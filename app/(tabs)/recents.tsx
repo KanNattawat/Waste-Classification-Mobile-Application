@@ -34,6 +34,7 @@ const recents = () => {
           uri: 'https://www.thaipedigree.com/static/articles/92a251af5c475574e8468931d8eb8d8938da855fad4aec8851529b9e9a3271be.jpeg'
         }}
         style={imgstyles.image}
+        className='shadow-md'
       />
 
       <Text className="text-3xl mt-2">ขยะอันตราย</Text>
@@ -58,7 +59,7 @@ const recents = () => {
 
 const imgstyles = StyleSheet.create({
   image: {
-    width: 300,
+    width: "90%",
     height: 200,
     margin: 10,
     borderRadius: 10,
