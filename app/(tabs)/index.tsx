@@ -35,6 +35,8 @@ export default function Index() {
         imageSource={require("@/assets/images/Upload.png")}
         text="อัปโหลดรูป"
       />
+
+      
     </View>
   );
 }

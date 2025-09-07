@@ -4,7 +4,7 @@ import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native'
 
 const ProgressBar = ({ label, percent, color }) => {
   return (
-    <View style={styles.container}>
+    <View style={styles.container} className='bg-white p-4 rounded-lg mb-4 shadow-md'>
       <View style={styles.labelRow}>
         <Text>{label}</Text>
         <Text>{percent}%</Text>
@@ -23,8 +23,8 @@ const ProgressBar = ({ label, percent, color }) => {
 
 const recents = () => {
   return (
-    <View className="flex-1 items-center justify-center bg-[#F8FDF9]">
-      
+    <View className="flex-1 items-center justify-center bg-[#F8FDF9] pt-10">
+
       <Text className="text-2xl font-bold text-[#4C944C]">
         ผลลัพธ์การคัดแยกขยะ
       </Text>
@@ -36,21 +36,22 @@ const recents = () => {
         style={imgstyles.image}
       />
 
-      <Text className="text-3xl mt-10">ขยะอันตราย</Text>
-      <Text className="text-base mt-10 pl-6 pr-6 text-center">
+      <Text className="text-3xl mt-2">ขยะอันตราย</Text>
+      <Text className="text-base mt-2 pl-6 pr-6 text-center text-[#545454]">
         ขยะชิ้นนี้มีความอันตรายสูง โปรดระมัดระวังในการจัดเก็บและนำไปทิ้งในจุดที่มีการรับทิ้งขยะประเภทนี้
       </Text>
 
-      <View style={{ width: "90%", marginTop: 20 }}>
-        <ProgressBar label="ขยะอันตราย" percent={90} color="red" />
-        <ProgressBar label="ขยะย่อยสลายได้" percent={5.8} color="green" />
-        <ProgressBar label="อื่นๆ" percent={4.2} color="purple" />
+      <View style={{ width: "90%", marginTop: 48 }}>
+        <ProgressBar label="ขยะอันตราย" percent={90} color="#EF4545" />
+        <ProgressBar label="ขยะย่อยสลายได้" percent={5.8} color="#28C45C" />
+        <ProgressBar label="อื่นๆ" percent={4.2} color="#C260FB" />
       </View>
-       <View style={btnstyles.container}>
-      <TouchableOpacity style={btnstyles.greenButton}>
-        <Text style={btnstyles.buttonText}>คัดแยกใหม่อีกครั้ง</Text>
-      </TouchableOpacity>
-    </View>
+
+      <View style={btnstyles.container}>
+        <TouchableOpacity style={btnstyles.greenButton}>
+          <Text style={btnstyles.buttonText}>คัดแยกใหม่อีกครั้ง</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   )
 }

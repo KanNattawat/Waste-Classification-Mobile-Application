@@ -29,19 +29,18 @@ export default function Buttons({
 }) {
   return (
     <Pressable
-      android_ripple={{ color: "#E6F4E6" }} // ripple สีเขียวอ่อน (Android)
-      className={` flex-row items-center ${mt} ${px} py-2 border ${borderColor} ${buttonColor} rounded-lg`}
+      android_ripple={{ color: "#E6F4E6" }}
+      className={`flex-row items-center ${mt} ${px} py-2 border ${borderColor} ${buttonColor} rounded-lg`}
       onPress={() => console.log("กดอัปโหลดรูป")}
     >
       <Image
         source={imageSource}
-        className="w-24 h-24 "
+        className="w-12 h-12"
         resizeMode="contain"
       />
-      <Text className={`pl-6 ${textColor} text-lg font-medium`}>
+      <Text className={`ml-2 ${textColor} text-lg font-medium`}>
         {text}
       </Text>
     </Pressable>
   );
 }
-
