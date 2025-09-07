@@ -1,4 +1,3 @@
-import Buttons from '@/components/buttons'
 import React from 'react'
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native'
 
@@ -37,7 +36,7 @@ const recents = () => {
         className='shadow-md'
       />
 
-      <Text className="text-3xl mt-2">ขยะอันตราย</Text>
+      <Text className="text-2xl mt-2 font-bold">ขยะอันตราย</Text>
       <Text className="text-base mt-2 pl-6 pr-6 text-center text-[#545454]">
         ขยะชิ้นนี้มีความอันตรายสูง โปรดระมัดระวังในการจัดเก็บและนำไปทิ้งในจุดที่มีการรับทิ้งขยะประเภทนี้
       </Text>
@@ -49,7 +48,8 @@ const recents = () => {
       </View>
 
       <View style={btnstyles.container}>
-        <TouchableOpacity style={btnstyles.greenButton}>
+        <TouchableOpacity style={btnstyles.greenButton}
+          activeOpacity={0.7} >
           <Text style={btnstyles.buttonText}>คัดแยกใหม่อีกครั้ง</Text>
         </TouchableOpacity>
       </View>

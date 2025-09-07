@@ -1,4 +1,4 @@
-import { Pressable, Text, Image } from "react-native";
+import { TouchableOpacity, Text, Image, View } from "react-native";
 
 /*
 1.button color
@@ -28,19 +28,20 @@ export default function Buttons({
   text: string;
 }) {
   return (
-    <Pressable
-      android_ripple={{ color: "#E6F4E6" }}
+    <TouchableOpacity
+      activeOpacity={0.7}
       className={`flex-row items-center ${mt} ${px} py-2 border ${borderColor} ${buttonColor} rounded-lg`}
-      onPress={() => console.log("กดอัปโหลดรูป")}
-    >
-      <Image
-        source={imageSource}
-        className="w-12 h-12"
-        resizeMode="contain"
-      />
-      <Text className={`ml-2 ${textColor} text-lg font-medium`}>
-        {text}
-      </Text>
-    </Pressable>
+      onPress={() => console.log("กดอัปโหลดรูป")}>
+      <View className="flex-row items-center">
+        <Image
+          source={imageSource}
+          className="w-12 h-12"
+          resizeMode="contain"
+        />
+        <Text className={`ml-2 ${textColor} text-base leading-[48px]`}>
+          {text}
+        </Text>
+      </View>
+    </TouchableOpacity>
   );
 }

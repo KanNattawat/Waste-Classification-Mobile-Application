@@ -1,4 +1,4 @@
-import { Text, View, Image, Pressable } from "react-native";
+import { Text, View, Image } from "react-native";
 import Buttons from '@/components/buttons'
 
 export default function Index() {
@@ -36,7 +36,7 @@ export default function Index() {
         text="อัปโหลดรูป"
       />
 
-      
+
     </View>
   );
 }
