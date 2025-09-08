@@ -10,6 +10,9 @@ const _layout = () => {
       <Tabs.Screen
       name='recents'
       options={{title: 'Recents', headerShown: false}}/>
+      <Tabs.Screen
+      name='result'
+      options={{title: 'Result', headerShown: false}}/>
     </Tabs>
   )
 }

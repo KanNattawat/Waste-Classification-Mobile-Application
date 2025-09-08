@@ -1,109 +1,84 @@
 import React from 'react'
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native'
+import { View, Text, Image, StyleSheet, TouchableOpacity, FlatList } from 'react-native'
 
-const ProgressBar = ({ label, percent, color }) => {
-  return (
-    <View style={styles.container} className='bg-white p-4 rounded-lg mb-4 shadow-md'>
-      <View style={styles.labelRow}>
-        <Text>{label}</Text>
-        <Text>{percent}%</Text>
-      </View>
-      <View style={styles.barBackground}>
-        <View
-          style={[
-            styles.barFill,
-            { width: `${percent}%`, backgroundColor: color },
-          ]}
-        />
-      </View>
-    </View>
-  )
-}
+const data = [
+  { id: "1", title: "ขยะอันตราย", date: "20 สิงหาคม 2026", image: "https://www.thaipedigree.com/static/articles/92a251af5c475574e8468931d8eb8d8938da855fad4aec8851529b9e9a3271be.jpeg" },
+  { id: "2", title: "ขยะอันตราย", date: "20 สิงหาคม 2026", image: "https://www.thaipedigree.com/static/articles/92a251af5c475574e8468931d8eb8d8938da855fad4aec8851529b9e9a3271be.jpeg" },
+  { id: "3", title: "ขยะอันตราย", date: "20 สิงหาคม 2026", image: "https://www.thaipedigree.com/static/articles/92a251af5c475574e8468931d8eb8d8938da855fad4aec8851529b9e9a3271be.jpeg" },
+];
 
 const recents = () => {
+  const renderItem = ({ item }) => (
+    <TouchableOpacity style={styles.card}>
+      <Image source={{ uri: item.image }} style={styles.image} />
+      <View style={styles.textContainer}>
+        <Text style={styles.title}>{item.title}</Text>
+        <Text style={styles.date}>{item.date}</Text>
+      </View>
+      <Text style={styles.arrow}>{">"}</Text>
+    </TouchableOpacity>
+  );
+
   return (
-    <View className="flex-1 items-center justify-center bg-[#F8FDF9] pt-10">
-
-      <Text className="text-2xl font-bold text-[#4C944C]">
-        ผลลัพธ์การคัดแยกขยะ
-      </Text>
-
-      <Image
-        source={{
-          uri: 'https://www.thaipedigree.com/static/articles/92a251af5c475574e8468931d8eb8d8938da855fad4aec8851529b9e9a3271be.jpeg'
-        }}
-        style={imgstyles.image}
-        className='shadow-md'
+    <View style={styles.container}>
+      <Text style={styles.header}>ประวัติการคัดแยกขยะ</Text>
+      <FlatList
+        data={data}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
       />
-
-      <Text className="text-2xl mt-2 font-bold">ขยะอันตราย</Text>
-      <Text className="text-base mt-2 pl-6 pr-6 text-center text-[#545454]">
-        ขยะชิ้นนี้มีความอันตรายสูง โปรดระมัดระวังในการจัดเก็บและนำไปทิ้งในจุดที่มีการรับทิ้งขยะประเภทนี้
-      </Text>
-
-      <View style={{ width: "90%", marginTop: 48 }}>
-        <ProgressBar label="ขยะอันตราย" percent={90} color="#EF4545" />
-        <ProgressBar label="ขยะย่อยสลายได้" percent={5.8} color="#28C45C" />
-        <ProgressBar label="อื่นๆ" percent={4.2} color="#C260FB" />
-      </View>
-
-      <View style={btnstyles.container}>
-        <TouchableOpacity style={btnstyles.greenButton}
-          activeOpacity={0.7} >
-          <Text style={btnstyles.buttonText}>คัดแยกใหม่อีกครั้ง</Text>
-        </TouchableOpacity>
-      </View>
     </View>
-  )
-}
+  );
+};
 
-const imgstyles = StyleSheet.create({
-  image: {
-    width: "90%",
-    height: 200,
-    margin: 10,
-    borderRadius: 10,
-  },
-})
+
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 15,
-  },
-  labelRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 5,
-  },
-  barBackground: {
-    height: 12,
-    backgroundColor: "#ccc",
-    borderRadius: 6,
-    overflow: "hidden",
-  },
-  barFill: {
-    height: "100%",
-    borderRadius: 6,
-  },
-})
-
-const btnstyles = StyleSheet.create({
-  container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F8FDF9',
+    backgroundColor: "#F5FDF7",
+    padding: 16,
   },
-  greenButton: {
-    backgroundColor: '#4C944C',
-    paddingVertical: 12,
-    paddingHorizontal: 30,
+  header: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#4C944C",
+    marginBottom: 12,
+    textAlign: "center",
+  },
+  card: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 10,
+    elevation: 2, // เงาสำหรับ Android
+    shadowColor: "#000", // เงาสำหรับ iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+  },
+  image: {
+    width: 100,
+    height: 80,
     borderRadius: 8,
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+  textContainer: {
+    flex: 1,
+    marginLeft: 10,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  date: {
+    fontSize: 14,
+    color: "#777",
+  },
+  arrow: {
+    fontSize: 20,
+    color: "#777",
   },
 });
 
