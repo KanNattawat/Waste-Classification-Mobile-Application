@@ -40,11 +40,12 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   header: {
-    fontSize: 18,
+    fontSize: 25,
     fontWeight: "bold",
     color: "#4C944C",
     marginBottom: 12,
     textAlign: "center",
+    paddingTop: 10
   },
   card: {
     flexDirection: "row",
