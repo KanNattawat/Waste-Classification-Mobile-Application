@@ -13,12 +13,32 @@ export default function Index() {
       return;
     }
     const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
       quality: 0.7,
     });
     if (!result.canceled) {
       setPhoto(result.assets[0].uri);
     }
     console.log(result);
+  }
+
+  const pickImage = async (setPhoto: (uri: string) => void) => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
+    if (status !== "granted") {
+      alert("กรุณาอนุญาตการเข้าถึงแกลเลอรีเพื่อใช้งาน");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    })
+    if (!result.canceled) {
+      setPhoto(result.assets[0].uri);
+    }
+    console.log(result);
+
   }
 
   return (
@@ -54,6 +74,7 @@ export default function Index() {
         textColor="text-[#4C944C]"
         imageSource={require("@/assets/images/Upload.png")}
         text="อัปโหลดรูป"
+        takeaPhoto={() => pickImage(setPhoto)}
       />
 
 
