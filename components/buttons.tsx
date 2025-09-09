@@ -18,6 +18,7 @@ export default function Buttons({
   textColor,
   imageSource,
   text,
+  takeaPhoto,
 }: {
   buttonColor: string;
   borderColor: string;
@@ -26,12 +27,13 @@ export default function Buttons({
   textColor: string;
   imageSource: any;
   text: string;
+  takeaPhoto?: () => void;
 }) {
   return (
     <TouchableOpacity
       activeOpacity={0.7}
       className={`flex-row items-center ${mt} ${px} py-2 border ${borderColor} ${buttonColor} rounded-lg`}
-      onPress={() => console.log("กดอัปโหลดรูป")}>
+      onPress={takeaPhoto}>
       <View className="flex-row items-center">
         <Image
           source={imageSource}

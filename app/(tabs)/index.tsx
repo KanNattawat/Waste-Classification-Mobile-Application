@@ -1,7 +1,26 @@
 import { Text, View, Image } from "react-native";
 import Buttons from '@/components/buttons'
+import * as ImagePicker from "expo-image-picker";
+import { useState } from "react";
 
 export default function Index() {
+  const [photo, setPhoto] = useState<string | null>(null);
+
+  const takeaPhoto = async (setPhoto: (uri: string) => void) => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== "granted") {
+      alert("กรุณาอนุญาตการเข้าถึงกล้องเพื่อใช้งาน");
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      quality: 0.7,
+    });
+    if (!result.canceled) {
+      setPhoto(result.assets[0].uri);
+    }
+    console.log(result);
+  }
+
   return (
     <View className="flex-1 items-center justify-center bg-[#F8FDF9]">
       <Text className="text-2xl font-bold text-[#4C944C]">
@@ -25,6 +44,7 @@ export default function Index() {
         textColor="text-white"
         imageSource={require("@/assets/images/Camera.png")}
         text="ถ่ายรูป"
+        takeaPhoto={() => takeaPhoto(setPhoto)}
       />
       <Buttons
         buttonColor="bg-[#ffffff]"
