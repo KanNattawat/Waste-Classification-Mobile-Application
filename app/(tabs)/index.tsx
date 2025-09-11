@@ -1,10 +1,13 @@
-import { Text, View, Image } from "react-native";
-import Buttons from '@/components/buttons'
-import * as ImagePicker from "expo-image-picker";
-import { useState } from "react";
+import Buttons from '@/components/buttons';
+import { ensureModelLoaded } from '@/libs/tflite';
+import * as ImagePicker from 'expo-image-picker';
+import { useEffect, useState } from 'react';
+import { Image, Text, View } from 'react-native';
 
 export default function Index() {
   const [photo, setPhoto] = useState<string | null>(null);
+  const [result, setResult] = useState<any[]>([]);
+  useEffect(() => { ensureModelLoaded().catch(console.error); }, []);
 
   const takeaPhoto = async (setPhoto: (uri: string) => void) => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
@@ -41,6 +44,9 @@ export default function Index() {
 
   }
 
+
+
+
   return (
     <View className="flex-1 items-center justify-center bg-[#F8FDF9]">
       <Text className="text-2xl font-bold text-[#4C944C]">
@@ -55,6 +61,9 @@ export default function Index() {
       <Text className="text-lg mt-10">
         ใช้กล้องของคุณเพื่อคัดแยกขยะ
       </Text>
+
+
+      {photo && <Image source={{ uri: photo }} style={{ width: 200, height: 200 }} />}
 
       <Buttons
         buttonColor="bg-[#4C944C]"
