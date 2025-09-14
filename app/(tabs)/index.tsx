@@ -1,13 +1,13 @@
 import Buttons from '@/components/buttons';
-import { ensureModelLoaded } from '@/libs/tflite';
 import * as ImagePicker from 'expo-image-picker';
-import { useEffect, useState } from 'react';
+import { useRouter } from "expo-router";
+import { useState } from 'react';
 import { Image, Text, View } from 'react-native';
 
 export default function Index() {
-  const [photo, setPhoto] = useState<string | null>(null);
-  const [result, setResult] = useState<any[]>([]);
-  useEffect(() => { ensureModelLoaded().catch(console.error); }, []);
+  const router = useRouter();
+  const [photo, setPhoto] = useState<string | null>(null); // delete ?
+  // const [result, setResult] = useState<any[]>([]);
 
   const takeaPhoto = async (setPhoto: (uri: string) => void) => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
@@ -22,6 +22,7 @@ export default function Index() {
     });
     if (!result.canceled) {
       setPhoto(result.assets[0].uri);
+      router.push({ pathname: "/result", params: { photo: result.assets[0].uri } });
     }
     console.log(result);
   }
@@ -39,13 +40,11 @@ export default function Index() {
     })
     if (!result.canceled) {
       setPhoto(result.assets[0].uri);
+      router.push({ pathname: "/result", params: { photo: result.assets[0].uri } });
     }
     console.log(result);
 
   }
-
-
-
 
   return (
     <View className="flex-1 items-center justify-center bg-[#F8FDF9]">
@@ -63,7 +62,7 @@ export default function Index() {
       </Text>
 
 
-      {photo && <Image source={{ uri: photo }} style={{ width: 200, height: 200 }} />}
+      {/* {photo && <Image source={{ uri: photo }} style={{ width: 200, height: 200 }} />} */}
 
       <Buttons
         buttonColor="bg-[#4C944C]"
