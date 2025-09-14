@@ -1,4 +1,4 @@
-import { ensureModelLoaded, preprocessImage, softmax } from '@/libs/tflite';
+import { ensureModelLoaded, preprocessImage } from '@/libs/tflite';
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from 'react';
 import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -24,14 +24,13 @@ const ProgressBar = ({ label, percent, color }: { label: string, percent: number
 
 const Index = () => {
     const { photo } = useLocalSearchParams<{ photo: string }>();
-    const [pred, setPred] = useState<any>(null);
+    const [result, setResult] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
 
     useEffect(() => {
         (async () => {
             try {
-                console.log("URI: ", photo)
                 if (!photo) throw new Error("Missing image uri");
                 const model = await ensureModelLoaded();
                 const input = await preprocessImage(photo)
@@ -41,7 +40,17 @@ const Index = () => {
                 // console.log('dtype', input.data.constructor.name);            // Float32Array
                 const outputs = model.runSync([input.data]); // output = logits
                 console.log(outputs)
-                return outputs;
+                const className = ["ขยะย่อยสลาย", "ขยะอันตราย", "ขยะทั่วไป", "ขยะรีไซเคิล"]
+
+                const mappingClass = className.reduce<Record<string, number>>((accu, current, index) => {
+                    accu[current] = outputs[0][index];
+                    return accu;
+                }, {});
+                const sortedClass = Object.entries(mappingClass).sort((a, b) => b[1] - a[1]);
+                console.log(sortedClass)
+                setResult(sortedClass)
+
+
             } catch (e) {
                 Alert.alert("Predict error", String(e));
             } finally {
@@ -53,38 +62,46 @@ const Index = () => {
 
     return (
         <View className="flex-1 items-center justify-center bg-[#F8FDF9] pt-16">
-
-            <Text className="text-2xl font-bold text-[#4C944C]">
-                ผลลัพธ์การคัดแยกขยะ
-            </Text>
-            {/* {!!photo && (
+            {loading?(<Text>loading</Text>):(
+            <>
+                <Text className="text-2xl font-bold text-[#4C944C]">
+                    ผลลัพธ์การคัดแยกขยะ
+                </Text>
+                {/* {!!photo && (
                 <Image source={{ photo }} style={{ width: 240, height: 240, borderRadius: 12 }} />
             )} */}
-            <Image
-                source={{
-                    uri: 'https://www.thaipedigree.com/static/articles/92a251af5c475574e8468931d8eb8d8938da855fad4aec8851529b9e9a3271be.jpeg'
-                }}
-                style={imgstyles.image}
-                className='shadow-md'
-            />
+                <Image
+                    source={{
+                        uri: photo
+                    }}
+                    style={imgstyles.image}
+                    className='shadow-md'
+                />
 
-            <Text className="text-2xl mt-2 font-bold">ขยะอันตราย</Text>
-            <Text className="text-base mt-2 pl-6 pr-6 text-center text-[#545454]">
-                ขยะชิ้นนี้มีความอันตรายสูง โปรดระมัดระวังในการจัดเก็บและนำไปทิ้งในจุดที่มีการรับทิ้งขยะประเภทนี้
-            </Text>
+                <Text className="text-2xl mt-2 font-bold">
+                    {result ? result[0][0] : "Loading"}
+                </Text>
+                <Text className="text-base mt-2 pl-6 pr-6 text-center text-[#545454]">
+                    ????????????????????ขยะชิ้นนี้มีความอันตรายสูง โปรดระมัดระวังในการจัดเก็บและนำไปทิ้งในจุดที่มีการรับทิ้งขยะประเภทนี้
+                </Text>
 
-            <View style={{ width: "90%", marginTop: 48 }}>
-                <ProgressBar label="ขยะอันตราย" percent={90} color="#EF4545" />
-                <ProgressBar label="ขยะย่อยสลายได้" percent={5.8} color="#28C45C" />
-                <ProgressBar label="อื่นๆ" percent={4.2} color="#C260FB" />
-            </View>
+                <View style={{ width: "90%", marginTop: 48 }}>
+                    <ProgressBar label={result[0][0]} percent={result[0][1] * 100} 
+                    color={result[0][0] == 'ขยะรีไซเคิล'? "#FCD92C": result[0][0] == 'ขยะอันตราย'?"#EF4545":result[0][0] == 'ขยะย่อยสลาย'?"#28C45C":"38AFFF"}/>
+                    <ProgressBar label={result[1][0]}percent={result[1][1]* 100} 
+                    color={result[1][0] == 'ขยะรีไซเคิล'? "#FCD92C": result[1][0] == 'ขยะอันตราย'?"#EF4545":result[1][0] == 'ขยะย่อยสลาย'?"#28C45C":"38AFFF"}/>
+                    <ProgressBar label={result[2][0]} percent={result[2][1]* 100} 
+                    color={result[2][0] == 'ขยะรีไซเคิล'? "#FCD92C": result[2][0] == 'ขยะอันตราย'?"#EF4545":result[2][0] == 'ขยะย่อยสลาย'?"#28C45C":"38AFFF"} />
+                </View>
 
-            <View style={btnstyles.container}>
-                <TouchableOpacity style={btnstyles.greenButton}
-                    activeOpacity={0.7} >
-                    <Text style={btnstyles.buttonText}>คัดแยกใหม่อีกครั้ง</Text>
-                </TouchableOpacity>
-            </View>
+                <View style={btnstyles.container}>
+                    <TouchableOpacity style={btnstyles.greenButton}
+                        activeOpacity={0.7} >
+                        <Text style={btnstyles.buttonText}>คัดแยกใหม่อีกครั้ง</Text>
+                    </TouchableOpacity>
+                </View>
+            </>
+        )}
         </View>
     )
 }

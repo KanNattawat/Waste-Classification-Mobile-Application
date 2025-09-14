@@ -56,7 +56,6 @@ export async function preprocessImage(
     }
   );
 
-  console.log('phase 1')
 
   if (!manipulated.base64) {
     throw new Error('Failed to produce base64 from ImageManipulator');
@@ -64,16 +63,13 @@ export async function preprocessImage(
 
   // 2) base64 → Uint8Array (บิต JPEG)
   const jpegBytes = toByteArray(manipulated.base64);
-  console.log('phase 2')
   // 3) ถอด JPEG → RGBA ด้วย jpeg-js (pure JS, ใช้ได้ใน RN)
   const decoded = jpeg.decode(jpegBytes, { useTArray: true }); // { data: Uint8Array(RGBA), width, height }
   const { data: rgba, width, height } = decoded;
-  console.log('phase 3')
   if (width !== targetW || height !== targetH) {
     // ปกติควรได้เท่ากันอยู่แล้ว เพราะเราบังคับ resize ไปแล้ว
     console.warn(`Decoded size ${width}x${height} differs from target ${targetW}x${targetH}`);
   }
-  console.log('phase 3')
   // 4) RGBA → RGB (ตัดช่อง A) และแปลงเป็น Float32 0..255
   //    ลำดับช่องของ jpeg-js คือ R,G,B,A ต่อเนื่องกัน
   const N = targetW * targetH;
@@ -88,7 +84,6 @@ export async function preprocessImage(
     src += 4; // RGBA
     dst += 3; // RGB
   }
-  console.log('phase 4')
   return {
     data: floatRGB,                 
     shape: [1, targetH, targetW, 3],
@@ -97,9 +92,3 @@ export async function preprocessImage(
   };
 }
 
-export function softmax(a: Float32Array) {
-  const m = Math.max(...a);
-  const exps = a.map(v => Math.exp(v - m));
-  const s = exps.reduce((p, c) => p + c, 0);
-  return exps.map(v => v / s);
-}
