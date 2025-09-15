@@ -2,7 +2,7 @@ import { ensureModelLoaded, preprocessImage } from '@/libs/tflite';
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from 'react';
 import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-
+import Loading from '@/components/loading'
 const ProgressBar = ({ label, percent, color }: { label: string, percent: number, color: string }) => {
     return (
         <View style={styles.container} className='bg-white p-4 rounded-lg mb-4 shadow-md'>
@@ -62,7 +62,7 @@ const Index = () => {
 
     return (
         <View className="flex-1 items-center justify-center bg-[#F8FDF9] pt-16">
-            {loading?(<Text>loading</Text>):(
+            {loading?(<Loading/>):(
             <>
                 <Text className="text-2xl font-bold text-[#4C944C]">
                     ผลลัพธ์การคัดแยกขยะ
@@ -79,7 +79,8 @@ const Index = () => {
                 />
 
                 <Text className="text-2xl mt-2 font-bold">
-                    {result ? result[0][0] : "Loading"}
+                    {/* {result ? result[0][0] : "Loading"} */}
+                    {result[0][0]}
                 </Text>
                 <Text className="text-base mt-2 pl-6 pr-6 text-center text-[#545454]">
                     ????????????????????ขยะชิ้นนี้มีความอันตรายสูง โปรดระมัดระวังในการจัดเก็บและนำไปทิ้งในจุดที่มีการรับทิ้งขยะประเภทนี้
@@ -87,11 +88,11 @@ const Index = () => {
 
                 <View style={{ width: "90%", marginTop: 48 }}>
                     <ProgressBar label={result[0][0]} percent={result[0][1] * 100} 
-                    color={result[0][0] == 'ขยะรีไซเคิล'? "#FCD92C": result[0][0] == 'ขยะอันตราย'?"#EF4545":result[0][0] == 'ขยะย่อยสลาย'?"#28C45C":"38AFFF"}/>
+                    color={result[0][0] == 'ขยะรีไซเคิล'? "#FCD92C": result[0][0] == 'ขยะอันตราย'?"#EF4545":result[0][0] == 'ขยะย่อยสลาย'?"#28C45C":"#38AFFF"}/>
                     <ProgressBar label={result[1][0]}percent={result[1][1]* 100} 
-                    color={result[1][0] == 'ขยะรีไซเคิล'? "#FCD92C": result[1][0] == 'ขยะอันตราย'?"#EF4545":result[1][0] == 'ขยะย่อยสลาย'?"#28C45C":"38AFFF"}/>
+                    color={result[1][0] == 'ขยะรีไซเคิล'? "#FCD92C": result[1][0] == 'ขยะอันตราย'?"#EF4545":result[1][0] == 'ขยะย่อยสลาย'?"#28C45C":"#38AFFF"}/>
                     <ProgressBar label={result[2][0]} percent={result[2][1]* 100} 
-                    color={result[2][0] == 'ขยะรีไซเคิล'? "#FCD92C": result[2][0] == 'ขยะอันตราย'?"#EF4545":result[2][0] == 'ขยะย่อยสลาย'?"#28C45C":"38AFFF"} />
+                    color={result[2][0] == 'ขยะรีไซเคิล'? "#FCD92C": result[2][0] == 'ขยะอันตราย'?"#EF4545":result[2][0] == 'ขยะย่อยสลาย'?"#28C45C":"#38AFFF"} />
                 </View>
 
                 <View style={btnstyles.container}>

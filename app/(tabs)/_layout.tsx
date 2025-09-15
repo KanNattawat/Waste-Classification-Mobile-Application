@@ -19,6 +19,9 @@ const _layout = () => {
       <Tabs.Screen
         name='sign_up'
         options={{ title: 'testsign_up', headerShown: false }} />
+      <Tabs.Screen
+        name='test'
+        options={{ title: 'test', headerShown: false }} />
     </Tabs>
   )
 }
