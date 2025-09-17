@@ -1,0 +1,53 @@
+datasource db {
+  provider = "postgresql" // หรือ "mysql" ตามที่คุณใช้
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  User_ID      Int       @id @default(autoincrement())
+  User_email   String    @unique
+  Full_name    String
+  User_name    String
+  User_password String
+
+  // relations
+  images   Image[]
+  history  History[]
+}
+
+model Image {
+  Image_ID   Int      @id @default(autoincrement())
+  User_ID    Int
+  Waste_ID   Int
+  Image_path String
+  timestamp  DateTime @default(now())
+
+  // relations
+  user   User   @relation(fields: [User_ID], references: [User_ID])
+  waste  Waste  @relation(fields: [Waste_ID], references: [Waste_ID])
+  history History[]
+}
+
+model Waste {
+  Waste_ID   Int     @id @default(autoincrement())
+  Waste_name String
+  Waste_info String
+
+  // relations
+  images Image[]
+}
+
+model History {
+  History_ID Int      @id @default(autoincrement())
+  User_ID    Int
+  Image_ID   Int
+  timestamp  DateTime @default(now())
+
+  // relations
+  user  User  @relation(fields: [User_ID], references: [User_ID])
+  image Image @relation(fields: [Image_ID], references: [Image_ID])
+}
