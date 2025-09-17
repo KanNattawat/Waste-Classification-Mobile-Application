@@ -1,15 +1,17 @@
-import express from "express"; // ถ้าใช้ ES Module
-// const express = require("express"); // ถ้าใช้ CommonJS
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+// import cookieParser from 'cookie-parser';
+import routes from './routes/routes.js';
 
+dotenv.config();
 const app = express();
-const PORT = process.env.PORT || 3000;
-
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.send("Backend is running!");
-});
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+
+app.use("/", routes);
+
+app.listen(process.env.PORT, async () => {
+    console.log('Service running');
 });
