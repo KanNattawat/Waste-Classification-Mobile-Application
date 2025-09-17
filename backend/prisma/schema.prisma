@@ -9,9 +9,8 @@ generator client {
 
 model User {
   User_ID      Int       @id @default(autoincrement())
-  User_email   String    @unique
   Full_name    String
-  User_name    String
+  User_name    String    @unique
   User_password String
 
   // relations
