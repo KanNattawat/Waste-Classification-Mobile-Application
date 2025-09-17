@@ -27,7 +27,7 @@ export function getModel() {
 
 /*
 ข้อมูล MobilenetV3
-1.Input shape : (1, 224, 224, 3) หรือ (batch=1, height=224, width=224, channels=3)
+1.Input shape : (1, 224, 224, 3) = (batch=1, height=224, width=224, channels=3)
 2.Data type: Float32 (สำหรับโมเดล float) หรือ UInt8 (สำหรับ quantized model)
 3.Normalize pixel values ให้อยู่ในช่วง [-1, 1] (ใน model ทำให้อยู่แล้ว)
 4.ใช้ RGB channels
