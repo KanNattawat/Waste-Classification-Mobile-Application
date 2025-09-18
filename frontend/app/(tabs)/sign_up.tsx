@@ -1,10 +1,32 @@
 import { View, KeyboardAvoidingView, Platform, TextInput, Text, Image, TouchableOpacity } from 'react-native'
 import { use, useState } from 'react'
+import axios from 'axios'
 const Sign_Up = () => {
     const [fullname, setFullname] = useState('')
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
+    const [error, setError] = useState('')
+
+    const handleSubmit = async () => {
+        try {
+            if (password !== confirmPassword) {
+                setError('password ไม่ตรงกัน')
+                return;
+            }
+
+            const response = await axios.post("http://193.168.182.241:3000/auth/register", //ตอนนี้อ้างอิง ip ของ pc ที่เรากำลัง run backend ไปก่อน
+                {
+                    User_name: username,
+                    User_password: password,
+                    Full_name: fullname
+                }
+            )
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
     return (
         // <KeyboardAvoidingView
         //   behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -57,14 +79,14 @@ const Sign_Up = () => {
 
             <TouchableOpacity
                 activeOpacity={0.7}
-                className='mt-10 bg-[#39E17B] rounded-xl w-80 h-16 items-center justify-center'>
+                className='mt-10 bg-[#39E17B] rounded-xl w-80 h-16 items-center justify-center'
+                onPress={handleSubmit}>
                 <View>
                     <Text className='text-[#12241A] text-xl font-bold'>สมัครสมาชิก</Text>
                 </View>
             </TouchableOpacity>
 
-
-
+            {error && <View className='text-red-500'>{error}</View>}
 
         </View>
 

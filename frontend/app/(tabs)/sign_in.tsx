@@ -1,12 +1,33 @@
 import { View, KeyboardAvoidingView, Platform, TextInput, Text, Image, TouchableOpacity } from 'react-native'
 import { useState } from 'react'
+import axios from 'axios'
+// import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const Sign_in = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+
+  const handleSubmit = async () => {
+    try {
+      const response = await axios.post("http://193.168.182.241:3000/auth/login", //ตอนนี้อ้างอิง ip ของ pc ที่เรากำลัง run backend ไปก่อน
+        {
+          User_name: username,
+          User_password: password
+        }
+      )
+      const token = response.data;
+      // await AsyncStorage.setItem("authToken", token);
+
+      console.log("Login success:", token);
+
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   return (
-    // <KeyboardAvoidingView
-    //   behavior={Platform.OS === "ios" ? "padding" : "height"}
-    // >
+
+
     <View className="flex-1 items-center justify-center bg-[#132119] pt-20">
       <Image source={require('@/assets/images/im3.png')} />
       <Text className='text-[#96C5A9] text-2xl pt-4 font-bold'>แอปพลิเคชันคัดแยกขยะ</Text>
@@ -42,8 +63,9 @@ const Sign_in = () => {
       </View>
 
       <TouchableOpacity
-      activeOpacity={0.7}
-      className='mt-10 bg-[#39E17B] rounded-xl w-80 h-16 items-center justify-center'>
+        activeOpacity={0.7}
+        className='mt-10 bg-[#39E17B] rounded-xl w-80 h-16 items-center justify-center'
+        onPress={handleSubmit}>
         <View>
           <Text className='text-[#12241A] text-xl font-bold'>เข้าสู่ระบบ</Text>
         </View>
@@ -52,7 +74,7 @@ const Sign_in = () => {
       <View className='flex-1 justify-end mb-10'>
         <Text className='text-white underline'>สร้างบัญชี</Text>
       </View>
-      
+
 
     </View>
 
