@@ -13,6 +13,9 @@ const _layout = () => {
       <Tabs.Screen
         name='recents'
         options={{ title: 'Recents', headerShown: false }} />
+      <Tabs.Screen
+        name='profile'
+        options={{ title: 'Profile', headerShown: false }} />
     </Tabs>
   )
 }
