@@ -4,7 +4,7 @@ import {
 } from 'react-native'
 import { useState } from 'react'
 import axios from 'axios'
-import { useNavigation } from "@react-navigation/native";
+import { useRouter } from 'expo-router';
 import { StackActions } from '@react-navigation/native';
 
 const Sign_Up = () => {
@@ -13,7 +13,7 @@ const Sign_Up = () => {
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
     const [error, setError] = useState('')
-    const navigation = useNavigation();
+    const router = useRouter()
     const handleSubmit = async () => {
         try {
             if (password !== confirmPassword) {
@@ -28,7 +28,7 @@ const Sign_Up = () => {
                 }
             )
 
-            navigation.dispatch(StackActions.replace('??'));
+            router.replace('/(auth)/sign_in')
         } catch (error) {
             console.log(error)
         }
@@ -43,11 +43,11 @@ const Sign_Up = () => {
             >
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                     <ScrollView
-                        contentContainerStyle={{ flexGrow: 1, padding: 20 }}
+                        contentContainerStyle={{ flexGrow: 1 }}
                         keyboardShouldPersistTaps="handled"
                         showsVerticalScrollIndicator={false}
                     >
-                        <View className="flex-1 items-center justify-center bg-[#132119]">
+                        <View className="flex-1 items-center justify-center bg-[#132119] mb-24">
                             <Image source={require('@/assets/images/im3.png')} />
                             <Text className='text-[#96C5A9] text-2xl pt-4 font-bold'>
                                 แอปพลิเคชันคัดแยกขยะ
@@ -58,7 +58,7 @@ const Sign_Up = () => {
                                 <TextInput
                                     value={fullname}
                                     onChangeText={setFullname}
-                                    placeholder="Fullname"
+                                    placeholder="Full name"
                                     placeholderTextColor="#96C5A9"
                                     className="flex-1 text-[#96C5A9] text-lg"
                                     returnKeyType="next"

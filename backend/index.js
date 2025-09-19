@@ -14,7 +14,7 @@ app.use(express.json());
 app.use(helmet())
 
 app.use("/auth", auth_router);
-app.use("/", authMiddleware, router)
+app.use("/", router)
 
 app.listen(process.env.PORT, async () => {
     console.log('Service running');

@@ -4,6 +4,7 @@ import axios from 'axios'
 import * as SecureStore from "expo-secure-store";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from 'expo-router';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Sign_in = () => {
   const [username, setUsername] = useState('')
@@ -21,8 +22,10 @@ const Sign_in = () => {
       )
       const token = response.data.token;
       await SecureStore.setItem("authToken", token)
+      await AsyncStorage.setItem("userId", String(response.data.userId));
       setToken(token)
       console.log(token)
+      console.log(response.data.userId)
 
     } catch (error) {
       console.log(error)
@@ -30,8 +33,6 @@ const Sign_in = () => {
   }
 
   return (
-
-
     <View className="flex-1 items-center justify-center bg-[#132119] pt-20">
       <Image source={require('@/assets/images/im3.png')} />
       <Text className='text-[#96C5A9] text-2xl pt-4 font-bold'>แอปพลิเคชันคัดแยกขยะ</Text>
@@ -76,8 +77,8 @@ const Sign_in = () => {
         </View>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={()=>{ router.replace('/(auth)/sign_up');}}>
-        <View className='flex-1 justify-end mb-10'>
+      <TouchableOpacity onPress={() => { router.navigate('/(auth)/sign_up'); }}>
+        <View className='justify-end mt-56'>
           <Text className='text-white underline text-xl'>สร้างบัญชี</Text>
         </View>
       </TouchableOpacity>
@@ -85,8 +86,6 @@ const Sign_in = () => {
 
 
     </View>
-
-    // </KeyboardAvoidingView>
   )
 }
 
