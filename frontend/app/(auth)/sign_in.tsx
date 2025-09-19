@@ -1,12 +1,13 @@
-import { View, KeyboardAvoidingView, Platform, TextInput, Text, Image, TouchableOpacity } from 'react-native'
+import { View,TextInput, Text, Image, TouchableOpacity } from 'react-native'
 import { useState } from 'react'
 import axios from 'axios'
-// import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from "expo-secure-store";
+import {useAuth } from "@/contexts/AuthContext";
 
 const Sign_in = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-
+  const { setToken} = useAuth();
   const handleSubmit = async () => {
     try {
       const response = await axios.post("http://193.168.182.241:3000/auth/login", //ตอนนี้อ้างอิง ip ของ pc ที่เรากำลัง run backend ไปก่อน
@@ -15,11 +16,11 @@ const Sign_in = () => {
           User_password: password
         }
       )
-      const token = response.data;
-      // await AsyncStorage.setItem("authToken", token);
-
-      console.log("Login success:", token);
-
+      const token = response.data.token;
+      await SecureStore.setItem("authToken", token)
+      setToken(token)
+      console.log(token);
+      
     } catch (error) {
       console.log(error)
     }
@@ -59,6 +60,7 @@ const Sign_in = () => {
           placeholder="Password"
           placeholderTextColor="#96C5A9"
           className="flex-1 text-[#96C5A9] text-lg"
+          secureTextEntry
         />
       </View>
 
