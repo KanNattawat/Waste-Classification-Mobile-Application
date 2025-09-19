@@ -9,10 +9,13 @@ const _layout = () => {
     <Tabs>
       <Tabs.Screen
         name="index"
-        options={{ title: 'Home', headerShown: false }} />
+        options={{ title: 'โฮม', headerShown: false }} />
       <Tabs.Screen
         name='recents'
-        options={{ title: 'Recents', headerShown: false }} />
+        options={{ title: 'ประวัติ', headerShown: false }} />
+      <Tabs.Screen
+        name='profile'
+        options={{ title: ' โปรไฟล์', headerShown: false }} />
     </Tabs>
   )
 }
