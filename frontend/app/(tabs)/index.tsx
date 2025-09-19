@@ -48,7 +48,7 @@ export default function Index() {
 
   return (
     <View className="flex-1 items-center justify-center bg-[#F8FDF9]">
-      <Text className="text-2xl font-bold text-[#4C944C]">
+      <Text className="text-3xl font-bold text-[#4C944C]">
         แอปพลิเคชันคัดแยกขยะ
       </Text>
       <View className="mt-10 p-7 border border-solid rounded-xl border-[#4C944C] bg-white">

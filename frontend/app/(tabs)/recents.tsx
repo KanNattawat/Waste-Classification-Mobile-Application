@@ -21,7 +21,7 @@ const recents = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>ประวัติการคัดแยกขยะ</Text>
+      <Text style={styles.header} className='text-3xl'>ประวัติการคัดแยกขยะ</Text>
       <FlatList
         data={data}
         keyExtractor={(item) => item.id}
@@ -37,10 +37,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F5FDF7",
-    padding: 16,
+    padding: 32,
   },
   header: {
-    fontSize: 25,
     fontWeight: "bold",
     color: "#4C944C",
     marginBottom: 12,

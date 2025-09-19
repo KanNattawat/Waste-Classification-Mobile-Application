@@ -3,6 +3,9 @@ import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from 'react';
 import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Loading from '@/components/loading'
+import axios from 'axios';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 const ProgressBar = ({ label, percent, color }: { label: string, percent: number, color: string }) => {
     return (
         <View style={styles.container} className='bg-white p-4 rounded-lg mb-4 shadow-md'>
@@ -22,11 +25,24 @@ const ProgressBar = ({ label, percent, color }: { label: string, percent: number
     )
 }
 
+const uploadtoStorage = async (wastetype: string, image_path: string, userId: string|null) =>{
+    try {
+        const res = await axios.post("http://193.168.182.241:3000/wasteupload",{
+            user_id : userId,
+            wastetype:wastetype,
+            image_path:image_path
+        })
+        console.log(res)
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+
 const Index = () => {
     const { photo } = useLocalSearchParams<{ photo: string }>();
     const [result, setResult] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-
 
     useEffect(() => {
         (async () => {
@@ -49,7 +65,9 @@ const Index = () => {
                 const sortedClass = Object.entries(mappingClass).sort((a, b) => b[1] - a[1]);
                 console.log(sortedClass)
                 setResult(sortedClass)
-
+                const userId = await AsyncStorage.getItem("userId");
+                console.log("id", userId)
+                uploadtoStorage(sortedClass[0][0], photo, userId);
 
             } catch (e) {
                 Alert.alert("Predict error", String(e));
@@ -61,15 +79,13 @@ const Index = () => {
 
 
     return (
-        <View className="flex-1 items-center justify-center bg-[#F8FDF9] pt-16">
+        <View className="flex-1 items-center justify-center bg-[#F8FDF9] pt-12">
             {loading?(<Loading/>):(
             <>
                 <Text className="text-2xl font-bold text-[#4C944C]">
                     ผลลัพธ์การคัดแยกขยะ
                 </Text>
-                {/* {!!photo && (
-                <Image source={{ photo }} style={{ width: 240, height: 240, borderRadius: 12 }} />
-            )} */}
+
                 <Image
                     source={{
                         uri: photo
@@ -143,6 +159,7 @@ const btnstyles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#F8FDF9',
+        paddingBottom: 50
     },
     greenButton: {
         backgroundColor: '#4C944C',
