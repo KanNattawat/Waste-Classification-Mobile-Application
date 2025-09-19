@@ -13,12 +13,6 @@ const _layout = () => {
       <Tabs.Screen
         name='recents'
         options={{ title: 'Recents', headerShown: false }} />
-      {/* <Tabs.Screen
-        name='sign_in'
-        options={{ title: 'sign_in', headerShown: false }} />
-      <Tabs.Screen
-        name='sign_up'
-        options={{ title: 'sign_up', headerShown: false }} /> */}
     </Tabs>
   )
 }

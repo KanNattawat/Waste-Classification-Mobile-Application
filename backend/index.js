@@ -5,12 +5,13 @@ import dotenv from 'dotenv';
 import auth_router from './routes/auth_routes.js';
 import router from './routes/routes.js'; 
 import { authMiddleware } from "./controller/auth_controller.js";
+import helmet from "helmet";
 
 dotenv.config();
 const app = express();
 app.use(express.json());
 
-
+app.use(helmet())
 
 app.use("/auth", auth_router);
 app.use("/", authMiddleware, router)
