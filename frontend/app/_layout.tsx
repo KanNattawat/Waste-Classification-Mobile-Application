@@ -1,13 +1,44 @@
 import { ensureModelLoaded } from "@/libs/tflite";
-import { Stack } from "expo-router";
+import { Stack, Redirect, useSegments } from "expo-router";
 import { useEffect } from "react";
+import { ActivityIndicator, View } from "react-native";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import "./globals.css";
+import Loading from "@/components/loading";
+import * as SecureStore from "expo-secure-store";
+
+
+
+function AuthGate({ children }: { children: React.ReactNode }) {
+  const { token, isLoading } = useAuth();
+  const segments = useSegments();
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <Loading />
+      </View>
+    );
+  }
+
+  const inAuthGroup = segments[0] === "(auth)";
+
+  if (!token && !inAuthGroup) {
+    return <Redirect href="/(auth)/sign_in" />;
+  }
+  if (token && inAuthGroup) {
+    return <Redirect href="/(tabs)" />;
+  }
+
+  return <>{children}</>;
+}
 
 export default function RootLayout() {
+  
   useEffect(() => {
     async function init() {
       try {
-
+        // SecureStore.deleteItemAsync("authToken")
         await ensureModelLoaded();
       } catch (err) {
         console.error("preload model error: ", err);
@@ -18,9 +49,15 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <Stack>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="result" options={{ headerShown: false }} />
-    </Stack>
+    <AuthProvider>
+      <AuthGate>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="result" options={{ headerShown: false }} />
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        </Stack>
+      </AuthGate>
+    </AuthProvider>
+
   );
 }

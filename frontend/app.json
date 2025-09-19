@@ -39,7 +39,8 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "react-native-edge-to-edge"
+      "react-native-edge-to-edge",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
