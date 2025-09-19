@@ -1,11 +1,10 @@
 import { ensureModelLoaded } from "@/libs/tflite";
 import { Stack, Redirect, useSegments } from "expo-router";
 import { useEffect } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { View } from "react-native";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import "./globals.css";
 import Loading from "@/components/loading";
-import * as SecureStore from "expo-secure-store";
 
 
 
@@ -38,7 +37,6 @@ export default function RootLayout() {
   useEffect(() => {
     async function init() {
       try {
-        // SecureStore.deleteItemAsync("authToken")
         await ensureModelLoaded();
       } catch (err) {
         console.error("preload model error: ", err);

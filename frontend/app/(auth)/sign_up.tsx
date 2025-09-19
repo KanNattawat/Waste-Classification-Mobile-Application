@@ -1,5 +1,7 @@
-import { View, KeyboardAvoidingView, Platform, TextInput, Text, Image, TouchableOpacity,
-     ScrollView, TouchableWithoutFeedback, Keyboard, SafeAreaView } from 'react-native'
+import {
+    View, KeyboardAvoidingView, Platform, TextInput, Text, Image, TouchableOpacity,
+    ScrollView, TouchableWithoutFeedback, Keyboard, SafeAreaView
+} from 'react-native'
 import { useState } from 'react'
 import axios from 'axios'
 import { useNavigation } from "@react-navigation/native";

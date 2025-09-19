@@ -1,13 +1,16 @@
-import { View,TextInput, Text, Image, TouchableOpacity } from 'react-native'
+import { View, TextInput, Text, Image, TouchableOpacity } from 'react-native'
 import { useState } from 'react'
 import axios from 'axios'
 import * as SecureStore from "expo-secure-store";
-import {useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from 'expo-router';
 
 const Sign_in = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const { setToken} = useAuth();
+  const { setToken } = useAuth()
+  const router = useRouter()
+
   const handleSubmit = async () => {
     try {
       const response = await axios.post("http://193.168.182.241:3000/auth/login", //ตอนนี้อ้างอิง ip ของ pc ที่เรากำลัง run backend ไปก่อน
@@ -19,8 +22,8 @@ const Sign_in = () => {
       const token = response.data.token;
       await SecureStore.setItem("authToken", token)
       setToken(token)
-      console.log(token);
-      
+      console.log(token)
+
     } catch (error) {
       console.log(error)
     }
@@ -73,9 +76,12 @@ const Sign_in = () => {
         </View>
       </TouchableOpacity>
 
-      <View className='flex-1 justify-end mb-10'>
-        <Text className='text-white underline'>สร้างบัญชี</Text>
-      </View>
+      <TouchableOpacity onPress={()=>{ router.replace('/(auth)/sign_up');}}>
+        <View className='flex-1 justify-end mb-10'>
+          <Text className='text-white underline text-xl'>สร้างบัญชี</Text>
+        </View>
+      </TouchableOpacity>
+
 
 
     </View>
