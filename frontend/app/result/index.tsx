@@ -1,4 +1,4 @@
-import { ensureModelLoaded, preprocessImage } from '@/libs/tflite';
+import { ensureModelLoaded, preprocessImage } from '@/lib/tflite';
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from 'react';
 import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -25,16 +25,18 @@ const ProgressBar = ({ label, percent, color }: { label: string, percent: number
     )
 }
 
-const uploadtoStorage = async (wastetype: string, image_path: string, userId: string|null) =>{
+
+const uploadToDB = async (wastetype: string, image_path: string, userId: string | null): Promise<string> => {
     try {
-        const res = await axios.post("http://193.168.182.241:3000/wasteupload",{
-            user_id : userId,
-            wastetype:wastetype,
-            image_path:image_path
+        const res = await axios.post("http://193.168.182.241:3000/wasteupload", {
+            user_id: userId,
+            wastetype: wastetype,
+            image_path: image_path
         })
-        console.log(res)
-    } catch (error) {
+        return res.data.imgid as string
+    } catch (error:any) {
         console.log(error)
+        return "error"
     }
 }
 
@@ -63,12 +65,11 @@ const Index = () => {
                     return accu;
                 }, {});
                 const sortedClass = Object.entries(mappingClass).sort((a, b) => b[1] - a[1]);
-                console.log(sortedClass)
+                // console.log(sortedClass)
                 setResult(sortedClass)
                 const userId = await AsyncStorage.getItem("userId");
-                console.log("id", userId)
-                uploadtoStorage(sortedClass[0][0], photo, userId);
-
+                // console.log("id", userId)
+                const res = await uploadToDB(sortedClass[0][0], photo, userId);
             } catch (e) {
                 Alert.alert("Predict error", String(e));
             } finally {
@@ -80,45 +81,45 @@ const Index = () => {
 
     return (
         <View className="flex-1 items-center justify-center bg-[#F8FDF9] pt-12">
-            {loading?(<Loading/>):(
-            <>
-                <Text className="text-2xl font-bold text-[#4C944C]">
-                    ผลลัพธ์การคัดแยกขยะ
-                </Text>
+            {loading ? (<Loading />) : (
+                <>
+                    <Text className="text-2xl font-bold text-[#4C944C]">
+                        ผลลัพธ์การคัดแยกขยะ
+                    </Text>
 
-                <Image
-                    source={{
-                        uri: photo
-                    }}
-                    style={imgstyles.image}
-                    className='shadow-md'
-                />
+                    <Image
+                        source={{
+                            uri: photo
+                        }}
+                        style={imgstyles.image}
+                        className='shadow-md'
+                    />
 
-                <Text className="text-2xl mt-2 font-bold">
-                    {/* {result ? result[0][0] : "Loading"} */}
-                    {result[0][0]}
-                </Text>
-                <Text className="text-base mt-2 pl-6 pr-6 text-center text-[#545454]">
-                    ????????????????????ขยะชิ้นนี้มีความอันตรายสูง โปรดระมัดระวังในการจัดเก็บและนำไปทิ้งในจุดที่มีการรับทิ้งขยะประเภทนี้
-                </Text>
+                    <Text className="text-2xl mt-2 font-bold">
+                        {/* {result ? result[0][0] : "Loading"} */}
+                        {result[0][0]}
+                    </Text>
+                    <Text className="text-base mt-2 pl-6 pr-6 text-center text-[#545454]">
+                        ????????????????????ขยะชิ้นนี้มีความอันตรายสูง โปรดระมัดระวังในการจัดเก็บและนำไปทิ้งในจุดที่มีการรับทิ้งขยะประเภทนี้
+                    </Text>
 
-                <View style={{ width: "90%", marginTop: 48 }}>
-                    <ProgressBar label={result[0][0]} percent={result[0][1] * 100} 
-                    color={result[0][0] == 'ขยะรีไซเคิล'? "#FCD92C": result[0][0] == 'ขยะอันตราย'?"#EF4545":result[0][0] == 'ขยะย่อยสลาย'?"#28C45C":"#38AFFF"}/>
-                    <ProgressBar label={result[1][0]}percent={result[1][1]* 100} 
-                    color={result[1][0] == 'ขยะรีไซเคิล'? "#FCD92C": result[1][0] == 'ขยะอันตราย'?"#EF4545":result[1][0] == 'ขยะย่อยสลาย'?"#28C45C":"#38AFFF"}/>
-                    <ProgressBar label={result[2][0]} percent={result[2][1]* 100} 
-                    color={result[2][0] == 'ขยะรีไซเคิล'? "#FCD92C": result[2][0] == 'ขยะอันตราย'?"#EF4545":result[2][0] == 'ขยะย่อยสลาย'?"#28C45C":"#38AFFF"} />
-                </View>
+                    <View style={{ width: "90%", marginTop: 48 }}>
+                        <ProgressBar label={result[0][0]} percent={result[0][1] * 100}
+                            color={result[0][0] == 'ขยะรีไซเคิล' ? "#FCD92C" : result[0][0] == 'ขยะอันตราย' ? "#EF4545" : result[0][0] == 'ขยะย่อยสลาย' ? "#28C45C" : "#38AFFF"} />
+                        <ProgressBar label={result[1][0]} percent={result[1][1] * 100}
+                            color={result[1][0] == 'ขยะรีไซเคิล' ? "#FCD92C" : result[1][0] == 'ขยะอันตราย' ? "#EF4545" : result[1][0] == 'ขยะย่อยสลาย' ? "#28C45C" : "#38AFFF"} />
+                        <ProgressBar label={result[2][0]} percent={result[2][1] * 100}
+                            color={result[2][0] == 'ขยะรีไซเคิล' ? "#FCD92C" : result[2][0] == 'ขยะอันตราย' ? "#EF4545" : result[2][0] == 'ขยะย่อยสลาย' ? "#28C45C" : "#38AFFF"} />
+                    </View>
 
-                <View style={btnstyles.container}>
-                    <TouchableOpacity style={btnstyles.greenButton}
-                        activeOpacity={0.7} >
-                        <Text style={btnstyles.buttonText}>คัดแยกใหม่อีกครั้ง</Text>
-                    </TouchableOpacity>
-                </View>
-            </>
-        )}
+                    <View style={btnstyles.container}>
+                        <TouchableOpacity style={btnstyles.greenButton}
+                            activeOpacity={0.7} >
+                            <Text style={btnstyles.buttonText}>คัดแยกใหม่อีกครั้ง</Text>
+                        </TouchableOpacity>
+                    </View>
+                </>
+            )}
         </View>
     )
 }
