@@ -5,7 +5,7 @@ import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-na
 import Loading from '@/components/loading'
 import axios from 'axios';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import {saveImage} from "@/lib/storage"
 const ProgressBar = ({ label, percent, color }: { label: string, percent: number, color: string }) => {
     return (
         <View style={styles.container} className='bg-white p-4 rounded-lg mb-4 shadow-md'>
@@ -26,12 +26,13 @@ const ProgressBar = ({ label, percent, color }: { label: string, percent: number
 }
 
 
-const uploadToDB = async (wastetype: string, image_path: string, userId: string | null): Promise<string> => {
+const uploadToDB = async (wastetype: string, image_path: string, userId: string | null, probs:Array<number>): Promise<string> => {
     try {
         const res = await axios.post("http://193.168.182.241:3000/wasteupload", {
             user_id: userId,
             wastetype: wastetype,
-            image_path: image_path
+            image_path: image_path,
+            probs: [...probs]
         })
         return res.data.imgid as string
     } catch (error:any) {
@@ -69,7 +70,10 @@ const Index = () => {
                 setResult(sortedClass)
                 const userId = await AsyncStorage.getItem("userId");
                 // console.log("id", userId)
-                const res = await uploadToDB(sortedClass[0][0], photo, userId);
+                const res = await uploadToDB(sortedClass[0][0], photo, userId, outputs[0]);
+                console.log(outputs[0])
+                saveImage(photo, userId, res)
+                console.log('saved!')
             } catch (e) {
                 Alert.alert("Predict error", String(e));
             } finally {
