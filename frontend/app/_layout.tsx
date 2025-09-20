@@ -1,4 +1,4 @@
-import { ensureModelLoaded } from "@/libs/tflite";
+import { ensureModelLoaded } from "@/lib/tflite";
 import { Stack, Redirect, useSegments } from "expo-router";
 import { useEffect } from "react";
 import { View } from "react-native";
