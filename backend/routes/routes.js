@@ -6,4 +6,5 @@ const router = express.Router()
 
 router.get('/getme', authMiddleware, controller.getMe);
 router.post('/wasteupload', controller.uploadtoStorage);
+router.get('/gethistory', controller.getHistory);
 export default router

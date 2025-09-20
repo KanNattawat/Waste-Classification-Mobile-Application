@@ -1,21 +1,80 @@
-import React from 'react'
-import { View, Text, Image, StyleSheet, TouchableOpacity, FlatList } from 'react-native'
+import { useEffect, useState } from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, FlatList, ListRenderItem } from 'react-native';
+import axios from 'axios';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { readImage } from "@/lib/storage"
+export interface HistoryItem {
+  Image_ID: number;
+  User_ID: number;
+  Waste_ID: number;
+  Image_path: string;
+  timestamp: string;
+  probs: number[];
+}
 
-const data = [
-  { id: "1", title: "ขยะอันตราย", date: "20 สิงหาคม 2026", image: "https://www.thaipedigree.com/static/articles/92a251af5c475574e8468931d8eb8d8938da855fad4aec8851529b9e9a3271be.jpeg" },
-  { id: "2", title: "ขยะอันตราย", date: "20 สิงหาคม 2026", image: "https://www.thaipedigree.com/static/articles/92a251af5c475574e8468931d8eb8d8938da855fad4aec8851529b9e9a3271be.jpeg" },
-  { id: "3", title: "ขยะอันตราย", date: "20 สิงหาคม 2026", image: "https://www.thaipedigree.com/static/articles/92a251af5c475574e8468931d8eb8d8938da855fad4aec8851529b9e9a3271be.jpeg" },
-];
+const WASTE_LABEL: Record<number, 'ขยะย่อยสลาย' | 'ขยะอันตราย' | 'ขยะรีไซเคิล' | 'ขยะทั่วไป'> = {
+  1: 'ขยะย่อยสลาย',
+  2: 'ขยะอันตราย',
+  3: 'ขยะรีไซเคิล',
+  4: 'ขยะทั่วไป',
+};
 
-const recents = () => {
-  const renderItem = ({ item }) => (
+const wasteLabel = (id: number) => WASTE_LABEL[id] ?? 'unknown';
+
+
+const formatDate = (iso: string) =>
+  new Date(iso).toLocaleDateString('th-TH-u-ca-gregory', {
+    timeZone: 'Asia/Bangkok',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+const Recents = () => {
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+
+  const getHistory = async () => {
+    try {
+      const userId = await AsyncStorage.getItem("userId");
+      if (!userId) {
+        console.warn("User id is undefined!!");
+        return;
+      }
+
+      const { data } = await axios.get("http://193.168.182.241:3000/gethistory", {
+        params: { userId },
+      });
+
+      const raw: HistoryItem[] = Array.isArray(data?.img) ? data.img : [];
+
+      const hydrated: HistoryItem[] = await Promise.all(
+        raw.map(async (it) => {
+          try {
+            const localUri = await readImage(it.User_ID, it.Image_ID, "jpeg");
+            return { ...it, Image_path: localUri };
+          } catch {
+            return it; //case ไม่เจอ path
+          }
+        })
+      );
+      setHistory(hydrated);
+    } catch (error: any) {
+      console.log("getHistory error:", error?.response?.status, error?.response?.data || error?.message);
+    }
+  };
+
+  useEffect(() => {
+    getHistory();
+  }, []);
+
+  const renderItem: ListRenderItem<HistoryItem> = ({ item }) => (
     <TouchableOpacity style={styles.card}>
-      <Image source={{ uri: item.image }} style={styles.image} />
+      <Image source={{ uri: item.Image_path }} style={styles.image} />
       <View style={styles.textContainer}>
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.date}>{item.date}</Text>
+        <Text style={styles.title}>{wasteLabel(item.Waste_ID)}</Text>
+        <Text style={styles.date}>{formatDate(item.timestamp)}</Text>
       </View>
-      <Text style={styles.arrow}>{">"}</Text>
+      <Text style={styles.arrow}>{'>'}</Text>
     </TouchableOpacity>
   );
 
@@ -23,15 +82,13 @@ const recents = () => {
     <View style={styles.container}>
       <Text style={styles.header} className='text-3xl'>ประวัติการคัดแยกขยะ</Text>
       <FlatList
-        data={data}
-        keyExtractor={(item) => item.id}
+        data={history}
+        keyExtractor={(item) => item.Image_ID.toString()}  // ใช้ Image_ID เป็น key
         renderItem={renderItem}
       />
     </View>
   );
 };
-
-
 
 const styles = StyleSheet.create({
   container: {
@@ -53,8 +110,8 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 10,
     marginBottom: 10,
-    elevation: 2, // เงาสำหรับ Android
-    shadowColor: "#000", // เงาสำหรับ iOS
+    elevation: 2,
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
@@ -71,6 +128,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: "bold",
+    textTransform: "capitalize", // ให้ขึ้นต้นด้วยตัวใหญ่สวย ๆ
   },
   date: {
     fontSize: 14,
@@ -82,4 +140,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default recents
+export default Recents;

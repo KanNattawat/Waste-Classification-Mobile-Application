@@ -25,24 +25,43 @@ export const getMe = async (req, res) => {
 
 export const uploadtoStorage = async (req, res) => {
     try {
-        const { user_id, wastetype, image_path } = req.body
+        const { user_id, wastetype, image_path, probs } = req.body
         //image_path อาจจะไม่ต้องใช้แล้วเพราะใช้แค่ user_id กับ img_id ก็พอในการดึงรูปจาก firebase
         const wasteMap = {
             "ขยะย่อยสลาย": 1,
             "ขยะอันตราย": 2,
-            "ขยะทั่วไป": 3,
-            "ขยะรีไซเคิล": 4
+            "ขยะทั่วไป": 4,
+            "ขยะรีไซเคิล": 3
         };
         const wasteid = wasteMap[wastetype];
+        console.log("probs:",probs)
 
         const img = await prisma.image.create({
             data: {
                 User_ID: parseInt(user_id),
                 Waste_ID: wasteid,
                 Image_path: image_path,
+                probs:probs
             }
         })
-        res.json({imgid : img.Image_ID})
+        res.json({ imgid: img.Image_ID })
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+export const getHistory = async (req, res) => {
+    try {
+        const userId = req.query.userId;
+        console.log(userId)
+        const img = await prisma.image.findMany({
+            where:{User_ID: Number(userId)}
+        })
+
+        res.status(200).json({
+            msg:"getHistory Successful",
+            img:img
+        })
     } catch (error) {
         console.log(error);
     }
