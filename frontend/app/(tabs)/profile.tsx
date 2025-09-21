@@ -14,7 +14,7 @@ export default function ProfileScreen() {
                 return;
             }
 
-            const response = await fetch('http://193.168.182.241:3000/getme', {
+            const response = await fetch('http://192.168.1.104:3000/getme', {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,

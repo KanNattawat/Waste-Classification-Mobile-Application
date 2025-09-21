@@ -20,7 +20,7 @@ const Sign_Up = () => {
                 setError('password ไม่ตรงกัน')
                 return;
             }
-            const response = await axios.post("http://193.168.182.241:3000/auth/register", //ตอนนี้อ้างอิง ip ของ pc ที่เรากำลัง run backend ไปก่อน
+            const response = await axios.post("http://192.168.1.104:3000/auth/register", //ตอนนี้อ้างอิง ip ของ pc ที่เรากำลัง run backend ไปก่อน
                 {
                     User_name: username,
                     User_password: password,

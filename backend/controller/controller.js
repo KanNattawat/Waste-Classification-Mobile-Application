@@ -66,3 +66,45 @@ export const getHistory = async (req, res) => {
         console.log(error);
     }
 }
+
+export const getWeekly = async (req, res) => {
+     try {
+        const userId = req.query.userId;
+        if (!userId) {
+            return res.status(400).json({ msg: "userId is required" });
+        }
+
+        const now = new Date();
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(now.getDate() - 7);
+
+        const count = await prisma.image.count({
+            where: {
+                User_ID: Number(userId),
+                timestamp: {
+                    gte: oneWeekAgo,
+                    lte: now
+                }
+            }
+        });
+
+        const img = await prisma.image.findMany({
+            where: {
+                User_ID: Number(userId),
+                timestamp: {
+                    gte: oneWeekAgo,
+                    lte: now
+                }
+            }
+        });
+
+        res.status(200).json({
+            msg: "getHistory Successful",
+            totalLastWeek: count,
+            img: img
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ msg: "Error", error: String(error) });
+    }
+}
