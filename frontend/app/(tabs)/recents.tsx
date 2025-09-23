@@ -3,6 +3,10 @@ import { View, Text, Image, StyleSheet, TouchableOpacity, FlatList, ListRenderIt
 import axios from 'axios';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { readImage } from "@/lib/storage"
+import { useRouter } from "expo-router";
+
+const router = useRouter();
+
 export interface HistoryItem {
   Image_ID: number;
   User_ID: number;
@@ -68,7 +72,7 @@ const Recents = () => {
   }, []);
 
   const renderItem: ListRenderItem<HistoryItem> = ({ item }) => (
-    <TouchableOpacity style={styles.card}>
+    <TouchableOpacity style={styles.card} onPress={() => router.push(`/history_result/${item.Image_ID}`)}>
       <Image source={{ uri: item.Image_path }} style={styles.image} />
       <View style={styles.textContainer}>
         <Text style={styles.title}>{wasteLabel(item.Waste_ID)}</Text>
