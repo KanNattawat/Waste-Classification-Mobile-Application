@@ -34,14 +34,14 @@ export const uploadtoStorage = async (req, res) => {
             "ขยะรีไซเคิล": 3
         };
         const wasteid = wasteMap[wastetype];
-        console.log("probs:",probs)
+        console.log("probs:", probs)
 
         const img = await prisma.image.create({
             data: {
                 User_ID: parseInt(user_id),
                 Waste_ID: wasteid,
                 Image_path: image_path,
-                probs:probs
+                probs: probs
             }
         })
         res.json({ imgid: img.Image_ID })
@@ -55,20 +55,47 @@ export const getHistory = async (req, res) => {
         const userId = req.query.userId;
         console.log(userId)
         const img = await prisma.image.findMany({
-            where:{User_ID: Number(userId)}
+            where: { User_ID: Number(userId) }
         })
 
         res.status(200).json({
-            msg:"getHistory Successful",
-            img:img
+            msg: "getHistory Successful",
+            img: img
         })
     } catch (error) {
         console.log(error);
     }
 }
 
+export const getHistoryData = async (req, res) => {
+    try {
+        // const userId = req.query.userId;
+        const imageId = req.query.imageId;
+
+        if (!imageId) {
+            return res.status(400).json({ error: "Null imageId" });
+        }
+
+        const img = await prisma.image.findFirst({
+            where: { Image_ID: Number(imageId) },
+        });
+
+
+        if (!img) {
+            return res.status(404).json({ error: "ไม่พบข้อมูล" });
+        }
+
+        res.status(200).json({ item: img });
+    } catch (error) {
+        console.error("getHistoryData error:", error);
+        res.status(500).json({ error: "server error" });
+    }
+};
+
+
+
 export const getWeekly = async (req, res) => {
-     try {
+    try {
         const userId = req.query.userId;
         if (!userId) {
             return res.status(400).json({ msg: "userId is required" });
