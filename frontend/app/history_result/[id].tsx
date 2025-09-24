@@ -24,7 +24,7 @@ const WASTE_LABEL: Record<number, string> = {
 const wasteDescriptions: Record<string, string> = {
   "ขยะย่อยสลาย": "ขยะประเภทนี้สามารถย่อยสลายได้เองตามธรรมชาติ เช่น เศษอาหาร เศษผักผลไม้ ใบไม้ ควรนำไปทำปุ๋ยหมักเพื่อใช้ประโยชน์ต่อไป",
   "ขยะอันตราย": "ขยะชิ้นนี้มีความอันตรายสูง โปรดระมัดระวังในการจัดเก็บและนำไปทิ้งในจุดที่มีการรับทิ้งขยะประเภทนี้ เช่น ถ่านไฟฉาย หลอดไฟเก่า สารเคมี",
-  "ขยะทั่วไป": "ขยะที่ไม่สามารถนำกลับมาใช้ใหม่ได้ เช่น ซองขนม ถุงพลาสติกเปื้อนอาหาร แก้วพลาสติก ควรทิ้งลงถังขยะทั่วไป",
+  "ขยะทั่วไป": "ขยะประเภทนี้ไม่สามารถนำกลับมาใช้ใหม่ได้ เช่น ซองขนม ถุงพลาสติกเปื้อนอาหาร แก้วพลาสติก ควรทิ้งลงถังขยะทั่วไป",
   "ขยะรีไซเคิล": "ขยะประเภทนี้สามารถนำกลับมาใช้ใหม่หรือรีไซเคิลได้ เช่น ขวดพลาสติก กระดาษ แก้ว โลหะ โปรดแยกใส่ถังรีไซเคิลเพื่อช่วยลดปริมาณขยะ",
 };
 
@@ -52,7 +52,7 @@ export default function HistoryDetail() {
         const userId = await AsyncStorage.getItem("userId");
         if (!userId || !id) return;
 
-        const { data } = await axios.get("http://192.168.1.104:3000/gethistorybyid", {
+        const { data } = await axios.get("http://193.168.182.241:3000/gethistorybyid", {
           params: { userId, imageId: id },
         });
 
@@ -85,8 +85,13 @@ export default function HistoryDetail() {
       <Text className="text-base mt-2 px-6 text-center text-[#545454]">{wasteDescriptions[WASTE_LABEL[item.Waste_ID]]}</Text>
 
       <View style={{ width: "90%", alignSelf: "center", marginTop: 32 }}>
-        {sorted.map(([label, prob], i) => (
-          <ProgressBar key={i} label={label} percent={prob * 100} color={colorFor(label)} />
+        {sorted.slice(0, 3).map(([label, prob], i) => (
+          <ProgressBar
+            key={i}
+            label={label}
+            percent={prob * 100}
+            color={colorFor(label)}
+          />
         ))}
       </View>
 
@@ -138,7 +143,7 @@ const btnstyles = StyleSheet.create({
   container: {
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 40,
+    paddingVertical: 40
   },
   greenButton: {
     backgroundColor: "#4C944C",
