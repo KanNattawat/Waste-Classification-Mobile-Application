@@ -45,7 +45,7 @@ const Recents = () => {
         return;
       }
 
-      const { data } = await axios.get("http://192.168.1.104:3000/gethistory", {
+      const { data } = await axios.get("http://193.168.182.241:3000/gethistory", {
         params: { userId },
       });
 
@@ -57,7 +57,7 @@ const Recents = () => {
             const localUri = await readImage(it.User_ID, it.Image_ID, "jpeg");
             return { ...it, Image_path: localUri };
           } catch {
-            return it; //case ไม่เจอ path
+            return it;
           }
         })
       );
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: "bold",
-    textTransform: "capitalize", // ให้ขึ้นต้นด้วยตัวใหญ่สวย ๆ
+    textTransform: "capitalize", 
   },
   date: {
     fontSize: 14,

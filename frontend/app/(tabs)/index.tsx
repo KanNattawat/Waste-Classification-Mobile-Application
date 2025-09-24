@@ -17,7 +17,7 @@ export default function Index() {
         const userId = await AsyncStorage.getItem("userId");
         if (!userId) return;
 
-        const res = await axios.get("http://192.168.1.104:3000/getweekly", {
+        const res = await axios.get("http://193.168.182.241:3000/getweekly", {
           params: { userId }
         });
 

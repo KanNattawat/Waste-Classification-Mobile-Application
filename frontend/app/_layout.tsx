@@ -7,7 +7,6 @@ import "./globals.css";
 import Loading from "@/components/loading";
 
 
-
 function AuthGate({ children }: { children: React.ReactNode }) {
   const { token, isLoading } = useAuth();
   const segments = useSegments();
