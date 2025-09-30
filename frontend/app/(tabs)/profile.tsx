@@ -2,19 +2,21 @@ import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from "@/contexts/AuthContext";
+
 export default function ProfileScreen() {
     const [user, setUser] = useState(null);
-      const { setToken } = useAuth()
+    const [stats, setStats] = useState(null);
+    const { setToken } = useAuth();
+
     const getmefunc = async () => {
         try {
-            const token = await SecureStore.getItemAsync('authToken')
-            console.log(token)
+            const token = await SecureStore.getItemAsync('authToken');
             if (!token) {
                 console.log("No token found");
                 return;
             }
 
-            const response = await fetch('http://193.168.182.241:3000/getme', {
+            const response = await fetch('http://192.168.1.105:3000/getme', {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -22,10 +24,8 @@ export default function ProfileScreen() {
                 },
             });
 
-            console.log(response)
-
             if (!response.ok) {
-                console.log("Response status:", response.status)
+                console.log("Response status:", response.status);
                 throw new Error('Failed to fetch user info');
             }
 
@@ -34,27 +34,50 @@ export default function ProfileScreen() {
         } catch (error) {
             console.log(error);
         }
-    }
+    };
 
-    const useLogout = () => {
-
-    const handleLogout = async () => {
+    const getStats = async () => {
         try {
-            await SecureStore.deleteItemAsync('authToken');
-            console.log("Logout success!");
-            setToken("")
+            const token = await SecureStore.getItemAsync('authToken');
+            if (!token) return;
+
+            const response = await fetch('http://192.168.1.105:3000/getstats', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                console.log("Response status:", response.status);
+                throw new Error('Failed to fetch stats');
+            }
+
+            const data = await response.json();
+            setStats(data);
         } catch (error) {
-            console.log("Logout error:", error);
+            console.log(error);
         }
     };
 
-    return { handleLogout };
-};
+    const useLogout = () => {
+        const handleLogout = async () => {
+            try {
+                await SecureStore.deleteItemAsync('authToken');
+                console.log("Logout success!");
+                setToken("");
+            } catch (error) {
+                console.log("Logout error:", error);
+            }
+        };
+        return { handleLogout };
+    };
     const { handleLogout } = useLogout();
-
 
     useEffect(() => {
         getmefunc();
+        getStats();
     }, []);
 
     return (
@@ -75,7 +98,9 @@ export default function ProfileScreen() {
                     <Text className="text-2xl text-gray-700 font-semibold">
                         แยกขยะไปแล้วทั้งหมด
                     </Text>
-                    <Text className="text-green-600 text-2xl font-bold">100</Text>
+                    <Text className="text-green-600 text-2xl font-bold">
+                        {stats ? stats.total : "..."}
+                    </Text>
                 </View>
 
                 <View className="flex-row justify-between items-center mb-2">
@@ -83,7 +108,7 @@ export default function ProfileScreen() {
                         <View className="w-3 h-3 rounded-full bg-red-500 mr-2" />
                         <Text className="text-gray-600 text-2xl">ขยะอันตราย</Text>
                     </View>
-                    <Text className="text-gray-600 text-2xl">25</Text>
+                    <Text className="text-gray-600 text-2xl">{stats ? stats.hazard : "..."}</Text>
                 </View>
 
                 <View className="flex-row justify-between items-center mb-2">
@@ -91,7 +116,7 @@ export default function ProfileScreen() {
                         <View className="w-3 h-3 rounded-full bg-green-500 mr-2" />
                         <Text className="text-gray-600 text-2xl">ขยะย่อยสลาย</Text>
                     </View>
-                    <Text className="text-gray-600 text-2xl">25</Text>
+                    <Text className="text-gray-600 text-2xl">{stats ? stats.biodegradable : "..."}</Text>
                 </View>
 
                 <View className="flex-row justify-between items-center mb-2">
@@ -99,7 +124,7 @@ export default function ProfileScreen() {
                         <View className="w-3 h-3 rounded-full bg-blue-500 mr-2" />
                         <Text className="text-gray-600 text-2xl">ขยะทั่วไป</Text>
                     </View>
-                    <Text className="text-gray-600 text-2xl">25</Text>
+                    <Text className="text-gray-600 text-2xl">{stats ? stats.general : "..."}</Text>
                 </View>
 
                 <View className="flex-row justify-between items-center">
@@ -107,7 +132,7 @@ export default function ProfileScreen() {
                         <View className="w-3 h-3 rounded-full bg-yellow-400 mr-2" />
                         <Text className="text-gray-600 text-2xl">ขยะรีไซเคิล</Text>
                     </View>
-                    <Text className="text-gray-600 text-2xl">25</Text>
+                    <Text className="text-gray-600 text-2xl">{stats ? stats.recyclable : "..."}</Text>
                 </View>
             </View>
 
