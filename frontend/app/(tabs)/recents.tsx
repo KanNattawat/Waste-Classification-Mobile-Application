@@ -45,7 +45,7 @@ const Recents = () => {
         return;
       }
 
-      const { data } = await axios.get("http://193.168.182.241:3000/gethistory", {
+      const { data } = await axios.get("http://192.168.1.105:3000/gethistory", {
         params: { userId },
       });
 

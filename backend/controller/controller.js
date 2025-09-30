@@ -135,3 +135,40 @@ export const getWeekly = async (req, res) => {
         res.status(500).json({ msg: "Error", error: String(error) });
     }
 }
+
+export const getStats = async (req, res) => {
+    try {
+        const userId = req.user.userId; // ได้จาก JWT middleware
+
+        // ดึงข้อมูลจำนวนขยะแต่ละประเภท
+        const hazardCount = await prisma.image.count({
+            where: { User_ID: Number(userId), Waste_ID: 2 } // ขยะอันตราย
+        });
+
+        const biodegradableCount = await prisma.image.count({
+            where: { User_ID: Number(userId), Waste_ID: 1 } // ขยะย่อยสลาย
+        });
+
+        const generalCount = await prisma.image.count({
+            where: { User_ID: Number(userId), Waste_ID: 4 } // ขยะทั่วไป
+        });
+
+        const recyclableCount = await prisma.image.count({
+            where: { User_ID: Number(userId), Waste_ID: 3 } // ขยะรีไซเคิล
+        });
+
+        const total = hazardCount + biodegradableCount + generalCount + recyclableCount;
+
+        res.status(200).json({
+            total: total,
+            hazard: hazardCount,
+            biodegradable: biodegradableCount,
+            general: generalCount,
+            recyclable: recyclableCount
+        });
+    } catch (error) {
+        console.error("getStats error:", error);
+        res.status(500).json({ error: "Server error" });
+    }
+};
+
