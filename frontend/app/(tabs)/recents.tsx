@@ -4,6 +4,7 @@ import axios from 'axios';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { readImage } from "@/lib/storage"
 import { useRouter } from "expo-router";
+import { API_URL } from "@/config";
 
 const router = useRouter();
 
@@ -45,7 +46,7 @@ const Recents = () => {
         return;
       }
 
-      const { data } = await axios.get("http://3.27.46.182:3000/gethistory", {
+      const { data } = await axios.get(`${API_URL}/gethistory`, {
         params: { userId },
       });
 

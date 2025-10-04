@@ -4,6 +4,7 @@ import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView } from "rea
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import Loading from "@/components/loading";
+import { API_URL } from "@/config";
 
 interface HistoryItem {
   Image_ID: number;
@@ -52,7 +53,7 @@ export default function HistoryDetail() {
         const userId = await AsyncStorage.getItem("userId");
         if (!userId || !id) return;
 
-        const { data } = await axios.get("http://3.27.46.182:3000/gethistorybyid", {
+        const { data } = await axios.get(`${API_URL}/gethistorybyid`, {
           params: { userId, imageId: id },
         });
 

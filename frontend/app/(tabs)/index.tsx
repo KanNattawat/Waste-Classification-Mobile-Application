@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { Image, Text, View } from 'react-native';
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "@/config";
 
 export default function Index() {
   const router = useRouter();
@@ -17,7 +18,7 @@ export default function Index() {
         const userId = await AsyncStorage.getItem("userId");
         if (!userId) return;
 
-        const res = await axios.get("http://3.27.46.182:3000/getweekly", {
+        const res = await axios.get(`${API_URL}/getweekly`, {
           params: { userId }
         });
 
