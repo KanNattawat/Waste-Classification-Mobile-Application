@@ -1,33 +1,38 @@
 import Buttons from '@/components/buttons';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from "expo-router";
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Image, Text, View } from 'react-native';
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "@/config";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function Index() {
   const router = useRouter();
   const [photo, setPhoto] = useState<string | null>(null);
   const [weeklyCount, setWeeklyCount] = useState<number>(0);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const userId = await AsyncStorage.getItem("userId");
-        if (!userId) return;
+  const fetchWeeklyCount = async () => {
+    try {
+      const userId = await AsyncStorage.getItem("userId");
+      if (!userId) return;
 
-        const res = await axios.get(`${API_URL}/getweekly`, {
-          params: { userId }
-        });
+      const res = await axios.get(`${API_URL}/getweekly`, {
+        params: { userId }
+      });
 
-        setWeeklyCount(res.data.totalLastWeek || 0);
-      } catch (err) {
-        console.log("Error fetching weekly count", err);
-      }
-    })();
-  }, []);
+      setWeeklyCount(res.data.totalLastWeek || 0);
+    } catch (err) {
+      console.log("Error fetching weekly count", err);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchWeeklyCount();
+    }, [])
+  );
 
   const takeaPhoto = async (setPhoto: (uri: string) => void) => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();

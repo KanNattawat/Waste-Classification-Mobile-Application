@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from "@/contexts/AuthContext";
 import { API_URL } from "@/config";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function ProfileScreen() {
     const [user, setUser] = useState(null);
@@ -76,10 +77,12 @@ export default function ProfileScreen() {
     };
     const { handleLogout } = useLogout();
 
-    useEffect(() => {
-        getmefunc();
-        getStats();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            getmefunc();
+            getStats();
+        }, [])
+    );
 
     return (
         <View className="flex-1 bg-[#F8FDF9] px-6 py-10 pt-16">
