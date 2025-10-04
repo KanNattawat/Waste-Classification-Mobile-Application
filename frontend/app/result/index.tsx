@@ -6,6 +6,8 @@ import Loading from '@/components/loading'
 import axios from 'axios';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { saveImage } from "@/lib/storage"
+import { API_URL } from "@/config";
+
 const ProgressBar = ({ label, percent, color }: { label: string, percent: number, color: string }) => {
     return (
         <View style={styles.container} className='bg-white p-4 rounded-lg mb-4 shadow-md'>
@@ -28,7 +30,7 @@ const ProgressBar = ({ label, percent, color }: { label: string, percent: number
 
 const uploadToDB = async (wastetype: string, image_path: string, userId: string | null, probs: Array<number>): Promise<string> => {
     try {
-        const res = await axios.post("http://3.27.46.182:3000/wasteupload", {
+        const res = await axios.post(`${API_URL}/wasteupload`, {
             user_id: userId,
             wastetype: wastetype,
             image_path: image_path,

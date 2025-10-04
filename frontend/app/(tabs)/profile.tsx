@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from "@/contexts/AuthContext";
+import { API_URL } from "@/config";
 
 export default function ProfileScreen() {
     const [user, setUser] = useState(null);
@@ -16,7 +17,7 @@ export default function ProfileScreen() {
                 return;
             }
 
-            const response = await fetch('http://3.27.46.182:3000/getme', {
+            const response = await fetch(`${API_URL}/getme`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -41,7 +42,7 @@ export default function ProfileScreen() {
             const token = await SecureStore.getItemAsync('authToken');
             if (!token) return;
 
-            const response = await fetch('http://3.27.46.182:3000/getstats', {
+            const response = await fetch(`${API_URL}/getstats`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
