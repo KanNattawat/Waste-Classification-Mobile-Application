@@ -16,7 +16,7 @@ export default function ProfileScreen() {
                 return;
             }
 
-            const response = await fetch('http://192.168.1.105:3000/getme', {
+            const response = await fetch('http://3.27.46.182:3000/getme', {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -41,7 +41,7 @@ export default function ProfileScreen() {
             const token = await SecureStore.getItemAsync('authToken');
             if (!token) return;
 
-            const response = await fetch('http://192.168.1.105:3000/getstats', {
+            const response = await fetch('http://3.27.46.182:3000/getstats', {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,

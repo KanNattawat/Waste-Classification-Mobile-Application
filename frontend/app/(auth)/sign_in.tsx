@@ -14,7 +14,7 @@ const Sign_in = () => {
 
   const handleSubmit = async () => {
     try {
-      const response = await axios.post("http://192.168.1.105:3000/auth/login", //ตอนนี้อ้างอิง ip ของ pc ที่เรากำลัง run backend ไปก่อน
+      const response = await axios.post("http://3.27.46.182:3000/auth/login", //ตอนนี้อ้างอิง ip ของ pc ที่เรากำลัง run backend ไปก่อน
         {
           User_name: username,
           User_password: password

@@ -28,7 +28,7 @@ const ProgressBar = ({ label, percent, color }: { label: string, percent: number
 
 const uploadToDB = async (wastetype: string, image_path: string, userId: string | null, probs: Array<number>): Promise<string> => {
     try {
-        const res = await axios.post("http://192.168.1.105:3000/wasteupload", {
+        const res = await axios.post("http://3.27.46.182:3000/wasteupload", {
             user_id: userId,
             wastetype: wastetype,
             image_path: image_path,
