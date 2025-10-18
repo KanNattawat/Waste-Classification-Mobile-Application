@@ -1,5 +1,5 @@
 import { ensureModelLoaded, preprocessImage } from '@/lib/tflite';
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from 'react';
 import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Loading from '@/components/loading'
@@ -8,12 +8,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { saveImage } from "@/lib/storage"
 import { API_URL } from "@/config";
 
+// ✅ ProgressBar แสดงเปอร์เซ็นต์ความมั่นใจ
 const ProgressBar = ({ label, percent, color }: { label: string, percent: number, color: string }) => {
     return (
         <View style={styles.container} className='bg-white p-4 rounded-lg mb-4 shadow-md'>
             <View style={styles.labelRow}>
                 <Text>{label}</Text>
-                <Text>{percent}%</Text>
+                <Text>{percent.toFixed(1)}%</Text>
             </View>
             <View style={styles.barBackground}>
                 <View
@@ -27,7 +28,7 @@ const ProgressBar = ({ label, percent, color }: { label: string, percent: number
     )
 }
 
-
+// ✅ ฟังก์ชันอัปโหลดข้อมูลไปฐานข้อมูล
 const uploadToDB = async (wastetype: string, image_path: string, userId: string | null, probs: Array<number>): Promise<string> => {
     try {
         const res = await axios.post(`${API_URL}/wasteupload`, {
@@ -43,47 +44,90 @@ const uploadToDB = async (wastetype: string, image_path: string, userId: string 
     }
 }
 
-
 const Index = () => {
     const { photo } = useLocalSearchParams<{ photo: string }>();
     const [result, setResult] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const router = useRouter();
+
     const wasteDescriptions: Record<string, string> = {
-                    "ขยะย่อยสลาย": "ขยะประเภทนี้สามารถย่อยสลายได้เองตามธรรมชาติ เช่น เศษอาหาร เศษผักผลไม้ ใบไม้ ควรนำไปทำปุ๋ยหมักเพื่อใช้ประโยชน์ต่อไป",
-                    "ขยะอันตราย": "ขยะชิ้นนี้มีความอันตรายสูง โปรดระมัดระวังในการจัดเก็บและนำไปทิ้งในจุดที่มีการรับทิ้งขยะประเภทนี้ เช่น ถ่านไฟฉาย หลอดไฟเก่า สารเคมี",
-                    "ขยะทั่วไป": "ขยะประเภทนี้ไม่สามารถนำกลับมาใช้ใหม่ได้ เช่น ซองขนม ถุงพลาสติกเปื้อนอาหาร แก้วพลาสติก ควรทิ้งลงถังขยะทั่วไป",
-                    "ขยะรีไซเคิล": "ขยะประเภทนี้สามารถนำกลับมาใช้ใหม่หรือรีไซเคิลได้ เช่น ขวดพลาสติก กระดาษ แก้ว โลหะ โปรดแยกใส่ถังรีไซเคิลเพื่อช่วยลดปริมาณขยะ"
-                };
+        "ขยะย่อยสลาย":
+            `♻️ ขยะย่อยสลายได้
+
+ขยะประเภทนี้สามารถย่อยสลายได้เองตามธรรมชาติ ไม่เป็นอันตรายต่อสิ่งแวดล้อม
+
+• 🕒 ระยะเวลาย่อยสลาย : 1 – 6 เดือน  
+• 🌿 ตัวอย่าง : เศษอาหาร เปลือกผลไม้ เศษผัก ใบไม้  
+• ⚠️ ผลกระทบหากไม่แยก : เกิดกลิ่น น้ำเสีย และแมลงรบกวน  
+
+📌 วิธีจัดการ  
+• แยกออกจากขยะอื่น  
+• ทิ้งในถังขยะเปียกหรือถังหมัก  
+• สามารถนำไปทำปุ๋ยหมักได้`,
+
+        "ขยะอันตราย":
+            `☣️ ขยะอันตราย
+
+ขยะประเภทนี้มีสารเคมีหรือคุณสมบัติที่เป็นอันตรายต่อสุขภาพและสิ่งแวดล้อม
+
+• 🧪 ตัวอย่าง : ถ่านไฟฉาย หลอดไฟเก่า ยา สารเคมี สี  
+• ⚠️ อันตราย : ปนเปื้อนน้ำ ดิน เป็นพิษต่อคนและสัตว์  
+• 🚫 ห้าม : เผา เททิ้ง หรือปะปนกับขยะทั่วไป
+
+📌 วิธีจัดการ  
+• แยกเก็บไว้ในภาชนะที่ปิดมิดชิด  
+• นำไปทิ้งที่จุดรับขยะอันตรายของเทศบาลหรือศูนย์กำจัดพิเศษ`,
+
+        "ขยะทั่วไป":
+            `🗑️ ขยะทั่วไป
+
+ขยะประเภทนี้ไม่สามารถนำกลับมาใช้ใหม่หรือรีไซเคิลได้
+
+• 🧻 ตัวอย่าง : ผ้าอนามัย กระดาษชำระ ถุงพลาสติกเปื้อนอาหาร  
+• 🕒 ย่อยสลายยาก ใช้เวลาหลายปีถึงหลายสิบปี  
+• 🌍 ผลกระทบ : เพิ่มปริมาณขยะฝังกลบ
+
+📌 วิธีจัดการ  
+• ใส่ถุงให้มิดชิดเพื่อลดกลิ่น  
+• ทิ้งลงถังขยะทั่วไป  
+• ลดการใช้ของใช้สิ้นเปลือง`,
+
+        "ขยะรีไซเคิล":
+            `🔁 ขยะรีไซเคิล
+
+ขยะประเภทนี้สามารถนำกลับมาใช้ใหม่หรือรีไซเคิลเป็นวัตถุดิบใหม่ได้
+
+• 🧃 ตัวอย่าง : ขวดพลาสติก แก้ว กระดาษ กระป๋อง โลหะ กล่องนม  
+• 🌱 ประโยชน์ : ลดขยะ ลดการใช้ทรัพยากรใหม่  
+• 🕒 พลาสติกบางชนิดย่อยสลายช้ามาก (100–450 ปี)
+
+📌 วิธีจัดการ  
+• ล้างให้สะอาด  
+• แยกฝาและฉลากออก  
+• บีบ/พับเพื่อลดพื้นที่  
+• ทิ้งในถังรีไซเคิลหรือจุดรับซื้อของเก่า`
+    };
 
     useEffect(() => {
         (async () => {
             try {
                 if (!photo) throw new Error("Missing image uri");
                 const model = await ensureModelLoaded();
-                const input = await preprocessImage(photo)
-                // console.log(input.data)
-                // console.log('isTypedArray?', ArrayBuffer.isView(input.data));
-                // console.log('length', input.data.length);                     // 150528 (1*224*224*3)
-                // console.log('dtype', input.data.constructor.name);            // Float32Array
-                const outputs = model.runSync([input.data]); // output = logits
-                console.log(outputs)
-                const className = ["ขยะย่อยสลาย", "ขยะอันตราย", "ขยะทั่วไป", "ขยะรีไซเคิล"]
-                // เพิ่ม dictionary คำอธิบายขยะ
-
+                const input = await preprocessImage(photo);
+                const outputs = model.runSync([input.data]);
+                const className = ["ขยะย่อยสลาย", "ขยะอันตราย", "ขยะทั่วไป", "ขยะรีไซเคิล"];
 
                 const mappingClass = className.reduce<Record<string, number>>((accu, current, index) => {
                     accu[current] = outputs[0][index];
                     return accu;
                 }, {});
+
                 const sortedClass = Object.entries(mappingClass).sort((a, b) => b[1] - a[1]);
-                // console.log(sortedClass)
-                setResult(sortedClass)
+                setResult(sortedClass);
+
                 const userId = await AsyncStorage.getItem("userId");
-                // console.log("id", userId)
                 const res = await uploadToDB(sortedClass[0][0], photo, userId, outputs[0]);
-                console.log(outputs[0])
-                saveImage(photo, userId, res)
-                console.log('saved!')
+                saveImage(photo, userId, res);
             } catch (e) {
                 Alert.alert("Predict error", String(e));
             } finally {
@@ -92,51 +136,71 @@ const Index = () => {
         })();
     }, [photo]);
 
-
     return (
-        <View className="flex-1 items-center justify-center bg-[#F8FDF9] pt-12">
-            {loading ? (<Loading />) : (
+        <View className="flex-1 items-center justify-center bg-[#F8FDF9]">
+            {loading ? (
+                <Loading />
+            ) : (
                 <>
-                    <Text className="text-2xl font-bold text-[#4C944C]">
-                        ผลลัพธ์การคัดแยกขยะ
-                    </Text>
+                    <Text className="text-2xl font-bold text-[#4C944C]">ผลลัพธ์การคัดแยกขยะ</Text>
 
-                    <Image
-                        source={{
-                            uri: photo
-                        }}
-                        style={imgstyles.image}
-                        className='shadow-md'
-                    />
+                    <Image source={{ uri: photo }} style={imgstyles.image} className='shadow-md' />
 
-                    <Text className="text-2xl mt-2 font-bold">
-                        {/* {result ? result[0][0] : "Loading"} */}
-                        {result[0][0]}
-                    </Text>
-                    <Text className="text-base mt-2 pl-6 pr-6 text-center text-[#545454]">
-                        {wasteDescriptions[result[0][0]]}
-                    </Text>
+                    <View style={descStyles.container}>
+                        {result && wasteDescriptions[result[0][0]].split("\n").map((line, index) => (
+                            <Text
+                                key={index}
+                                style={[
+                                    descStyles.text,
+                                    line.startsWith("📌") || line.startsWith("•") || line.startsWith("-") ? descStyles.bullet : null,
+                                    line.startsWith("♻️") || line.startsWith("☣️") || line.startsWith("🗑️") || line.startsWith("🔁") ? descStyles.title : null,
+                                ]}
+                            >
+                                {line}
+                            </Text>
+                        ))}
+
+                    </View>
 
                     <View style={{ width: "90%", marginTop: 48 }}>
-                        <ProgressBar label={result[0][0]} percent={result[0][1] * 100}
-                            color={result[0][0] == 'ขยะรีไซเคิล' ? "#FCD92C" : result[0][0] == 'ขยะอันตราย' ? "#EF4545" : result[0][0] == 'ขยะย่อยสลาย' ? "#28C45C" : "#38AFFF"} />
-                        <ProgressBar label={result[1][0]} percent={result[1][1] * 100}
-                            color={result[1][0] == 'ขยะรีไซเคิล' ? "#FCD92C" : result[1][0] == 'ขยะอันตราย' ? "#EF4545" : result[1][0] == 'ขยะย่อยสลาย' ? "#28C45C" : "#38AFFF"} />
-                        <ProgressBar label={result[2][0]} percent={result[2][1] * 100}
-                            color={result[2][0] == 'ขยะรีไซเคิล' ? "#FCD92C" : result[2][0] == 'ขยะอันตราย' ? "#EF4545" : result[2][0] == 'ขยะย่อยสลาย' ? "#28C45C" : "#38AFFF"} />
+                        {result.slice(0, 3).map(([label, prob]: any, index: number) => (
+                            <ProgressBar
+                                key={index}
+                                label={label}
+                                percent={prob * 100}
+                                color={
+                                    label === 'ขยะรีไซเคิล' ? "#FCD92C" :
+                                        label === 'ขยะอันตราย' ? "#EF4545" :
+                                            label === 'ขยะย่อยสลาย' ? "#28C45C" : "#38AFFF"
+                                }
+                            />
+                        ))}
                     </View>
 
                     <View style={btnstyles.container}>
-                        <TouchableOpacity style={btnstyles.greenButton}
-                            activeOpacity={0.7} >
+                        <TouchableOpacity
+                            style={btnstyles.yellowButton}
+                            activeOpacity={0.7}
+                            onPress={() => router.replace('/camera')}
+                        >
                             <Text style={btnstyles.buttonText}>คัดแยกใหม่อีกครั้ง</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={btnstyles2.container}>
+                        <TouchableOpacity
+                            style={btnstyles2.greenButton}
+                            activeOpacity={0.7}
+                            onPress={() => router.back()}
+                        >
+                            <Text style={btnstyles2.buttonText}>เสร็จสิ้น</Text>
                         </TouchableOpacity>
                     </View>
                 </>
             )}
         </View>
-    )
-}
+    );
+};
 
 const imgstyles = StyleSheet.create({
     image: {
@@ -145,12 +209,10 @@ const imgstyles = StyleSheet.create({
         margin: 10,
         borderRadius: 10,
     },
-})
+});
 
 const styles = StyleSheet.create({
-    container: {
-        marginBottom: 15,
-    },
+    container: { marginBottom: 15 },
     labelRow: {
         flexDirection: "row",
         justifyContent: "space-between",
@@ -162,19 +224,29 @@ const styles = StyleSheet.create({
         borderRadius: 6,
         overflow: "hidden",
     },
-    barFill: {
-        height: "100%",
-        borderRadius: 6,
-    },
-})
+    barFill: { height: "100%", borderRadius: 6 },
+});
 
 const btnstyles = StyleSheet.create({
     container: {
-        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#F8FDF9',
-        paddingBottom: 50
+        paddingBottom: 10
+    },
+    yellowButton: {
+        backgroundColor: '#e2be47',
+        paddingVertical: 12,
+        paddingHorizontal: 30,
+        borderRadius: 8,
+    },
+    buttonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+});
+
+const btnstyles2 = StyleSheet.create({
+    container: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingBottom: 40,
     },
     greenButton: {
         backgroundColor: '#4C944C',
@@ -182,11 +254,41 @@ const btnstyles = StyleSheet.create({
         paddingHorizontal: 30,
         borderRadius: 8,
     },
-    buttonText: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
+    buttonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
 });
 
-export default Index
+const descStyles = StyleSheet.create({
+  container: {
+    marginTop: 12,
+    paddingHorizontal: 16, // เพิ่ม padding ด้านข้างเล็กน้อย
+    paddingVertical: 16,
+    backgroundColor: "#ffffff",
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 2,
+    width: "95%", // หรือ "100%" ก็ได้ ถ้าอยากเต็มจอ
+    alignSelf: "center", // จัดกึ่งกลางหน้าจอ
+  },
+  text: {
+    fontSize: 16,
+    color: "#444",
+    lineHeight: 24,
+    marginBottom: 6,
+  },
+  title: {
+    fontWeight: "bold",
+    fontSize: 18,
+    color: "#2E7D32",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  bullet: {
+    paddingLeft: 12,
+  },
+});
+
+
+export default Index;
