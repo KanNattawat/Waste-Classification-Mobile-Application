@@ -4,6 +4,7 @@ import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView } from "rea
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import Loading from "@/components/loading";
+import { API_URL } from "@/config";
 
 interface HistoryItem {
   Image_ID: number;
@@ -22,10 +23,61 @@ const WASTE_LABEL: Record<number, string> = {
 };
 
 const wasteDescriptions: Record<string, string> = {
-  "ขยะย่อยสลาย": "ขยะประเภทนี้สามารถย่อยสลายได้เองตามธรรมชาติ เช่น เศษอาหาร เศษผักผลไม้ ใบไม้ ควรนำไปทำปุ๋ยหมักเพื่อใช้ประโยชน์ต่อไป",
-  "ขยะอันตราย": "ขยะชิ้นนี้มีความอันตรายสูง โปรดระมัดระวังในการจัดเก็บและนำไปทิ้งในจุดที่มีการรับทิ้งขยะประเภทนี้ เช่น ถ่านไฟฉาย หลอดไฟเก่า สารเคมี",
-  "ขยะทั่วไป": "ขยะประเภทนี้ไม่สามารถนำกลับมาใช้ใหม่ได้ เช่น ซองขนม ถุงพลาสติกเปื้อนอาหาร แก้วพลาสติก ควรทิ้งลงถังขยะทั่วไป",
-  "ขยะรีไซเคิล": "ขยะประเภทนี้สามารถนำกลับมาใช้ใหม่หรือรีไซเคิลได้ เช่น ขวดพลาสติก กระดาษ แก้ว โลหะ โปรดแยกใส่ถังรีไซเคิลเพื่อช่วยลดปริมาณขยะ",
+  "ขยะย่อยสลาย": 
+`ขยะย่อยสลายได้
+
+ขยะประเภทนี้สามารถย่อยสลายได้เองตามธรรมชาติ ไม่เป็นอันตรายต่อสิ่งแวดล้อม
+
+ระยะเวลาย่อยสลาย : 1 – 6 เดือน  
+ตัวอย่าง : เศษอาหาร เปลือกผลไม้ เศษผัก ใบไม้  
+ผลกระทบหากไม่แยก : เกิดกลิ่น น้ำเสีย และแมลงรบกวน  
+
+วิธีจัดการ  
+- แยกออกจากขยะอื่น  
+- ทิ้งในถังขยะเปียกหรือถังหมัก  
+- สามารถนำไปทำปุ๋ยหมักได้`,
+
+  "ขยะอันตราย": 
+`ขยะอันตราย
+
+ขยะประเภทนี้มีสารเคมีหรือคุณสมบัติที่เป็นอันตรายต่อสุขภาพและสิ่งแวดล้อม
+
+ตัวอย่าง : ถ่านไฟฉาย หลอดไฟเก่า ยา สารเคมี สี  
+ความอันตราย : ปนเปื้อนน้ำ ดิน เป็นพิษต่อคนและสัตว์  
+ห้าม : เผา เททิ้ง หรือปะปนกับขยะทั่วไป
+
+วิธีจัดการ  
+- แยกเก็บไว้ในภาชนะที่ปิดมิดชิด  
+- นำไปทิ้งที่จุดรับขยะอันตรายของเทศบาลหรือศูนย์กำจัดพิเศษ`,
+
+  "ขยะทั่วไป": 
+`ขยะทั่วไป
+
+ขยะประเภทนี้ไม่สามารถนำกลับมาใช้ใหม่หรือรีไซเคิลได้
+
+ตัวอย่าง : ผ้าอนามัย กระดาษชำระ ถุงพลาสติกเปื้อนอาหาร  
+ย่อยสลายยาก ใช้เวลาหลายปีถึงหลายสิบปี  
+ผลกระทบ : เพิ่มปริมาณขยะฝังกลบ
+
+วิธีจัดการ  
+- ใส่ถุงให้มิดชิดเพื่อลดกลิ่น  
+- ทิ้งลงถังขยะทั่วไป  
+- ลดการใช้ของใช้สิ้นเปลือง`,
+
+  "ขยะรีไซเคิล": 
+`ขยะรีไซเคิล
+
+ขยะประเภทนี้สามารถนำกลับมาใช้ใหม่หรือรีไซเคิลเป็นวัตถุดิบใหม่ได้
+
+ตัวอย่าง : ขวดพลาสติก แก้ว กระดาษ กระป๋อง โลหะ กล่องนม  
+ประโยชน์ : ลดขยะ ลดการใช้ทรัพยากรใหม่  
+พลาสติกบางชนิดย่อยสลายช้ามาก (100–450 ปี)
+
+วิธีจัดการ  
+- ล้างให้สะอาด  
+- แยกฝาและฉลากออก  
+- บีบ/พับเพื่อลดพื้นที่  
+- ทิ้งในถังรีไซเคิลหรือจุดรับซื้อของเก่า`
 };
 
 const ProgressBar = ({ label, percent, color }: { label: string; percent: number; color: string }) => (
@@ -52,7 +104,7 @@ export default function HistoryDetail() {
         const userId = await AsyncStorage.getItem("userId");
         if (!userId || !id) return;
 
-        const { data } = await axios.get("http://193.168.182.241:3000/gethistorybyid", {
+        const { data } = await axios.get(`${API_URL}/gethistorybyid`, {
           params: { userId, imageId: id },
         });
 
@@ -73,7 +125,10 @@ export default function HistoryDetail() {
   const sorted = mapped.sort((a, b) => b[1] - a[1]);
 
   const colorFor = (w: string) =>
-    w === "ขยะรีไซเคิล" ? "#FCD92C" : w === "ขยะอันตราย" ? "#EF4545" : w === "ขยะย่อยสลาย" ? "#28C45C" : "#38AFFF";
+    w === "ขยะรีไซเคิล" ? "#FCD92C" :
+    w === "ขยะอันตราย" ? "#EF4545" :
+    w === "ขยะย่อยสลาย" ? "#28C45C" :
+    "#38AFFF";
 
   return (
     <ScrollView className="flex-1 bg-[#F8FDF9] pt-12">
@@ -81,8 +136,20 @@ export default function HistoryDetail() {
 
       <Image source={{ uri: item.Image_path }} style={imgstyles.image} className="shadow-md" />
 
-      <Text className="text-2xl mt-2 font-bold text-center">{WASTE_LABEL[item.Waste_ID]}</Text>
-      <Text className="text-base mt-2 px-6 text-center text-[#545454]">{wasteDescriptions[WASTE_LABEL[item.Waste_ID]]}</Text>
+      <View style={descStyles.container}>
+        {wasteDescriptions[WASTE_LABEL[item.Waste_ID]].split("\n").map((line, index) => (
+          <Text
+            key={index}
+            style={[
+              descStyles.text,
+              line.startsWith("-") ? descStyles.bullet : null,
+              index === 0 ? descStyles.title : null,
+            ]}
+          >
+            {line}
+          </Text>
+        ))}
+      </View>
 
       <View style={{ width: "90%", alignSelf: "center", marginTop: 32 }}>
         {sorted.slice(0, 3).map(([label, prob], i) => (
@@ -155,5 +222,36 @@ const btnstyles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
+  },
+});
+
+const descStyles = StyleSheet.create({
+  container: {
+    marginTop: 12,
+    marginHorizontal: 20,
+    backgroundColor: "#ffffff",
+    borderRadius: 10,
+    padding: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  text: {
+    fontSize: 16,
+    color: "#444",
+    lineHeight: 24,
+    marginBottom: 6,
+  },
+  title: {
+    fontWeight: "bold",
+    fontSize: 18,
+    color: "#2E7D32",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  bullet: {
+    paddingLeft: 12,
   },
 });

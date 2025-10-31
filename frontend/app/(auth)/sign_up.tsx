@@ -6,6 +6,7 @@ import { useState } from 'react'
 import axios from 'axios'
 import { useRouter } from 'expo-router';
 import { StackActions } from '@react-navigation/native';
+import { API_URL } from "@/config";
 
 const Sign_Up = () => {
     const [fullname, setFullname] = useState('')
@@ -20,7 +21,7 @@ const Sign_Up = () => {
                 setError('password ไม่ตรงกัน')
                 return;
             }
-            const response = await axios.post("http://193.168.182.241:3000/auth/register", //ตอนนี้อ้างอิง ip ของ pc ที่เรากำลัง run backend ไปก่อน
+            const response = await axios.post(`${API_URL}/auth/register`, //ตอนนี้อ้างอิง ip ของ pc ที่เรากำลัง run backend ไปก่อน
                 {
                     User_name: username,
                     User_password: password,

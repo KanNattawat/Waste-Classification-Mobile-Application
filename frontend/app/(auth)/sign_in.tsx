@@ -5,6 +5,7 @@ import * as SecureStore from "expo-secure-store";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from 'expo-router';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "@/config";
 
 const Sign_in = () => {
   const [username, setUsername] = useState('')
@@ -14,7 +15,7 @@ const Sign_in = () => {
 
   const handleSubmit = async () => {
     try {
-      const response = await axios.post("http://193.168.182.241:3000/auth/login", //ตอนนี้อ้างอิง ip ของ pc ที่เรากำลัง run backend ไปก่อน
+      const response = await axios.post(`${API_URL}/auth/login`, //ตอนนี้อ้างอิง ip ของ pc ที่เรากำลัง run backend ไปก่อน
         {
           User_name: username,
           User_password: password

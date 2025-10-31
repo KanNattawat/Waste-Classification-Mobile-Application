@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useState, useCallback } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, FlatList, ListRenderItem } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { readImage } from "@/lib/storage"
+import { readImage } from "@/lib/storage";
 import { useRouter } from "expo-router";
+import { API_URL } from "@/config";
+import { useFocusEffect } from "@react-navigation/native";
 
 const router = useRouter();
 
@@ -25,7 +27,6 @@ const WASTE_LABEL: Record<number, 'ขยะย่อยสลาย' | 'ขย�
 
 const wasteLabel = (id: number) => WASTE_LABEL[id] ?? 'unknown';
 
-
 const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString('th-TH-u-ca-gregory', {
     timeZone: 'Asia/Bangkok',
@@ -45,7 +46,7 @@ const Recents = () => {
         return;
       }
 
-      const { data } = await axios.get("http://193.168.182.241:3000/gethistory", {
+      const { data } = await axios.get(`${API_URL}/gethistory`, {
         params: { userId },
       });
 
@@ -67,9 +68,11 @@ const Recents = () => {
     }
   };
 
-  useEffect(() => {
-    getHistory();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      getHistory();
+    }, [])
+  );
 
   const renderItem: ListRenderItem<HistoryItem> = ({ item }) => (
     <TouchableOpacity style={styles.card} onPress={() => router.push(`/history_result/${item.Image_ID}`)}>
