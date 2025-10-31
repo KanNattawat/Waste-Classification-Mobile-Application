@@ -5,8 +5,8 @@ const _layout = () => {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#4C944C",   // สีตอนเลือก
-        tabBarInactiveTintColor: "#95a5a6", // สีตอนปิด
+        tabBarActiveTintColor: "#4C944C",   
+        tabBarInactiveTintColor: "#95a5a6", 
       }}
     >
       <Tabs.Screen

@@ -6,12 +6,14 @@ import Loading from '@/components/loading'
 import axios from 'axios';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { saveImage } from "@/lib/storage"
+import { useRouter } from 'expo-router';
+
 const ProgressBar = ({ label, percent, color }: { label: string, percent: number, color: string }) => {
     return (
         <View style={styles.container} className='bg-white p-4 rounded-lg mb-4 shadow-md'>
             <View style={styles.labelRow}>
                 <Text>{label}</Text>
-                <Text>{percent}%</Text>
+                <Text>{percent.toFixed(3)}%</Text>
             </View>
             <View style={styles.barBackground}>
                 <View
@@ -46,6 +48,7 @@ const Index = () => {
     const { photo } = useLocalSearchParams<{ photo: string }>();
     const [result, setResult] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const router = useRouter()
     const wasteDescriptions: Record<string, string> = {
                     "ขยะย่อยสลาย": "ขยะประเภทนี้สามารถย่อยสลายได้เองตามธรรมชาติ เช่น เศษอาหาร เศษผักผลไม้ ใบไม้ ควรนำไปทำปุ๋ยหมักเพื่อใช้ประโยชน์ต่อไป",
                     "ขยะอันตราย": "ขยะชิ้นนี้มีความอันตรายสูง โปรดระมัดระวังในการจัดเก็บและนำไปทิ้งในจุดที่มีการรับทิ้งขยะประเภทนี้ เช่น ถ่านไฟฉาย หลอดไฟเก่า สารเคมี",
@@ -95,7 +98,7 @@ const Index = () => {
         <View className="flex-1 items-center justify-center bg-[#F8FDF9] pt-12">
             {loading ? (<Loading />) : (
                 <>
-                    <Text className="text-2xl font-bold text-[#4C944C]">
+                    <Text className="text-3xl font-bold text-[#4C944C]">
                         ผลลัพธ์การคัดแยกขยะ
                     </Text>
 
@@ -127,7 +130,7 @@ const Index = () => {
                     <View style={btnstyles.container}>
                         <TouchableOpacity style={btnstyles.greenButton}
                             activeOpacity={0.7} >
-                            <Text style={btnstyles.buttonText}>คัดแยกใหม่อีกครั้ง</Text>
+                            <Text style={btnstyles.buttonText} onPress={()=>{{router.replace('/(tabs)')}}}>ย้อนกลับ</Text>
                         </TouchableOpacity>
                     </View>
                 </>

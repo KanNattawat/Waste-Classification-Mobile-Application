@@ -32,7 +32,7 @@ const ProgressBar = ({ label, percent, color }: { label: string; percent: number
   <View style={progress.container} className="bg-white p-4 rounded-lg mb-4 shadow-md">
     <View style={progress.labelRow}>
       <Text>{label}</Text>
-      <Text>{percent.toFixed(1)}%</Text>
+      <Text>{percent.toFixed(3)}%</Text>
     </View>
     <View style={progress.barBackground}>
       <View style={[progress.barFill, { width: `${percent}%`, backgroundColor: color }]} />

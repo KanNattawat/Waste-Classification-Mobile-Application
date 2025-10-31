@@ -7,10 +7,10 @@ let model: any | null = null;
 let loadPromise: Promise<any> | null = null;
 
 export async function ensureModelLoaded() {
-  if (model) return model; // ถ้าโหลดเสร็จแล้ว → คืนเลย
+  if (model) return model; // ถ้าโหลดเสร็จแล้ว → return
   if (!loadPromise) { // ถ้ายังไม่เคยโหลด → เริ่มโหลด
     loadPromise = loadTensorflowModel(
-      require("@/assets/models/mobilenetv3.tflite")
+      require("@/assets/models/mobilenetv3FINAL.tflite")
     ).then((m) => {
       model = m;
       return model;
@@ -61,16 +61,16 @@ export async function preprocessImage(
     throw new Error('Failed to produce base64 from ImageManipulator');
   }
 
-  // 2) base64 → Uint8Array (บิต JPEG)
+  // 2) แปลง base64 เป็น Uint8Array (บิต JPEG)
   const jpegBytes = toByteArray(manipulated.base64);
-  // 3) ถอด JPEG → RGBA ด้วย jpeg-js (pure JS, ใช้ได้ใน RN)
+  // 3) ถอด JPEG เป็น RGBA ด้วย jpeg-js (pure JS, ใช้ได้ใน RN)
   const decoded = jpeg.decode(jpegBytes, { useTArray: true }); // { data: Uint8Array(RGBA), width, height }
   const { data: rgba, width, height } = decoded;
   if (width !== targetW || height !== targetH) {
     // ปกติควรได้เท่ากันอยู่แล้ว เพราะเราบังคับ resize ไปแล้ว
     console.warn(`Decoded size ${width}x${height} differs from target ${targetW}x${targetH}`);
   }
-  // 4) RGBA → RGB (ตัดช่อง A) และแปลงเป็น Float32 0..255
+  // 4) RGBA เป็น RGB (ตัดช่อง A) และแปลงเป็น Float32 0..255
   //    ลำดับช่องของ jpeg-js คือ R,G,B,A ต่อเนื่องกัน
   const N = targetW * targetH;
   const floatRGB = new Float32Array(N * 3);
