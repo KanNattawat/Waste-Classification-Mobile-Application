@@ -23,8 +23,7 @@ const WASTE_LABEL: Record<number, string> = {
 };
 
 const wasteDescriptions: Record<string, string> = {
-  "ขยะย่อยสลาย": 
-`ขยะย่อยสลายได้
+  "ขยะย่อยสลาย": `ขยะย่อยสลายได้
 
 ขยะประเภทนี้สามารถย่อยสลายได้เองตามธรรมชาติ ไม่เป็นอันตรายต่อสิ่งแวดล้อม
 
@@ -37,8 +36,7 @@ const wasteDescriptions: Record<string, string> = {
 - ทิ้งในถังขยะเปียกหรือถังหมัก  
 - สามารถนำไปทำปุ๋ยหมักได้`,
 
-  "ขยะอันตราย": 
-`ขยะอันตราย
+  "ขยะอันตราย": `ขยะอันตราย
 
 ขยะประเภทนี้มีสารเคมีหรือคุณสมบัติที่เป็นอันตรายต่อสุขภาพและสิ่งแวดล้อม
 
@@ -50,8 +48,7 @@ const wasteDescriptions: Record<string, string> = {
 - แยกเก็บไว้ในภาชนะที่ปิดมิดชิด  
 - นำไปทิ้งที่จุดรับขยะอันตรายของเทศบาลหรือศูนย์กำจัดพิเศษ`,
 
-  "ขยะทั่วไป": 
-`ขยะทั่วไป
+  "ขยะทั่วไป": `ขยะทั่วไป
 
 ขยะประเภทนี้ไม่สามารถนำกลับมาใช้ใหม่หรือรีไซเคิลได้
 
@@ -64,8 +61,7 @@ const wasteDescriptions: Record<string, string> = {
 - ทิ้งลงถังขยะทั่วไป  
 - ลดการใช้ของใช้สิ้นเปลือง`,
 
-  "ขยะรีไซเคิล": 
-`ขยะรีไซเคิล
+  "ขยะรีไซเคิล": `ขยะรีไซเคิล
 
 ขยะประเภทนี้สามารถนำกลับมาใช้ใหม่หรือรีไซเคิลเป็นวัตถุดิบใหม่ได้
 
@@ -77,7 +73,7 @@ const wasteDescriptions: Record<string, string> = {
 - ล้างให้สะอาด  
 - แยกฝาและฉลากออก  
 - บีบ/พับเพื่อลดพื้นที่  
-- ทิ้งในถังรีไซเคิลหรือจุดรับซื้อของเก่า`
+- ทิ้งในถังรีไซเคิลหรือจุดรับซื้อของเก่า`,
 };
 
 const ProgressBar = ({ label, percent, color }: { label: string; percent: number; color: string }) => (
@@ -131,47 +127,46 @@ export default function HistoryDetail() {
     "#38AFFF";
 
   return (
-    <ScrollView className="flex-1 bg-[#F8FDF9] pt-12">
-      <Text className="text-2xl font-bold text-[#4C944C] text-center">ผลลัพธ์การคัดแยกขยะ</Text>
+    <View className="flex-1 bg-[#F8FDF9]">
+      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}>
+        <Text className="text-2xl font-bold text-[#4C944C] text-center mt-12">
+          ผลลัพธ์การคัดแยกขยะ
+        </Text>
 
-      <Image source={{ uri: item.Image_path }} style={imgstyles.image} className="shadow-md" />
+        <Image source={{ uri: item.Image_path }} style={imgstyles.image} className="shadow-md" />
 
-      <View style={descStyles.container}>
-        {wasteDescriptions[WASTE_LABEL[item.Waste_ID]].split("\n").map((line, index) => (
-          <Text
-            key={index}
-            style={[
-              descStyles.text,
-              line.startsWith("-") ? descStyles.bullet : null,
-              index === 0 ? descStyles.title : null,
-            ]}
+        <View style={descStyles.container}>
+          {wasteDescriptions[WASTE_LABEL[item.Waste_ID]].split("\n").map((line, index) => (
+            <Text
+              key={index}
+              style={[
+                descStyles.text,
+                line.startsWith("-") ? descStyles.bullet : null,
+                index === 0 ? descStyles.title : null,
+              ]}
+            >
+              {line}
+            </Text>
+          ))}
+        </View>
+
+        <View style={{ width: "90%", alignSelf: "center", marginTop: 32 }}>
+          {sorted.slice(0, 3).map(([label, prob], i) => (
+            <ProgressBar key={i} label={label} percent={prob * 100} color={colorFor(label)} />
+          ))}
+        </View>
+
+        <View style={btnstyles.container}>
+          <TouchableOpacity
+            style={btnstyles.greenButton}
+            activeOpacity={0.7}
+            onPress={() => router.back()}
           >
-            {line}
-          </Text>
-        ))}
-      </View>
-
-      <View style={{ width: "90%", alignSelf: "center", marginTop: 32 }}>
-        {sorted.slice(0, 3).map(([label, prob], i) => (
-          <ProgressBar
-            key={i}
-            label={label}
-            percent={prob * 100}
-            color={colorFor(label)}
-          />
-        ))}
-      </View>
-
-      <View style={btnstyles.container}>
-        <TouchableOpacity
-          style={btnstyles.greenButton}
-          activeOpacity={0.7}
-          onPress={() => router.back()}
-        >
-          <Text style={btnstyles.buttonText}>ย้อนกลับ</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+            <Text style={btnstyles.buttonText}>ย้อนกลับ</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -186,9 +181,7 @@ const imgstyles = StyleSheet.create({
 });
 
 const progress = StyleSheet.create({
-  container: {
-    marginBottom: 15,
-  },
+  container: { marginBottom: 15 },
   labelRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -210,7 +203,7 @@ const btnstyles = StyleSheet.create({
   container: {
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 40
+    paddingVertical: 40,
   },
   greenButton: {
     backgroundColor: "#4C944C",
@@ -251,7 +244,5 @@ const descStyles = StyleSheet.create({
     marginBottom: 10,
     textAlign: "center",
   },
-  bullet: {
-    paddingLeft: 12,
-  },
+  bullet: { paddingLeft: 12 },
 });
