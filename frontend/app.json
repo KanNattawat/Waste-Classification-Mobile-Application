@@ -21,7 +21,8 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.myapp"
+      "package": "com.anonymous.myapp",
+      "usesCleartextTraffic": true
     },
     "web": {
       "bundler": "metro",
@@ -49,6 +50,10 @@
       "router": {},
       "eas": {
         "projectId": "ab8d67b8-8a15-4795-bdde-34468a7e71b6"
+      },
+      "backend": {
+        "dev": "http://3.107.236.113:3000",
+        "prod": "http://3.107.236.113:3000"
       }
     }
   }
