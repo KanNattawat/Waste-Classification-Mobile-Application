@@ -2,6 +2,7 @@
   "expo": {
     "name": "myapp",
     "slug": "myapp",
+    "owner": "kadookma",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -49,7 +50,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "ab8d67b8-8a15-4795-bdde-34468a7e71b6"
+        "projectId": "426c99d1-7bfd-4a7b-8f9d-809c85e8c1cd"
       }
     }
   }
