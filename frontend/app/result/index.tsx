@@ -102,6 +102,14 @@ const Index = () => {
 - ทิ้งในถังรีไซเคิลหรือจุดรับซื้อของเก่า`,
   };
 
+  const displayNames: Record<string, string> = {
+    "ขยะย่อยสลาย": "ขยะอินทรีย์",
+    "ขยะอันตราย": "ขยะอันตราย",
+    "ขยะทั่วไป": "ขยะทั่วไป",
+    "ขยะรีไซเคิล": "ขยะรีไซเคิล",
+  };
+
+
   useEffect(() => {
     (async () => {
       try {
@@ -141,32 +149,39 @@ const Index = () => {
             <Image source={{ uri: photo }} style={imgstyles.image} className="shadow-md" />
 
             <View style={descStyles.container}>
-              {result && wasteDescriptions[result[0][0]].split("\n").map((line, index) => (
-                <Text
-                  key={index}
-                  style={[
-                    descStyles.text,
-                    line.startsWith("-") ? descStyles.bullet : null,
-                    index === 0 ? descStyles.title : null,
-                  ]}
-                >
-                  {line}
-                </Text>
-              ))}
+              {result && (
+                <>
+                  <Text style={descStyles.title}>
+                    {displayNames[result[0][0]]}
+                  </Text>
+                  {wasteDescriptions[result[0][0]].split("\n").slice(1).map((line, index) => (
+                    <Text
+                      key={index}
+                      style={[
+                        descStyles.text,
+                        line.startsWith("-") ? descStyles.bullet : null,
+                      ]}
+                    >
+                      {line}
+                    </Text>
+                  ))}
+                </>
+              )}
             </View>
 
             <View style={{ width: "90%", marginTop: 32 }}>
               {result.slice(0, 3).map(([label, prob]: any, index: number) => (
                 <ProgressBar
                   key={index}
-                  label={label}
+                  label={displayNames[label]}
                   percent={prob * 100}
                   color={
                     label === 'ขยะรีไซเคิล' ? "#FCD92C" :
-                    label === 'ขยะอันตราย' ? "#EF4545" :
-                    label === 'ขยะย่อยสลาย' ? "#28C45C" : "#38AFFF"
+                      label === 'ขยะอันตราย' ? "#EF4545" :
+                        label === 'ขยะย่อยสลาย' ? "#28C45C" : "#38AFFF"
                   }
                 />
+
               ))}
             </View>
 
