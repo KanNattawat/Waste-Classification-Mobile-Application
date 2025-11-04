@@ -45,7 +45,7 @@ export async function preprocessImage(
   targetW = 224,
   targetH = 224
 ): Promise<PreprocessResult> {
-  // 1) Resize และส่งออกเป็น JPEG + base64 (เพื่อให้ถอดเป็น RGBA ได้ด้วย jpeg-js)
+  // 1) Resize แปลงเป็น base64 (เพื่อให้ถอดเป็น RGBA ได้ด้วย jpeg-js)
   const manipulated = await ImageManipulator.manipulateAsync(
     uri,
     [{ resize: { width: targetW, height: targetH } }],
@@ -58,7 +58,7 @@ export async function preprocessImage(
 
 
   if (!manipulated.base64) {
-    throw new Error('Failed to produce base64 from ImageManipulator');
+    throw new Error('error this is not base64');
   }
 
   // 2) แปลง base64 เป็น Uint8Array (บิต JPEG)
@@ -86,7 +86,7 @@ export async function preprocessImage(
   }
   return {
     data: floatRGB,                 
-    shape: [1, targetH, targetW, 3],
+    shape: [1, targetH, targetW, 3], //(batch, height, width, channel)
     width: targetW,
     height: targetH,
   };

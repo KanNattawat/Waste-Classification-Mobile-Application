@@ -1,12 +1,6 @@
-<<<<<<< HEAD
-import { View, TextInput, Text, Image, TouchableOpacity } from 'react-native'
-import { useState } from 'react'
-import axios from 'axios'
-=======
 import { View, TextInput, Text, Image, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { useState } from 'react';
 import axios from 'axios';
->>>>>>> f3a241c33bbbbd72889aa7067a4a967c0f3316c2
 import * as SecureStore from "expo-secure-store";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from 'expo-router';
