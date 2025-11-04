@@ -23,7 +23,7 @@ const WASTE_LABEL: Record<number, string> = {
 };
 
 const wasteDescriptions: Record<string, string> = {
-  "ขยะย่อยสลาย": `ขยะย่อยสลายได้
+  "ขยะย่อยสลาย": `ขยะอินทรีย์
 
 ขยะประเภทนี้สามารถย่อยสลายได้เองตามธรรมชาติ ไม่เป็นอันตรายต่อสิ่งแวดล้อม
 
@@ -80,7 +80,7 @@ const ProgressBar = ({ label, percent, color }: { label: string; percent: number
   <View style={progress.container} className="bg-white p-4 rounded-lg mb-4 shadow-md">
     <View style={progress.labelRow}>
       <Text>{label}</Text>
-      <Text>{percent.toFixed(3)}%</Text>
+      <Text>{percent.toFixed(1)}%</Text>
     </View>
     <View style={progress.barBackground}>
       <View style={[progress.barFill, { width: `${percent}%`, backgroundColor: color }]} />
@@ -116,7 +116,7 @@ export default function HistoryDetail() {
   if (loading) return <Loading />;
   if (!item) return <Text>ไม่พบข้อมูล</Text>;
 
-  const labels = ["ขยะย่อยสลาย", "ขยะอันตราย", "ขยะรีไซเคิล", "ขยะทั่วไป"];
+  const labels = ["ขยะอินทรีย์", "ขยะอันตราย", "ขยะทั่วไป", "ขยะรีไซเคิล"];
   const mapped = labels.map((l, i) => [l, item.probs[i]] as [string, number]);
   const sorted = mapped.sort((a, b) => b[1] - a[1]);
 
