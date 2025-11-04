@@ -49,7 +49,7 @@ const Index = () => {
   const router = useRouter();
 
   const wasteDescriptions: Record<string, string> = {
-    "ขยะย่อยสลาย": `ขยะย่อยสลายได้
+    "ขยะย่อยสลาย": `ขยะอินทรีย์
 
 ขยะประเภทนี้สามารถย่อยสลายได้เองตามธรรมชาติ ไม่เป็นอันตรายต่อสิ่งแวดล้อม
 
