@@ -1,17 +1,44 @@
 import Buttons from '@/components/buttons';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from "expo-router";
-import { useState, useCallback } from 'react';
-import { Image, Text, View, SafeAreaView, ScrollView } from 'react-native';
+import { useState, useCallback, useMemo } from 'react';
+import { Image, Text, View, SafeAreaView, ScrollView, Pressable } from 'react-native';
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "@/config";
 import { useFocusEffect } from "@react-navigation/native";
-
+import { PieChart } from 'react-native-gifted-charts';
+import WasteType from '@/components/WasteType';
+import tipsData from '@/assets/tips.json';
 export default function Index() {
   const router = useRouter();
   const [photo, setPhoto] = useState<string | null>(null);
   const [weeklyCount, setWeeklyCount] = useState<number>(0);
+  const [selectedKey, setSelectedKey] = useState("");
+
+  const raw = useMemo(
+    () => [
+      { key: "recycle", label: "ขยะรีไซเคิล", value: 12, color: "#FCD92C" },
+      { key: "danger", label: "ขยะอันตราย", value: 3, color: "#EF4545" },
+      { key: "general", label: "ขยะทั่วไป", value: 5, color: "#38AFFF" },
+      { key: "compost", label: "ขยะอินทรีย์", value: 4, color: "#28C45C" },
+    ],
+    []
+  );
+
+
+  const selected = raw.find((x) => x.key === selectedKey) ?? raw[0];
+  const data = raw.map((x) => {
+    const isSelected = x.key === selectedKey;
+
+    return {
+      value: x.value,
+      color: isSelected ? darkenColor(x.color, 0.05) : x.color,
+      onPress: () => setSelectedKey(x.key),
+    };
+  });
+
+
 
   const fetchWeeklyCount = async () => {
     try {
@@ -60,54 +87,125 @@ export default function Index() {
     }
   };
 
-  return (
-    <SafeAreaView className="flex-1 bg-white">
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <View className="flex-1 items-center justify-center bg-[#F8FDF9] px-4 py-10">
-          <Text className="text-3xl font-bold text-[#4C944C] text-center">
-            แอปพลิเคชันคัดแยกขยะ
-          </Text>
+  function darkenColor(hex: string, amount = 0.25) {
+    const num = parseInt(hex.replace("#", ""), 16);
 
-          <View className="mt-10 p-7 border border-solid rounded-xl border-[#4C944C] bg-white w-full max-w-sm items-center">
-            <Text className="text-lg text-center">
-              อาทิตย์นี้คุณแยกขยะไปแล้ว{" "}
-              <Text className="text-2xl font-bold text-[#4C944C]">
-                {weeklyCount}
-              </Text>{" "}
-              ชิ้น
-            </Text>
+    let r = (num >> 16) & 0xff;
+    let g = (num >> 8) & 0xff;
+    let b = num & 0xff;
+
+    r = Math.max(0, Math.floor(r * (1 - amount)));
+    g = Math.max(0, Math.floor(g * (1 - amount)));
+    b = Math.max(0, Math.floor(b * (1 - amount)));
+
+    return `#${((1 << 24) + (r << 16) + (g << 8) + b)
+      .toString(16)
+      .slice(1)}`;
+  }
+
+  return (
+    <SafeAreaView className="flex-1 flex-col bg-[#F9F8FA] min-h-full">
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        {/* tab ด้านบน */}
+        <View className="flex flex-col text-center bg-white px-4 py-8 shadow">
+          <View className='px-4'>
+            <Text className='text-[#7F7B7B] text-2xl'>สวัสดี</Text>
+            <View className="flex flex-row justify-between items-center">
+              <Text className='text-4xl'>John Doe</Text>
+              <View className='flex flex-row justify-center items-center'>
+                <Image
+                  source={require("@/assets/images/coin.png")}
+                  className="w-10 h-10 mr-2"
+                />
+                <Text className='text-4xl'>100</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+        {/* tab graph */}
+        <View className='flex flex-col bg-white items-center px-4 py-8 mt-8 mx-20 rounded-xl shadow'>
+          <Text className='text-[#1E8B79] text-4xl font-bold'>สถิติการคักแยกขยะ</Text>
+          <View className='mt-8 justify-center items-center'>
+            <PieChart
+              data={data}
+              donut
+              radius={180}
+              innerRadius={140}
+              centerLabelComponent={() => (
+                <View className="items-center">
+                  <Text className={`tracking-[2px] font-bold text-2xl opacity-60 ${selectedKey === "recycle" ? "text-yellow-500" : selectedKey === "danger" ? "text-red-500" : selectedKey === "general" ? "text-blue-500" : "text-green-500"}`}>
+                    {selected.label.toUpperCase()}
+                  </Text>
+
+                  <Text className="text-8xl font-extrabold">
+                    {selected.value}
+                  </Text>
+
+                  <Text className="text-2xl opacity-60 text-gray-600">
+                    ชิ้นถูกแยก
+                  </Text>
+                </View>
+              )}
+            />
+            <View className="mt-12 w-full max-w-[480px] mx-auto">
+              <View className="flex-row flex-wrap">
+                <WasteType
+                  k="recycle"
+                  label="ขยะรีไซเคิล"
+                  color="#FCD92C"
+                  selectedKey={selectedKey}
+                  setSelectedKey={setSelectedKey}
+                />
+                <WasteType
+                  k="danger"
+                  label="ขยะอันตราย"
+                  color="#EF4545"
+                  selectedKey={selectedKey}
+                  setSelectedKey={setSelectedKey}
+                />
+                <WasteType
+                  k="general"
+                  label="ขยะทั่วไป   "
+                  color="#38AFFF"
+                  selectedKey={selectedKey}
+                  setSelectedKey={setSelectedKey}
+                />
+                <WasteType
+                  k="compost"
+                  label="ขยะอินทรีย์ "
+                  color="#28C45C"
+                  selectedKey={selectedKey}
+                  setSelectedKey={setSelectedKey}
+                />
+              </View>
+            </View>
+          </View>
+        </View>
+        {/* tab ด้านล่าง */}
+        <View className="flex-row justify-center items-center mx-20 gap-x-8">
+          <View className="bg-white items-center px-4 py-8 mt-8 rounded-xl shadow flex-1">
+            <Image
+              source={require("@/assets/images/streak.png")}
+              className="w-20 h-20"
+            />
+            <Text className='text-gray-600 text-2xl mt-4'>แยกขยะติดต่อกัน</Text>
+            <Text className='text-4xl mt-4 font-bold'>12 วัน</Text>
           </View>
 
-          <Image
-            source={require("@/assets/images/trash-logo.png")}
-            className="mt-10 w-48 h-48"
-            resizeMode="contain"
-          />
+          <View className="bg-white items-center px-4 py-8 mt-8 rounded-xl shadow flex-1 ">
+            <Image
+              source={require("@/assets/images/Total.png")}
+              className="w-20 h-20"
+            />
+            <Text className='text-gray-600 text-2xl mt-4'>จำนวนที่แยกในอาทิตย์นี้</Text>
+            <Text className='text-4xl mt-4 font-bold'>9 ชิ้น</Text>
+          </View>
+        </View>
 
-          <Text className="text-lg mt-10 text-center">
-            ใช้กล้องของคุณเพื่อคัดแยกขยะ
-          </Text>
-
-          <Buttons
-            buttonColor="bg-[#4C944C]"
-            borderColor="border-[#4C944C]"
-            mt="mt-16"
-            px="px-16"
-            textColor="text-white"
-            imageSource={require("@/assets/images/Camera.png")}
-            text="ถ่ายรูป"
-            takeaPhoto={() => takeaPhoto(setPhoto)}
-          />
-          <Buttons
-            buttonColor="bg-[#ffffff]"
-            borderColor="border-[#4C944C]"
-            mt="mt-6"
-            px="px-12"
-            textColor="text-[#4C944C]"
-            imageSource={require("@/assets/images/Upload.png")}
-            text="อัปโหลดรูป"
-            takeaPhoto={() => pickImage(setPhoto)}
-          />
+        {/* Tip */}
+        <View className='bg-[#EDF3F5] mx-20 mt-8 border border-[#D8EBE9] rounded-xl p-6'>
+          <Text className='text-4xl text-[#1F9280] font-bold mx-4'>Tip</Text>
+          <Text className='text-2xl leading-9 italic mx-4 w-full flex-shrink'>{tipsData.tips[Math.floor(Math.random() * tipsData.tips.length)]}</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
