@@ -12,8 +12,8 @@ const ProgressBar = ({ label, percent, color }: { label: string, percent: number
   return (
     <View style={styles.container} className='bg-white p-4 rounded-lg mb-4 shadow-md'>
       <View style={styles.labelRow}>
-        <Text>{label}</Text>
-        <Text>{percent.toFixed(1)}%</Text>
+        <Text className='text-2xl' >{label}</Text>
+        <Text className='text-2xl'>{percent.toFixed(1)}%</Text>
       </View>
       <View style={styles.barBackground}>
         <View
@@ -136,22 +136,30 @@ const Index = () => {
   }, [photo]);
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F8FDF9]">
+    <SafeAreaView className="flex-1 bg-[#F9F8FA]">
       <ScrollView contentContainerStyle={{ flexGrow: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }}>
         {loading ? (
           <Loading />
         ) : (
           <>
-            <Text className="text-2xl font-bold text-[#4C944C] mb-4 text-center">
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => router.back()}
+              className='absolute top-12 left-4 z-50'
+            >
+              <Image source={require("@/assets/images/back.png")} className="shadow-md w-20 h-20 mb-4" />
+            </TouchableOpacity>
+            <Text className="text-4xl font-bold text-[#1E8B79] mb-4 text-center">
               ผลลัพธ์การคัดแยกขยะ
             </Text>
 
+
             <Image source={{ uri: photo }} style={imgstyles.image} className="shadow-md" />
 
-            <View style={descStyles.container}>
+            <View style={descStyles.container} >
               {result && (
                 <>
-                  <Text style={descStyles.title}>
+                  <Text className={`font-semibold text-2xl mb-2 text-center`}>
                     {displayNames[result[0][0]]}
                   </Text>
                   {wasteDescriptions[result[0][0]].split("\n").slice(1).map((line, index) => (
@@ -169,7 +177,7 @@ const Index = () => {
               )}
             </View>
 
-            <View style={{ width: "90%", marginTop: 32 }}>
+            <View style={{ width: "95%", marginTop: 32 }}>
               {result.slice(0, 3).map(([label, prob]: any, index: number) => (
                 <ProgressBar
                   key={index}
@@ -233,9 +241,9 @@ const btnstyles2 = StyleSheet.create({
     paddingVertical: 40,
   },
   greenButton: {
-    backgroundColor: '#4C944C',
-    paddingVertical: 12,
-    paddingHorizontal: 30,
+    backgroundColor: '#1E8B79',
+    paddingVertical: 20,
+    paddingHorizontal: 40,
     borderRadius: 8,
   },
   buttonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
@@ -257,7 +265,7 @@ const descStyles = StyleSheet.create({
     alignSelf: "center",
   },
   text: {
-    fontSize: 16,
+    fontSize: 20,
     color: "#444",
     lineHeight: 24,
     marginBottom: 6,

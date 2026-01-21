@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 const TAB_HEIGHT = 90;
 const TAB_MARGIN = 18;
 
-export function Screen({ children }: { children: React.ReactNode }) {
+export default function Screen({ children }: { children: React.ReactNode }) {
   const insets = useSafeAreaInsets();
 
   return (

@@ -1,12 +1,12 @@
-import { useState, useCallback } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, FlatList, ListRenderItem } from 'react-native';
-import axios from 'axios';
+import { useState, useCallback } from "react";
+import { View, Text, Image, TouchableOpacity, FlatList, ListRenderItem } from "react-native";
+import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { readImage } from "@/lib/storage";
 import { useRouter } from "expo-router";
 import { API_URL } from "@/config";
 import { useFocusEffect } from "@react-navigation/native";
-
+import Screen from "@/components/Screen";
 const router = useRouter();
 
 export interface HistoryItem {
@@ -18,21 +18,21 @@ export interface HistoryItem {
   probs: number[];
 }
 
-const WASTE_LABEL: Record<number, 'ขยะย่อยสลาย' | 'ขยะอันตราย' | 'ขยะรีไซเคิล' | 'ขยะทั่วไป'> = {
-  1: 'ขยะอินทรีย์',
-  2: 'ขยะอันตราย',
-  3: 'ขยะรีไซเคิล',
-  4: 'ขยะทั่วไป',
+const WASTE_LABEL: Record<number, string> = {
+  1: "ขยะอินทรีย์",
+  2: "ขยะอันตราย",
+  3: "ขยะรีไซเคิล",
+  4: "ขยะทั่วไป",
 };
 
-const wasteLabel = (id: number) => WASTE_LABEL[id] ?? 'unknown';
+const wasteLabel = (id: number) => WASTE_LABEL[id] ?? "unknown";
 
 const formatDate = (iso: string) =>
-  new Date(iso).toLocaleDateString('th-TH-u-ca-gregory', {
-    timeZone: 'Asia/Bangkok',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
+  new Date(iso).toLocaleDateString("th-TH-u-ca-gregory", {
+    timeZone: "Asia/Bangkok",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 
 const Recents = () => {
@@ -41,10 +41,7 @@ const Recents = () => {
   const getHistory = async () => {
     try {
       const userId = await AsyncStorage.getItem("userId");
-      if (!userId) {
-        console.warn("User id is undefined!!");
-        return;
-      }
+      if (!userId) return;
 
       const { data } = await axios.get(`${API_URL}/gethistory`, {
         params: { userId },
@@ -52,7 +49,7 @@ const Recents = () => {
 
       const raw: HistoryItem[] = Array.isArray(data?.img) ? data.img : [];
 
-      const hydrated: HistoryItem[] = await Promise.all(
+      const hydrated = await Promise.all(
         raw.map(async (it) => {
           try {
             const localUri = await readImage(it.User_ID, it.Image_ID, "jpeg");
@@ -62,9 +59,10 @@ const Recents = () => {
           }
         })
       );
+
       setHistory(hydrated);
-    } catch (error: any) {
-      console.log("getHistory error:", error?.response?.status, error?.response?.data || error?.message);
+    } catch (err: any) {
+      console.log("getHistory error:", err?.response?.status, err?.response?.data || err?.message);
     }
   };
 
@@ -75,76 +73,56 @@ const Recents = () => {
   );
 
   const renderItem: ListRenderItem<HistoryItem> = ({ item }) => (
-    <TouchableOpacity style={styles.card} onPress={() => router.push(`/history_result/${item.Image_ID}`)}>
-      <Image source={{ uri: item.Image_path }} style={styles.image} />
-      <View style={styles.textContainer}>
-        <Text style={styles.title}>{wasteLabel(item.Waste_ID)}</Text>
-        <Text style={styles.date}>{formatDate(item.timestamp)}</Text>
+    <TouchableOpacity
+      onPress={() => router.push(`/history_result/${item.Image_ID}`)}
+      className="
+        flex-row items-center
+        bg-white
+        p-3
+        rounded-xl
+        mb-3
+        shadow
+      "
+    >
+      <Image
+        source={{ uri: item.Image_path }}
+        className="w-[180px] h-[160px] rounded-lg"
+      />
+
+      <View className="flex-1 ml-3">
+        {wasteLabel(item.Waste_ID) === "ขยะอินทรีย์" ? <Text className="text-2xl font-bold capitalize bg-[#E5FFED] text-[#1A863E] rounded-lg p-3 mr-[315px]">
+          {wasteLabel(item.Waste_ID)}</Text>
+          : wasteLabel(item.Waste_ID) === "ขยะอันตราย" ? <Text className="text-2xl font-bold capitalize bg-[#FFC8C8] text-[#842A2A] rounded-lg p-3 mr-[304px]">{wasteLabel(item.Waste_ID)} </Text>
+            : wasteLabel(item.Waste_ID) === "ขยะรีไซเคิล" ? <Text className="text-2xl font-bold capitalize bg-[#FFFCEB] text-[#A99323] rounded-lg p-3 mr-[310px]">{wasteLabel(item.Waste_ID)} </Text>
+              : <Text className="text-2xl font-bold capitalize bg-[#EDF8FF] text-[#276F9F] rounded-lg p-3 mr-[331px]">{wasteLabel(item.Waste_ID)} </Text>
+        }
+
+
+        <Text className="text-xl text-gray-500">
+          {formatDate(item.timestamp)}
+        </Text>
       </View>
-      <Text style={styles.arrow}>{'>'}</Text>
+
+      <Text className="text-xl text-gray-400">{">"}</Text>
     </TouchableOpacity>
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header} className='text-3xl'>ประวัติการคัดแยกขยะ</Text>
-      <FlatList
-        data={history}
-        keyExtractor={(item) => item.Image_ID.toString()}  // ใช้ Image_ID เป็น key
-        renderItem={renderItem}
-      />
-    </View>
+    <Screen>
+      <View className="flex-1 bg-[#F9F8FA] px-8 pt-8">
+        <Text className="text-4xl font-bold text-[#1E8B79] text-center mb-3">
+          ประวัติการคัดแยกขยะ
+        </Text>
+
+        <FlatList
+          data={history}
+          keyExtractor={(item) => item.Image_ID.toString()}
+          renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
+        />
+      </View>
+    </Screen>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F5FDF7",
-    padding: 32,
-  },
-  header: {
-    fontWeight: "bold",
-    color: "#4C944C",
-    marginBottom: 12,
-    textAlign: "center",
-    paddingTop: 10
-  },
-  card: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    padding: 10,
-    borderRadius: 10,
-    marginBottom: 10,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-  },
-  image: {
-    width: 100,
-    height: 80,
-    borderRadius: 8,
-  },
-  textContainer: {
-    flex: 1,
-    marginLeft: 10,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: "bold",
-    textTransform: "capitalize", 
-  },
-  date: {
-    fontSize: 14,
-    color: "#777",
-  },
-  arrow: {
-    fontSize: 20,
-    color: "#777",
-  },
-});
 
 export default Recents;
