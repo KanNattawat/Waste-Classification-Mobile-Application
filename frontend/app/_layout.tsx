@@ -32,7 +32,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 }
 
 export default function RootLayout() {
-  
+
   useEffect(() => {
     async function init() {
       try {
@@ -53,6 +53,7 @@ export default function RootLayout() {
           <Stack.Screen name="result" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="history_result" options={{ headerShown: false }} />
+          <Stack.Screen name="camera" options={{ presentation: "modal", headerShown: false }} />
         </Stack>
       </AuthGate>
     </AuthProvider>
