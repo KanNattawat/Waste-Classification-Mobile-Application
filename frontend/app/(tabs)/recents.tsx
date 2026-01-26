@@ -86,18 +86,18 @@ const Recents = () => {
     >
       <Image
         source={{ uri: item.Image_path }}
-        className="w-[180px] h-[160px] rounded-lg"
+        className="w-[80px] h-[60px] rounded-lg"
       />
 
       <View className="flex-1 ml-3">
-        {wasteLabel(item.Waste_ID) === "ขยะอินทรีย์" ? <Text className="text-2xl font-bold capitalize bg-[#E5FFED] text-[#1A863E] rounded-lg p-3 mr-[315px]">
-          {wasteLabel(item.Waste_ID)}</Text>
-          : wasteLabel(item.Waste_ID) === "ขยะอันตราย" ? <Text className="text-2xl font-bold capitalize bg-[#FFC8C8] text-[#842A2A] rounded-lg p-3 mr-[304px]">{wasteLabel(item.Waste_ID)} </Text>
-            : wasteLabel(item.Waste_ID) === "ขยะรีไซเคิล" ? <Text className="text-2xl font-bold capitalize bg-[#FFFCEB] text-[#A99323] rounded-lg p-3 mr-[310px]">{wasteLabel(item.Waste_ID)} </Text>
-              : <Text className="text-2xl font-bold capitalize bg-[#EDF8FF] text-[#276F9F] rounded-lg p-3 mr-[331px]">{wasteLabel(item.Waste_ID)} </Text>
-        }
-
-
+        <View className="self-start">
+          {wasteLabel(item.Waste_ID) === "ขยะอินทรีย์" ? <Text className="text-xl font-bold capitalize bg-[#E5FFED] text-[#1A863E] rounded-lg p-3 ">
+            {wasteLabel(item.Waste_ID)}</Text>
+            : wasteLabel(item.Waste_ID) === "ขยะอันตราย" ? <Text className="text-xl font-bold capitalize bg-[#FFC8C8] text-[#842A2A] rounded-lg p-3 ">{wasteLabel(item.Waste_ID)} </Text>
+              : wasteLabel(item.Waste_ID) === "ขยะรีไซเคิล" ? <Text className="text-xl font-bold capitalize bg-[#FFFCEB] text-[#A99323] rounded-lg p-3">{wasteLabel(item.Waste_ID)} </Text>
+                : <Text className="text-lg font-bold capitalize bg-[#EDF8FF] text-[#276F9F] rounded-lg p-2">{wasteLabel(item.Waste_ID)} </Text>
+          }
+        </View>
         <Text className="text-xl text-gray-500">
           {formatDate(item.timestamp)}
         </Text>
@@ -110,7 +110,7 @@ const Recents = () => {
   return (
     <Screen>
       <View className="flex-1 bg-[#F9F8FA] px-8 pt-8">
-        <Text className="text-4xl font-bold text-[#1E8B79] text-center mb-3">
+        <Text className="text-2xl font-bold text-[#1E8B79] text-center mb-3">
           ประวัติการคัดแยกขยะ
         </Text>
 

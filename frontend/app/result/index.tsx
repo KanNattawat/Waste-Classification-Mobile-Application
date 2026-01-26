@@ -12,8 +12,8 @@ const ProgressBar = ({ label, percent, color }: { label: string, percent: number
   return (
     <View style={styles.container} className='bg-white p-4 rounded-lg mb-4 shadow-md'>
       <View style={styles.labelRow}>
-        <Text className='text-2xl' >{label}</Text>
-        <Text className='text-2xl'>{percent.toFixed(1)}%</Text>
+        <Text className='text-xl' >{label}</Text>
+        <Text className='text-xl'>{percent.toFixed(1)}%</Text>
       </View>
       <View style={styles.barBackground}>
         <View
@@ -136,7 +136,7 @@ const Index = () => {
   }, [photo]);
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F9F8FA]">
+    <SafeAreaView className="flex-1 bg-[#F9F8FA] pt-8">
       <ScrollView contentContainerStyle={{ flexGrow: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }}>
         {loading ? (
           <Loading />
@@ -145,18 +145,18 @@ const Index = () => {
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => router.back()}
-              className='absolute top-12 left-4 z-50'
+              className='absolute top-4 left-4 z-50'
             >
-              <Image source={require("@/assets/images/back.png")} className="shadow-md w-20 h-20 mb-4" />
+              <Image source={require("@/assets/images/back.png")} className="shadow-md w-14 h-14" />
             </TouchableOpacity>
-            <Text className="text-4xl font-bold text-[#1E8B79] mb-4 text-center">
+            <Text className="text-2xl font-bold text-[#1E8B79] mb-4 text-center">
               ผลลัพธ์การคัดแยกขยะ
             </Text>
 
 
             <Image source={{ uri: photo }} style={imgstyles.image} className="shadow-md" />
 
-            <View style={descStyles.container} >
+            <View style={descStyles.container} className='border-2 border-[#DAD9D9]' >
               {result && (
                 <>
                   <Text className={`font-semibold text-2xl mb-2 text-center`}>
@@ -175,32 +175,45 @@ const Index = () => {
                   ))}
                 </>
               )}
-            </View>
 
-            <View style={{ width: "95%", marginTop: 32 }}>
-              {result.slice(0, 3).map(([label, prob]: any, index: number) => (
-                <ProgressBar
-                  key={index}
-                  label={displayNames[label]}
-                  percent={prob * 100}
-                  color={
-                    label === 'ขยะรีไซเคิล' ? "#FCD92C" :
-                      label === 'ขยะอันตราย' ? "#EF4545" :
-                        label === 'ขยะย่อยสลาย' ? "#28C45C" : "#38AFFF"
-                  }
-                />
 
-              ))}
-            </View>
+              <View style={{ width: "95%", marginTop: 32 }}>
+                {result.slice(0, 3).map(([label, prob]: any, index: number) => (
+                  <ProgressBar
+                    key={index}
+                    label={displayNames[label]}
+                    percent={prob * 100}
+                    color={
+                      label === 'ขยะรีไซเคิล' ? "#FCD92C" :
+                        label === 'ขยะอันตราย' ? "#EF4545" :
+                          label === 'ขยะย่อยสลาย' ? "#28C45C" : "#38AFFF"
+                    }
+                  />
 
-            <View style={btnstyles2.container}>
-              <TouchableOpacity
-                style={btnstyles2.greenButton}
-                activeOpacity={0.7}
-                onPress={() => router.back()}
-              >
-                <Text style={btnstyles2.buttonText}>เสร็จสิ้น</Text>
-              </TouchableOpacity>
+                ))}
+              </View>
+                <Text className='text-black text-xl mt-8 text-center font-bold'>ผลลัพธ์ถูกต้องหรือไม่</Text>
+              <View className='flex flex-row justify-center'>
+                <View style={btnstyles2.container} className='mx-4'>
+                  <TouchableOpacity
+                    style={btnstyles2.greenButton} className='bg-[#239147]'
+                    activeOpacity={0.7}
+                    onPress={() => router.back()}
+                  >
+                    <Text style={btnstyles2.buttonText}>ถูกต้อง</Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={btnstyles2.container} className='mx-4'>
+                  <TouchableOpacity
+                    style={btnstyles2.greenButton} className='bg-[#AB2D2D]'
+                    activeOpacity={0.7}
+                    onPress={() => router.back()}
+                  >
+                    <Text style={btnstyles2.buttonText}>ไม่ถูกต้อง</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
             </View>
           </>
         )}
@@ -238,15 +251,14 @@ const btnstyles2 = StyleSheet.create({
   container: {
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 40,
+    paddingVertical: 10,
   },
   greenButton: {
-    backgroundColor: '#1E8B79',
-    paddingVertical: 20,
+    paddingVertical: 16,
     paddingHorizontal: 40,
     borderRadius: 8,
   },
-  buttonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
 });
 
 const descStyles = StyleSheet.create({
@@ -265,7 +277,7 @@ const descStyles = StyleSheet.create({
     alignSelf: "center",
   },
   text: {
-    fontSize: 20,
+    fontSize: 18,
     color: "#444",
     lineHeight: 24,
     marginBottom: 6,

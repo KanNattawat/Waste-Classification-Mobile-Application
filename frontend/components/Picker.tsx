@@ -28,9 +28,9 @@ export default function Picker({
       >
         <Pressable
           onPress={() => {}}
-          className="bg-white rounded-2xl m-20 p-8"
+          className="bg-white rounded-2xl p-7"
         >
-          <Text className='text-2xl font-bold mb-8'>
+          <Text className='text-xl font-bold mb-4'>
             เลือกวิธี
           </Text>
 
@@ -39,18 +39,18 @@ export default function Picker({
           >
             <View className='flex-row gap-8'>
               <Pressable onPress={onCamera} hitSlop={10}>
-                <Text className='text-[#1F9280] text-xl'>ถ่ายรูป</Text>
+                <Text className='text-[#1F9280] text-lg'>ถ่ายรูป</Text>
               </Pressable>
 
               <Pressable onPress={onGallery} hitSlop={10}>
-                <Text className='text-[#1F9280] text-xl'>
+                <Text className='text-[#1F9280] text-lg'>
                   เลือกรูปจากแกลเลอรี่
                 </Text>
               </Pressable>
             </View>
 
             <Pressable onPress={onClose} hitSlop={10}>
-              <Text className='text-[#1F9280] text-xl'>ยกเลิก</Text>
+              <Text className='text-[#1F9280] text-lg'>ยกเลิก</Text>
             </Pressable>
           </View>
         </Pressable>

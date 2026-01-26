@@ -35,7 +35,7 @@ const Sign_Up = () => {
     };
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: "#132119" }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: "#F9F8FA" }}>
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
                 behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -45,7 +45,6 @@ const Sign_Up = () => {
                     <ScrollView
                         contentContainerStyle={{
                             flexGrow: 1,
-                            justifyContent: 'center',
                             alignItems: 'center',
                             paddingVertical: 40,
                             paddingHorizontal: 24
@@ -53,44 +52,44 @@ const Sign_Up = () => {
                         keyboardShouldPersistTaps="handled"
                         showsVerticalScrollIndicator={false}
                     >
-                        <Image source={require('@/assets/images/im3.png')} />
-                        <Text className='text-[#96C5A9] text-2xl pt-4 font-bold text-center'>
+                        <Image source={require('@/assets/images/im3.png')} className='w-48 h-48 mt-8' />
+                        <Text className='text-black text-2xl pt-8 font-bold text-center'>
                             แอปพลิเคชันคัดแยกขยะ
                         </Text>
 
                         {/* Fullname */}
-                        <View className="flex-row items-center mt-8 bg-[#264433] rounded-xl w-80 h-16 px-4">
+                        <View className="flex-row items-center mt-14 bg-white border-2 border-black rounded-xl w-[80%] h-16 px-4">
                             <TextInput
                                 value={fullname}
                                 onChangeText={setFullname}
                                 placeholder="Full name"
-                                placeholderTextColor="#96C5A9"
-                                className="flex-1 text-[#96C5A9] text-lg"
+                                placeholderTextColor="#000000"
+                                className="flex-1 text-[#000000] text-xl"
                                 returnKeyType="next"
                             />
                         </View>
 
                         {/* Username */}
-                        <View className="flex-row items-center mt-5 bg-[#264433] rounded-xl w-80 h-16 px-4">
+                        <View className="flex-row items-center mt-14 bg-white border-2 border-black rounded-xl w-[80%] h-16 px-4">
                             <TextInput
                                 value={username}
                                 onChangeText={setUsername}
                                 placeholder="Username"
-                                placeholderTextColor="#96C5A9"
-                                className="flex-1 text-[#96C5A9] text-lg"
+                                placeholderTextColor="#000000"
+                                className="flex-1 text-[#000000] text-xl"
                                 autoCapitalize="none"
                                 returnKeyType="next"
                             />
                         </View>
 
                         {/* Password */}
-                        <View className="flex-row items-center mt-5 bg-[#264433] rounded-xl w-80 h-16 px-4">
+                        <View className="flex-row items-center mt-14 bg-white border-2 border-black rounded-xl w-[80%] h-16 px-4">
                             <TextInput
                                 value={password}
                                 onChangeText={setPassword}
                                 placeholder="Password"
-                                placeholderTextColor="#96C5A9"
-                                className="flex-1 text-[#96C5A9] text-lg"
+                                placeholderTextColor="#000000"
+                                className="flex-1 text-[#000000] text-xl"
                                 secureTextEntry
                                 autoCapitalize="none"
                                 returnKeyType="next"
@@ -98,29 +97,30 @@ const Sign_Up = () => {
                         </View>
 
                         {/* Confirm Password */}
-                        <View className="flex-row items-center mt-5 bg-[#264433] rounded-xl w-80 h-16 px-4">
+                        <View className="flex-row items-center mt-14 bg-white border-2 border-black rounded-xl w-[80%] h-16 px-4">
                             <TextInput
                                 value={confirmPassword}
                                 onChangeText={setConfirmPassword}
                                 placeholder="Confirm Password"
-                                placeholderTextColor="#96C5A9"
-                                className="flex-1 text-[#96C5A9] text-lg"
+                                placeholderTextColor="#000000"
+                                className="flex-1 text-[#000000] text-xl"
                                 secureTextEntry
                                 autoCapitalize="none"
                                 returnKeyType="done"
                             />
                         </View>
 
-                        {error ? <Text className='text-red-500 mt-2 text-center'>{error}</Text> : null}
+                        
 
                         {/* Sign Up Button */}
                         <TouchableOpacity
                             activeOpacity={0.7}
-                            className='mt-8 bg-[#39E17B] rounded-xl w-80 h-16 items-center justify-center'
+                            className='mt-14 bg-[#1E8B79] rounded-xl w-60 h-16 items-center justify-center'
                             onPress={handleSubmit}
                         >
-                            <Text className='text-[#12241A] text-xl font-bold'>สมัครสมาชิก</Text>
+                            <Text className='text-[#FFFFFF] text-2xl font-bold'>สมัครสมาชิก</Text>
                         </TouchableOpacity>
+                        {error ? <Text className='text-red-500 mt-14 text-lg underline text-center'>{error}</Text> : null}
                     </ScrollView>
                 </TouchableWithoutFeedback>
             </KeyboardAvoidingView>

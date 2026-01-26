@@ -1,4 +1,4 @@
-import { router, Tabs, useRouter } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, View, Text, Alert } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
@@ -10,40 +10,6 @@ import Picker from "../../components/Picker";
 const _layout = () => {
   const router = useRouter();
   const [picker, setPicker] = useState(false);
-  type PickSource = "camera" | "library";
-
-  // const takeaPhoto = async (source: PickSource) : Promise<string | null> => {
-
-  //   if(source === "camera"){
-  //     const { status } = await ImagePicker.requestCameraPermissionsAsync();
-  //         if (status !== "granted") {
-  //             alert("กรุณาอนุญาตการเข้าถึงกล้องเพื่อใช้งาน");
-  //             return null;
-  //         }
-  //   }
-  //   else{
-  //     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  //         if (status !== "granted") {
-  //             alert("กรุณาอนุญาตการเข้าถึงรูปภาพเพื่อใช้งาน");
-  //             return null;
-  //         }
-  //   }
-
-  //   const result = source === "camera"? await ImagePicker.launchCameraAsync({
-  //     allowsEditing: true,
-  //     aspect: [1, 1],
-  //     quality: 0.7,
-  //   }) 
-  //   : await ImagePicker.launchImageLibraryAsync({
-  //     allowsEditing: true,
-  //     aspect: [1, 1],
-  //     quality: 0.7,
-  //   });
-  //   router.push({ pathname: "/result", params: { photo: result.assets[0].uri } });
-  //   if (result.canceled) {
-  //     return result.assets[0].uri;
-  //   }
-  // };
 
   const takeaPhoto = async (router: ReturnType<typeof useRouter>) => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
@@ -90,13 +56,13 @@ const _layout = () => {
             flexDirection: "row",
             justifyContent: "space-between",
             backgroundColor: "white",
-            margin: 18,
+            margin: 0,
             borderRadius: 16,
-            height: 90,
+            height: 70,
             position: "absolute",
             borderTopWidth: 0,
             paddingBottom: 11,
-            paddingTop: 11,
+            paddingTop: 1,
             paddingHorizontal: 22
           },
 
@@ -116,7 +82,7 @@ const _layout = () => {
           },
 
           tabBarLabelStyle: {
-            fontSize: 20,
+            fontSize: 16,
             marginBottom: 6,
           }
         }}
@@ -127,7 +93,7 @@ const _layout = () => {
             title: "โฮม",
             headerShown: false,
             tabBarIcon: ({ color }) => (
-              <Ionicons name="home" size={34} color={color} />
+              <Ionicons name="home" size={28} color={color} />
             ),
           }}
         />
@@ -138,7 +104,7 @@ const _layout = () => {
             title: "ประวัติ",
             headerShown: false,
             tabBarIcon: ({ color }) => (
-              <Ionicons name="time" size={34} color={color} />
+              <Ionicons name="time" size={28} color={color} />
             ),
           }}
         />
@@ -169,9 +135,9 @@ const _layout = () => {
                         style={{
                           position: "absolute",
                           alignSelf: "center",
-                          top: -45,
-                          width: 80,
-                          height: 80,
+                          top: -28,
+                          width: 60,
+                          height: 60,
                           borderRadius: 999,
                           backgroundColor: "#4C944C",
                           alignItems: "center",
@@ -181,13 +147,13 @@ const _layout = () => {
                           transform: [{ scale: focused ? 1.02 : 1 }],
                         }}
                       >
-                        <Ionicons name="camera" size={30} color="white" />
+                        <Ionicons name="camera" size={28} color="white" />
                       </View>
 
                       <Text
                         style={{
                           marginTop: 26,
-                          fontSize: 20,
+                          fontSize: 16,
                           color: "#4C944C",
                         }}
                       >
@@ -208,7 +174,7 @@ const _layout = () => {
             title: "โปรไฟล์",
             headerShown: false,
             tabBarIcon: ({ color }) => (
-              <Ionicons name="person" size={34} color={color} />
+              <Ionicons name="person" size={28} color={color} />
             ),
           }}
         />
@@ -219,7 +185,7 @@ const _layout = () => {
             title: "แลกแต้ม",
             headerShown: false,
             tabBarIcon: ({ color }) => (
-              <Ionicons name="person" size={34} color={color} />
+              <Ionicons name="gift" size={28} color={color} />
             ),
           }}
         />
