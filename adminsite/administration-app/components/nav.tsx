@@ -16,7 +16,7 @@ const Nav = () => {
                     </div>
 
                     <img src="/images/Users.png" alt="" className="h-7 w-7" />
-                    <p className="text-xl text-white group-hover:text-white transition">User Management</p>
+                    <p className="text-xl text-white group-hover:text-white transition">จัดการผู้ใช้งาน</p>
                 </div>
             </Link>
 
@@ -26,7 +26,7 @@ const Nav = () => {
 
                     </div>
                     <img src="/images/Shopping.png" alt="" className="h-7 w-7" />
-                    <p className="text-xl">Store Management</p>
+                    <p className="text-xl">จัดการร้านรับของ</p>
                 </div>
 
             </Link>
