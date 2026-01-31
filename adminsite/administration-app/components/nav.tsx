@@ -10,7 +10,7 @@ const Nav = () => {
 
             </Link>
 
-            <Link href={"/usermanage"}>
+            <Link href={"/usermanage?page=1"}>
                 <div className="group relative flex flex-row items-center justify-start pl-6 mt-12 gap-3 h-14 hover:bg-[#2C2C2C] transition cursor-pointer">
                     <div className='absolute left-0 w-1 h-8 bg-transparent group-hover:bg-[#1E8B79] transition-all rounded-r-lg'>
                     </div>

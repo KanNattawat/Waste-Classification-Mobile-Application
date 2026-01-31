@@ -12,6 +12,7 @@ model User {
   Full_name    String
   User_name    String    @unique
   User_password String
+  Email String
 
   // relations
   images   Image[]

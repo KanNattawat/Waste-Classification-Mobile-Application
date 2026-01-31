@@ -10,4 +10,5 @@ router.get('/gethistory', controller.getHistory);
 router.get('/getweekly', controller.getWeekly);
 router.get('/gethistorybyid', controller.getHistoryData);
 router.get('/getstats',authMiddleware , controller.getStats);
+router.get('/getusers', controller.getUsers);
 export default router

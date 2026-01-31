@@ -18,5 +18,5 @@ app.use("/auth", auth_router);
 app.use("/", router)
 
 app.listen(process.env.PORT, async () => {
-    console.log('Service running');
+    console.log('Service running at', process.env.PORT);
 });

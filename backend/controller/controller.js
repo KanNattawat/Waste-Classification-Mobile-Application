@@ -172,3 +172,46 @@ export const getStats = async (req, res) => {
     }
 };
 
+
+export const getUsers = async (req, res) => {
+    try {
+        const currentPage = Number(req.query.current) || 1;
+        const userName = req.query.username
+        const limit = 11
+        const offset = (currentPage - 1) * limit
+
+        const [ users, total ] = await Promise.all(
+            [
+                prisma.user.findMany({
+                    skip: offset,
+                    take: limit,
+                    where: {
+                        User_name: userName ? { contains: userName } : undefined
+                    }
+                }),
+                prisma.user.count({
+                    where:{
+                        User_name: userName ? { contains: userName } : undefined
+                    }
+                })
+            ])
+
+        console.log(users)
+
+
+        const totalPage = Math.ceil(total / limit)
+        console.log(total)
+
+        res.status(200).json(
+            {
+                user: users,
+                totalPage: totalPage
+            }
+        );
+
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ error: "Server error" });
+    }
+};
