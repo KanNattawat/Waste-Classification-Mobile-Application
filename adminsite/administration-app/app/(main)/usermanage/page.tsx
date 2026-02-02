@@ -1,28 +1,27 @@
 import Searchbar from "@/components/searchBar";
 import Pagination from "@/components/pagination"
 import Table from "@/components/table"
-
-type SearchParams = {
+import { cookies } from 'next/headers';type SearchParams = {
   page?: string;
   username?: string;
 };
 
-const  page = async ({searchParams}:{searchParams:SearchParams}) => {
-  
-  const { page, username } = await searchParams;
-  const usernameParams = username ? username : ""
-  const currentPage = page ?? '1';
-  const res = await fetch(`${process.env.API_BASE_URL}/getusers?current=${currentPage}&username=${usernameParams}`);
-  const data = await res.json();
+const page = async ({ searchParams }: { searchParams: SearchParams }) => {
 
+  const { page, username } = await searchParams;
+  const usernameQuery = username ? `&username=${username}` : ""
+  const currentPage = page ?? '1';
+  const cookieStore = await cookies();
+  const token = cookieStore.get('token')?.value;
+  const res = await fetch(`${process.env.API_BASE_URL}/getusers?current=${currentPage}${usernameQuery}`,{
+   headers:{
+    'Authorization':`Bearer ${token}`
+   }
+  });
+  const data = await res.json();
   const user = data.user
   const totalPage = data.totalPage
   const safePage = Math.min(totalPage, Number(currentPage))
-  console.log('current', currentPage)
-  console.log('total' ,totalPage)
-  console.log('safePage' ,safePage)
-  // search
-
 
 
   return (

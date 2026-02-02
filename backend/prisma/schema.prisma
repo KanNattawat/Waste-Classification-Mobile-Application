@@ -7,12 +7,19 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
+
 model User {
   User_ID      Int       @id @default(autoincrement())
   Full_name    String
   User_name    String    @unique
   User_password String
   Email String
+  Role Role? @default(USER)
 
   // relations
   images   Image[]

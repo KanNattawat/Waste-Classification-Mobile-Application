@@ -7,7 +7,6 @@ const Nav = () => {
                 <div className='flex h-14 items-center justify-center hover:bg-[#2C2C2C] transition-colors'>
                     <p className="text-3xl font-bold ">Administration</p>
                 </div>
-
             </Link>
 
             <Link href={"/usermanage?page=1"}>

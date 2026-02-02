@@ -1,12 +1,12 @@
+import Link from 'next/link';
+
 type User = {
-  User_name?: string;
-  Full_name?: string;
-  Email?: string;
+    User_name?: string;
+    Full_name?: string;
+    Email?: string;
 };
 
-const Table = ({user}:{user:[User]}) => {
-    
-    console.log(user)
+const Table = ({ user }: { user: [User] }) => {
 
     return (
         <div className="relative h-full w-full overflow-auto bg-clip-border shadow-xl rounded-md">
@@ -34,9 +34,9 @@ const Table = ({user}:{user:[User]}) => {
                                 <p className="text-sm">{item.Full_name}</p>
                             </td>
                             <td className="p-4 text-right">
-                                <a href="#" className="text-sm font-semibold text-blue-600 hover:text-blue-800">
+                                <Link href={`${process.env.NEXT_PUBLIC_SITE_URL}/usermanage/${item.User_name}?full_name=${item.Full_name}&email=${encodeURIComponent(String(item.Email))}`} className="text-sm font-semibold text-blue-600 hover:text-blue-800">
                                     Edit
-                                </a>
+                                </Link>
                             </td>
                         </tr>
                     ))}

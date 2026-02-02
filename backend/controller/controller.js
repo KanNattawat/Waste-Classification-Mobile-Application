@@ -215,3 +215,48 @@ export const getUsers = async (req, res) => {
         res.status(500).json({ error: "Server error" });
     }
 };
+
+export const editUser = async (req,res) =>{
+    try {
+        const {userName, email, fullName, identify} = req.body
+
+        const userId = await prisma.user.findUnique({
+            where:{
+                User_name:identify
+            }
+        })
+
+        console.log(userId.User_ID)
+
+        const updateUser = await prisma.user.update({
+            where:{
+                User_ID:userId.User_ID
+            },
+            data:{
+                Full_name:fullName,
+                Email:email,
+                User_name:userName
+            }
+        })
+        console.log(updateUser);
+        res.status(200).json(updateUser)
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+
+export const deleteUser = async (req,res) =>{
+    try {
+        const {identify} = req.body
+        const deleteUser = await prisma.user.delete({
+            where:{
+                User_name:identify
+            }
+        })
+
+        res.status(200).json(deleteUser)
+    } catch (error) {
+        console.log(error)
+    }
+}
