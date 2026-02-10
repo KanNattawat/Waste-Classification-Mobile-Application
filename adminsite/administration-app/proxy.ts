@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     const cookieStore = await cookies();
     const token = cookieStore.get('token')?.value;
 

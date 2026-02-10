@@ -1,5 +1,5 @@
 import Link from 'next/link';
-
+import { deleteCookie } from "@/app/actions/auth"
 const Nav = () => {
     return (
         <div className="flex flex-col h-screen bg-black text-center text-white pt-4">
@@ -29,10 +29,13 @@ const Nav = () => {
                 </div>
 
             </Link>
-            <div className="flex flex-row mt-auto h-14 items-center gap-3 justify-center hover:bg-[#2C2C2C] transition-colors cursor-pointer">
+            <Link
+                className='flex flex-row mt-auto h-14 items-center gap-3 justify-center hover:bg-[#2C2C2C] transition-colors cursor-pointer'
+                onClick={deleteCookie}
+                href={"/auth"}>
                 <img src="/images/Logout.png" className="h-7 w-7" alt="" />
                 <p className="text-xl">Sign Out</p>
-            </div>
+            </Link>
 
         </div>
     )

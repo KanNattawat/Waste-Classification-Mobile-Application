@@ -142,19 +142,12 @@ const Index = () => {
           <Loading />
         ) : (
           <>
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => router.back()}
-              className='absolute top-4 left-4 z-50'
-            >
-              <Image source={require("@/assets/images/back.png")} className="shadow-md w-14 h-14" />
-            </TouchableOpacity>
-            <Text className="text-2xl font-bold text-[#1E8B79] mb-4 text-center">
+            <Text className="text-3xl font-bold text-[#1E8B79] mb-4 text-center">
               ผลลัพธ์การคัดแยกขยะ
             </Text>
 
 
-            <Image source={{ uri: photo }} style={imgstyles.image} className="shadow-md" />
+            <Image source={{ uri: photo }} style={imgstyles.image} className="shadow-md object-cover" />
 
             <View style={descStyles.container} className='border-2 border-[#DAD9D9]' >
               {result && (

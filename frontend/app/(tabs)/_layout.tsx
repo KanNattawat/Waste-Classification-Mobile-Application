@@ -171,7 +171,7 @@ const _layout = () => {
         <Tabs.Screen
           name="profile"
           options={{
-            title: "โปรไฟล์",
+            title: "ร้านรับของ",
             headerShown: false,
             tabBarIcon: ({ color }) => (
               <Ionicons name="person" size={28} color={color} />
@@ -182,13 +182,51 @@ const _layout = () => {
         <Tabs.Screen
           name="point"
           options={{
-            title: "แลกแต้ม",
+            title: "แลกรางวัล",
             headerShown: false,
             tabBarIcon: ({ color }) => (
               <Ionicons name="gift" size={28} color={color} />
             ),
           }}
         />
+
+        <Tabs.Screen
+          name="pointHistory"
+          options={{
+            title: "ประวัติ",
+            href: null,
+            headerShown: false,
+            tabBarIcon: ({ color }) => (
+              <Ionicons name="time" size={28} color={color} />
+            ),
+          }}
+        />
+
+        <Tabs.Screen
+          name="item"
+          options={{
+            title: "ประวัติ",
+            href: null,
+            headerShown: false,
+            tabBarIcon: ({ color }) => (
+              <Ionicons name="time" size={28} color={color} />
+            ),
+          }}
+        />
+
+        <Tabs.Screen
+          name="event"
+          options={{
+            title: "ประวัติ",
+            href: null,
+            headerShown: false,
+            tabBarIcon: ({ color }) => (
+              <Ionicons name="time" size={28} color={color} />
+            ),
+          }}
+        />
+
+
 
       </Tabs>
 

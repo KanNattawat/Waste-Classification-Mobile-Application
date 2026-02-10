@@ -32,7 +32,7 @@ model Image {
   Waste_ID   Int
   Image_path String
   timestamp  DateTime @default(now())
-  probs   Float[]
+  probs   Double[]
   
   // relations
   user   User   @relation(fields: [User_ID], references: [User_ID])

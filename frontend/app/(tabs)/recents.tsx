@@ -7,7 +7,6 @@ import { useRouter } from "expo-router";
 import { API_URL } from "@/config";
 import { useFocusEffect } from "@react-navigation/native";
 import Screen from "@/components/Screen";
-const router = useRouter();
 
 export interface HistoryItem {
   Image_ID: number;
@@ -36,6 +35,7 @@ const formatDate = (iso: string) =>
   });
 
 const Recents = () => {
+  const router = useRouter();
   const [history, setHistory] = useState<HistoryItem[]>([]);
 
   const getHistory = async () => {
@@ -74,6 +74,7 @@ const Recents = () => {
 
   const renderItem: ListRenderItem<HistoryItem> = ({ item }) => (
     <TouchableOpacity
+      activeOpacity={0.8}
       onPress={() => router.push(`/history_result/${item.Image_ID}`)}
       className="
         flex-row items-center
@@ -91,11 +92,11 @@ const Recents = () => {
 
       <View className="flex-1 ml-3">
         <View className="self-start">
-          {wasteLabel(item.Waste_ID) === "ขยะอินทรีย์" ? <Text className="text-xl font-bold capitalize bg-[#E5FFED] text-[#1A863E] rounded-lg p-3 ">
+          {wasteLabel(item.Waste_ID) === "ขยะอินทรีย์" ? <Text className="text-xl font-bold capitalize bg-[#E5FFED] text-[#1A863E] rounded-lg px-2 py-1 ">
             {wasteLabel(item.Waste_ID)}</Text>
-            : wasteLabel(item.Waste_ID) === "ขยะอันตราย" ? <Text className="text-xl font-bold capitalize bg-[#FFC8C8] text-[#842A2A] rounded-lg p-3 ">{wasteLabel(item.Waste_ID)} </Text>
-              : wasteLabel(item.Waste_ID) === "ขยะรีไซเคิล" ? <Text className="text-xl font-bold capitalize bg-[#FFFCEB] text-[#A99323] rounded-lg p-3">{wasteLabel(item.Waste_ID)} </Text>
-                : <Text className="text-lg font-bold capitalize bg-[#EDF8FF] text-[#276F9F] rounded-lg p-2">{wasteLabel(item.Waste_ID)} </Text>
+            : wasteLabel(item.Waste_ID) === "ขยะอันตราย" ? <Text className="text-xl font-bold capitalize bg-[#FFC8C8] text-[#842A2A] rounded-lg px-2 py-1 ">{wasteLabel(item.Waste_ID)} </Text>
+              : wasteLabel(item.Waste_ID) === "ขยะรีไซเคิล" ? <Text className="text-xl font-bold capitalize bg-[#FFFCEB] text-[#A99323] rounded-lg px-2 py-1">{wasteLabel(item.Waste_ID)} </Text>
+                : <Text className="text-lg font-bold capitalize bg-[#EDF8FF] text-[#276F9F] rounded-lg px-2 py-1">{wasteLabel(item.Waste_ID)} </Text>
           }
         </View>
         <Text className="text-xl text-gray-500">
@@ -109,8 +110,8 @@ const Recents = () => {
 
   return (
     <Screen>
-      <View className="flex-1 bg-[#F9F8FA] px-8 pt-8">
-        <Text className="text-2xl font-bold text-[#1E8B79] text-center mb-3">
+      <View className="flex-1 bg-[#F9F8FA] px-8 pt-10">
+        <Text className="text-3xl font-bold text-[#1E8B79] text-center mb-3">
           ประวัติการคัดแยกขยะ
         </Text>
 

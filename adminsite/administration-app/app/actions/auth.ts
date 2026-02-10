@@ -22,3 +22,8 @@ export async function getCookie() {
     }
     return cookie.value;
 }
+    
+export async function deleteCookie(){
+    const cookieStore = await cookies();
+    cookieStore.delete('token');
+}
