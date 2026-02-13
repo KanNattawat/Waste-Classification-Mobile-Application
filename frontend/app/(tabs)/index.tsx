@@ -1,8 +1,5 @@
-import Buttons from '@/components/buttons';
-import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from "expo-router";
 import { useState, useCallback, useMemo } from 'react';
-import { Image, Text, View, SafeAreaView, ScrollView, Pressable } from 'react-native';
+import { Image, Text, View, SafeAreaView, ScrollView } from 'react-native';
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "@/config";
@@ -12,26 +9,50 @@ import WasteType from '@/components/WasteType';
 import tipsData from '@/assets/tips.json';
 import ScreenScroll from "@/components/ScreenScroll";
 
+type homeData = {
+  userName:string,
+  point:number,
+  graph:{
+    _count: {
+      Waste_ID:number
+    }; WasteType_ID: string 
+}[],
+  weekData:number,
+  streak:number
+}
+
 export default function Index() {
-  const router = useRouter();
-  const [photo, setPhoto] = useState<string | null>(null);
-  const [weeklyCount, setWeeklyCount] = useState<number>(0);
-  const [selectedKey, setSelectedKey] = useState("ขยะรีไซเคิล");
+  const [homeData, setHomeData] = useState<homeData | null>(null);
+  const [selectedKey, setSelectedKey] = useState("recycle");
+
+
 
   const raw = useMemo(
-    () => [
-      { key: "recycle", label: "ขยะรีไซเคิล", value: 12, color: "#FCD92C" },
-      { key: "danger", label: "ขยะอันตราย", value: 3, color: "#EF4545" },
-      { key: "general", label: "ขยะทั่วไป", value: 5, color: "#38AFFF" },
-      { key: "compost", label: "ขยะอินทรีย์", value: 4, color: "#28C45C" },
-    ],
-    []
+    () =>{
+      const getId = (id:string) =>{
+        const item = homeData?.graph.find((x) =>{
+        return x.WasteType_ID == id
+      })
+        console.log(item)
+        return item?._count.Waste_ID || 0
+      }
+
+      return [
+      { key: "recycle", label: "ขยะรีไซเคิล", value: getId("4"), color: "#FCD92C" },
+      { key: "danger", label: "ขยะอันตราย", value: getId("2"), color: "#EF4545" },
+      { key: "general", label: "ขยะทั่วไป", value: getId("3"), color: "#38AFFF" },
+      { key: "compost", label: "ขยะอินทรีย์", value: getId("1"), color: "#28C45C" },
+      { key: "none", label: "-", value: 0, color: "#CCCCCC" }
+    ];
+  },
+    [homeData]
   );
 
 
-  const selected = raw.find((x) => x.key === selectedKey) ?? raw[0];
+  const selected = raw.find((x) => x.key === selectedKey) || raw[4];
   const data = raw.map((x) => {
     const isSelected = x.key === selectedKey;
+
 
     return {
       value: x.value,
@@ -42,52 +63,21 @@ export default function Index() {
 
 
 
-  const fetchWeeklyCount = async () => {
+  const fetchHome = async () => {
     try {
       const userId = await AsyncStorage.getItem("userId");
       if (!userId) return;
-      const res = await axios.get(`${API_URL}/getweekly`, { params: { userId } });
-      setWeeklyCount(res.data.totalLastWeek || 0);
+      const res = await axios.get(`${API_URL}/home`, { params: { userId } });
+      console.log(res.data)
+      setHomeData(res.data);
     } catch (err) {
       console.log("Error fetching weekly count", err);
     }
   };
 
-  useFocusEffect(useCallback(() => { fetchWeeklyCount(); }, []));
+  useFocusEffect(useCallback(() => { fetchHome(); }, []));
 
-  const takeaPhoto = async (setPhoto: (uri: string) => void) => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== "granted") {
-      alert("กรุณาอนุญาตการเข้าถึงกล้องเพื่อใช้งาน");
-      return;
-    }
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.7,
-    });
-    if (!result.canceled) {
-      setPhoto(result.assets[0].uri);
-      router.push({ pathname: "/result", params: { photo: result.assets[0].uri } });
-    }
-  };
-
-  const pickImage = async (setPhoto: (uri: string) => void) => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      alert("กรุณาอนุญาตการเข้าถึงแกลเลอรีเพื่อใช้งาน");
-      return;
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.7,
-    });
-    if (!result.canceled) {
-      setPhoto(result.assets[0].uri);
-      router.push({ pathname: "/result", params: { photo: result.assets[0].uri } });
-    }
-  };
+ 
 
   function darkenColor(hex: string, amount = 0.25) {
     const num = parseInt(hex.replace("#", ""), 16);
@@ -114,13 +104,13 @@ export default function Index() {
             <View className='px-4'>
               <Text className='text-[#7F7B7B] text-lg'>สวัสดี</Text>
               <View className="flex flex-row justify-between items-center">
-                <Text className='text-2xl'>John Doe</Text>
+                <Text className='text-2xl'>{homeData?.userName}</Text>
                 <View className='flex flex-row justify-center items-center'>
                   <Image
                     source={require("@/assets/images/coin.png")}
                     className="w-8 h-8 mr-2"
                   />
-                  <Text className='text-2xl'>100</Text>
+                  <Text className='text-2xl'>{homeData?.point}</Text>
                 </View>
               </View>
             </View>
@@ -193,7 +183,7 @@ export default function Index() {
                 className="w-16 h-16"
               />
               <Text className='text-gray-600 text-xl mt-4'>แยกขยะติดต่อกัน</Text>
-              <Text className='text-2xl mt-4 font-bold'>12 วัน</Text>
+              <Text className='text-2xl mt-4 font-bold'>{homeData?.streak} วัน</Text>
             </View>
 
             <View className="bg-white items-center px-4 py-4 mt-8 rounded-xl shadow flex-1 ">
@@ -202,7 +192,7 @@ export default function Index() {
                 className="w-16 h-16"
               />
               <Text className='text-gray-600 text-xl mt-4'>สัปดาห์นี้แยกไป</Text>
-              <Text className='text-2xl mt-4 font-bold'>9 ชิ้น</Text>
+              <Text className='text-2xl mt-4 font-bold'>{homeData?.weekData} ชิ้น</Text>
             </View>
           </View>
 

@@ -37,7 +37,7 @@ const uploadToDB = async (wastetype: string, image_path: string, userId: string 
     });
     return res.data.imgid as string;
   } catch (error: any) {
-    console.log(error);
+    console.log('error จ้าไอสัส',error);
     return "error";
   }
 };
@@ -123,6 +123,7 @@ const Index = () => {
           return accu;
         }, {});
         const sortedClass = Object.entries(mappingClass).sort((a, b) => b[1] - a[1]);
+        console.log('class: ', sortedClass);
         setResult(sortedClass);
         const userId = await AsyncStorage.getItem("userId");
         const res = await uploadToDB(sortedClass[0][0], photo, userId, outputs[0]);

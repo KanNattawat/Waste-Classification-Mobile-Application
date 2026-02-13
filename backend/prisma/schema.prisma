@@ -1,5 +1,5 @@
 datasource db {
-  provider = "postgresql" // หรือ "mysql" ตามที่คุณใช้
+  provider = "postgresql" 
   url      = env("DATABASE_URL")
 }
 
@@ -8,8 +8,13 @@ generator client {
 }
 
 enum Role {
-  USER
   ADMIN
+  USER
+}
+
+enum History_Type {
+  GET
+  USE
 }
 
 
@@ -20,42 +25,69 @@ model User {
   User_password String
   Email String
   Role Role? @default(USER)
-
-  // relations
-  images   Image[]
-  history  History[]
-}
-
-model Image {
-  Image_ID   Int      @id @default(autoincrement())
-  User_ID    Int
-  Waste_ID   Int
-  Image_path String
-  timestamp  DateTime @default(now())
-  probs   Double[]
+  Points Int @default(0)
   
   // relations
-  user   User   @relation(fields: [User_ID], references: [User_ID])
-  waste  Waste  @relation(fields: [Waste_ID], references: [Waste_ID])
-  history History[]
+  waste   Waste[]
+  pointHistory  PointHistory[]
+  recycleShop  RecycleShop[]
+  wasteVote  WasteVote[]
 }
 
 model Waste {
-  Waste_ID   Int     @id @default(autoincrement())
-  Waste_name String
-  Waste_info String
+  Waste_ID   Int      @id @default(autoincrement())
+  User_ID    Int
+  WasteType_ID   Int
+  Image_path String
+  Timestamp  DateTime @default(now())
+  Probs   Float[]
+  Is_correct Boolean @default(false)
+  Vote_wastetype Int[] @default([0, 0, 0, 0])
 
   // relations
-  images Image[]
+  user   User   @relation(fields: [User_ID], references: [User_ID])
+  wasteType  WasteType  @relation(fields: [WasteType_ID], references: [WasteType_ID])
+  wasteVote  WasteVote[]
 }
 
-model History {
-  History_ID Int      @id @default(autoincrement())
-  User_ID    Int
-  Image_ID   Int
-  timestamp  DateTime @default(now())
+model WasteType {
+  WasteType_ID   Int     @id @default(autoincrement())
+  Waste_name String
 
+  // relations
+  waste Waste[]
+}
+
+
+model PointHistory {
+  PointHistory_ID Int      @id @default(autoincrement())
+  User_ID    Int
+  History_Detail   String
+  History_Type  History_Type
   // relations
   user  User  @relation(fields: [User_ID], references: [User_ID])
-  image Image @relation(fields: [Image_ID], references: [Image_ID])
 }
+
+model RecycleShop {
+   Shop_ID   Int     @id @default(autoincrement())
+   User_ID    Int
+   Shop_name String
+   Tel_num String
+   Location Float[] //[Lat, Long]
+   Accepted_cate Int[]
+
+   user  User  @relation(fields: [User_ID], references: [User_ID])
+}
+
+model WasteVote{
+  Vote_ID Int @id @default(autoincrement())
+  Waste_ID   Int 
+  User_ID    Int
+  Vote_Detail String
+  Timestamp  DateTime @default(now())
+
+  user  User  @relation(fields: [User_ID], references: [User_ID])
+  waste  Waste  @relation(fields: [Waste_ID], references: [Waste_ID])
+}
+
+//npx prisma migrate dev --name init

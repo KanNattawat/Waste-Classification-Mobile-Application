@@ -3,7 +3,7 @@ import { View, Image, Text } from 'react-native'
 
 const Loading = () => {
     return (
-        <View className='flex items-center'>
+        <View className='flex items-center justify-center h-full w-full'>
             <Image source={require('@/assets/images/earth.png')} className='' />
             <View className='flex-row pt-8 items-center'>
                     <Text className='text-[#4C944C] text-2xl font-bold mr-2 mt-6'>Loading</Text>

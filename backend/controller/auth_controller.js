@@ -6,7 +6,7 @@ import { Role } from "@prisma/client";
 
 export const Register = async (req, res) => {
     try {
-        const { User_name, User_password, Full_name } = req.body;
+        const { User_name, User_password, Full_name, Email } = req.body;
         if (!User_name || !User_password || !Full_name) {
             return res.status(400).json({ error: "กรุณากรอกข้อมูลให้ครบถ้วน" });
         }
@@ -25,7 +25,8 @@ export const Register = async (req, res) => {
             data: {
                 User_name,
                 User_password: hashedPassword,
-                Full_name
+                Full_name,
+                Email
             }
         });
         res.json("เพิ่มผู้ใช้สำเร็จ");

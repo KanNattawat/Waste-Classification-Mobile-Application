@@ -12,11 +12,13 @@ const Sign_Up = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [email, setEmail] = useState('');
     const [error, setError] = useState('');
     const router = useRouter();
 
     const handleSubmit = async () => {
         try {
+            console.log(API_URL)
             if (password !== confirmPassword) {
                 setError('Password ไม่ตรงกัน');
                 return;
@@ -24,7 +26,8 @@ const Sign_Up = () => {
             await axios.post(`${API_URL}/auth/register`, {
                 User_name: username,
                 User_password: password,
-                Full_name: fullname
+                Full_name: fullname,
+                Email : email
             });
 
             router.replace('/(auth)/sign_in');
@@ -58,11 +61,11 @@ const Sign_Up = () => {
                         </Text>
 
                         {/* Fullname */}
-                        <View className="flex-row items-center mt-14 bg-white border-2 border-black rounded-xl w-[80%] h-16 px-4">
+                        <View className="flex-row items-center mt-8 bg-white border-2 border-black rounded-xl w-[80%] h-16 px-4">
                             <TextInput
                                 value={fullname}
                                 onChangeText={setFullname}
-                                placeholder="Full name"
+                                placeholder="Full Name"
                                 placeholderTextColor="#000000"
                                 className="flex-1 text-[#000000] text-xl"
                                 returnKeyType="next"
@@ -70,7 +73,7 @@ const Sign_Up = () => {
                         </View>
 
                         {/* Username */}
-                        <View className="flex-row items-center mt-14 bg-white border-2 border-black rounded-xl w-[80%] h-16 px-4">
+                        <View className="flex-row items-center mt-8 bg-white border-2 border-black rounded-xl w-[80%] h-16 px-4">
                             <TextInput
                                 value={username}
                                 onChangeText={setUsername}
@@ -82,8 +85,21 @@ const Sign_Up = () => {
                             />
                         </View>
 
+                        {/* Email */}
+                        <View className="flex-row items-center mt-8 bg-white border-2 border-black rounded-xl w-[80%] h-16 px-4">
+                            <TextInput
+                                value={email}
+                                onChangeText={setEmail}
+                                placeholder="Email"
+                                placeholderTextColor="#000000"
+                                className="flex-1 text-[#000000] text-xl"
+                                autoCapitalize="none"
+                                returnKeyType="next"
+                            />
+                        </View>
+
                         {/* Password */}
-                        <View className="flex-row items-center mt-14 bg-white border-2 border-black rounded-xl w-[80%] h-16 px-4">
+                        <View className="flex-row items-center mt-8 bg-white border-2 border-black rounded-xl w-[80%] h-16 px-4">
                             <TextInput
                                 value={password}
                                 onChangeText={setPassword}
@@ -97,7 +113,7 @@ const Sign_Up = () => {
                         </View>
 
                         {/* Confirm Password */}
-                        <View className="flex-row items-center mt-14 bg-white border-2 border-black rounded-xl w-[80%] h-16 px-4">
+                        <View className="flex-row items-center mt-8 bg-white border-2 border-black rounded-xl w-[80%] h-16 px-4">
                             <TextInput
                                 value={confirmPassword}
                                 onChangeText={setConfirmPassword}
@@ -110,7 +126,7 @@ const Sign_Up = () => {
                             />
                         </View>
 
-                        
+
 
                         {/* Sign Up Button */}
                         <TouchableOpacity
