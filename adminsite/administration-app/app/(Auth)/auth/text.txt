@@ -1,0 +1,99 @@
+'use client'
+import { useForm } from "react-hook-form";
+
+type Login = {
+    userName: string,
+    password: string
+}
+
+
+const page = () => {
+    const {
+        register,
+        handleSubmit,
+        formState,
+    } = useForm<Login>();
+
+    const { errors } = formState
+
+    const doSubmit = async (data: any) => {
+
+    }
+
+    return (
+        <div>
+            <div className="flex justify-center items-center bg-linear-to-r from-[#7CD4C5] to-[#41BFAA] w-full h-screen min-h-screen">
+                <div className="flex flex-col justify-center items-center bg-white w-[50%] h-[55%] rounded-lg">
+                    <p className="text-4xl font-bold mt-12 mb-4 ">Administration Page</p>
+                    <form onSubmit={handleSubmit(doSubmit)}
+                        className="flex flex-col bg-white w-full h-full rounded-md">
+
+                        {/* <div className="flex flex-row items-center pt-16 pl-8">
+                            <p className="text-xl ml-8 font-semibold">Username:</p>
+                            <input type="text" className="w-[20%] h-12 ml-4 pl-2 text-black bg-[#F4F4F4] text-xl"
+                                {...register("userName", {
+                                    required: {
+                                        value: true,
+                                        message: "กรุณากรอก username"
+                                    }
+                                })}
+                            />
+                            <p className="text-red-500 ml-2">{errors.userName?.message}</p>
+                        </div> */}
+
+                        <div className="flex flex-col pt-8 "> {/* เพิ่ม flex-col เพื่อให้ Error message ไม่เบียด input */}
+                            <div className="flex flex-row items-center justify-center">
+                                {/* Container หลักที่เป็น Border แทน Input */}
+                                <div className="flex items-center w-[20%] h-12 bg-white border border-black rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+                                    <div className="pl-3">
+                                        <img src="/images/User.png" alt="" className="w-12 h-14 object-contain" />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        className="w-full h-full pl-2 text-black bg-transparent outline-none text-xl"
+                                        placeholder="Username"
+                                        {...register("userName", {
+                                            required: {
+                                                value: true,
+                                                message: "กรุณากรอก username"
+                                            }
+                                        })}
+                                    />
+                                </div>
+                                <p className="text-red-500 ml-2 text-sm">{errors.userName?.message}</p>
+                            </div>
+                            <div className="flex flex-row items-center justify-center mt-8">
+                                {/* Container หลักที่เป็น Border แทน Input */}
+                                <div className="flex items-center w-[20%] h-12 bg-white border border-black rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+                                    <div className="pl-3">
+                                        <img src="/images/Lock.png" alt="" className="w-10 h-14 object-contain" />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        className="w-full h-full pl-2 text-black bg-transparent outline-none text-xl"
+                                        placeholder="Password"
+                                        {...register("userName", {
+                                            required: {
+                                                value: true,
+                                                message: "กรุณากรอก username"
+                                            }
+                                        })}
+                                    />
+                                </div>
+                                <p className="text-red-500 ml-2 text-sm">{errors.userName?.message}</p>
+                            </div>
+                            <div className="flex flex-row items-center justify-center">
+                                <button className="bg-[#1E8B79] text-white text-xl rounded-md px-9 py-3 mx-4 my-8  hover:bg-[#1D6256] disabled:opacity-50 cursor-pointer transition"
+                                    form="editForm" type="submit">
+                                    Login
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+export default page

@@ -9,8 +9,7 @@ const _layout = () => {
   const router = useRouter();
   const [picker, setPicker] = useState(false);
 
-  /* ---------- CAMERA ---------- */
-  const takeaPhoto = async () => {
+  const takeaPhoto = async (router: ReturnType<typeof useRouter>) => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
       alert("กรุณาอนุญาตการเข้าถึงกล้องเพื่อใช้งาน");
@@ -61,14 +60,14 @@ const _layout = () => {
             flexDirection: "row",
             justifyContent: "space-between",
             backgroundColor: "white",
-            margin: 18,
+            margin: 0,
             borderRadius: 16,
-            height: 90,
+            height: 70,
             position: "absolute",
             borderTopWidth: 0,
             paddingBottom: 11,
-            paddingTop: 11,
-            paddingHorizontal: 22,
+            paddingTop: 1,
+            paddingHorizontal: 22
           },
           tabBarItemStyle: {
             width: "auto",
@@ -81,7 +80,7 @@ const _layout = () => {
             width: 34,
           },
           tabBarLabelStyle: {
-            fontSize: 20,
+            fontSize: 16,
             marginBottom: 6,
           },
         }}
@@ -91,7 +90,7 @@ const _layout = () => {
           options={{
             title: "โฮม",
             tabBarIcon: ({ color }) => (
-              <Ionicons name="home" size={34} color={color} />
+              <Ionicons name="home" size={28} color={color} />
             ),
           }}
         />
@@ -101,7 +100,7 @@ const _layout = () => {
           options={{
             title: "ประวัติ",
             tabBarIcon: ({ color }) => (
-              <Ionicons name="time" size={34} color={color} />
+              <Ionicons name="time" size={28} color={color} />
             ),
           }}
         />
@@ -127,9 +126,10 @@ const _layout = () => {
                       <View
                         style={{
                           position: "absolute",
-                          top: -45,
-                          width: 80,
-                          height: 80,
+                          alignSelf: "center",
+                          top: -28,
+                          width: 60,
+                          height: 60,
                           borderRadius: 999,
                           backgroundColor: "#4C944C",
                           alignItems: "center",
@@ -139,13 +139,13 @@ const _layout = () => {
                           transform: [{ scale: focused ? 1.02 : 1 }],
                         }}
                       >
-                        <Ionicons name="camera" size={30} color="white" />
+                        <Ionicons name="camera" size={28} color="white" />
                       </View>
 
                       <Text
                         style={{
                           marginTop: 26,
-                          fontSize: 20,
+                          fontSize: 16,
                           color: "#4C944C",
                         }}
                       >
@@ -162,9 +162,10 @@ const _layout = () => {
         <Tabs.Screen
           name="profile"
           options={{
-            title: "โปรไฟล์",
+            title: "ร้านรับของ",
+            headerShown: false,
             tabBarIcon: ({ color }) => (
-              <Ionicons name="person" size={34} color={color} />
+              <Ionicons name="person" size={28} color={color} />
             ),
           }}
         />
@@ -172,12 +173,52 @@ const _layout = () => {
         <Tabs.Screen
           name="point"
           options={{
-            title: "แลกแต้ม",
+            title: "แลกรางวัล",
+            headerShown: false,
             tabBarIcon: ({ color }) => (
-              <Ionicons name="gift" size={34} color={color} />
+              <Ionicons name="gift" size={28} color={color} />
             ),
           }}
         />
+
+        <Tabs.Screen
+          name="pointHistory"
+          options={{
+            title: "ประวัติ",
+            href: null,
+            headerShown: false,
+            tabBarIcon: ({ color }) => (
+              <Ionicons name="time" size={28} color={color} />
+            ),
+          }}
+        />
+
+        <Tabs.Screen
+          name="item"
+          options={{
+            title: "ประวัติ",
+            href: null,
+            headerShown: false,
+            tabBarIcon: ({ color }) => (
+              <Ionicons name="time" size={28} color={color} />
+            ),
+          }}
+        />
+
+        <Tabs.Screen
+          name="event"
+          options={{
+            title: "ประวัติ",
+            href: null,
+            headerShown: false,
+            tabBarIcon: ({ color }) => (
+              <Ionicons name="time" size={28} color={color} />
+            ),
+          }}
+        />
+
+
+
       </Tabs>
 
       <Picker
