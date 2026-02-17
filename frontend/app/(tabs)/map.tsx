@@ -6,6 +6,7 @@ import {
   Alert,
   FlatList,
   Linking,
+  Platform,
 } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import * as Location from "expo-location";
@@ -14,8 +15,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-
-
 
 /* ---------- TYPES ---------- */
 
@@ -30,6 +29,7 @@ type JunkShop = {
 
 /* ---------- API KEY ---------- */
 
+// ⚠️ อย่าลืมตรวจสอบ Quota ของ API Key ด้วยนะครับ
 const GOOGLE_API_KEY = "AIzaSyDOTi8DE-fCsrIPvkHXwuB0Aq_qkffvq-c";
 
 /* ---------- REAL ROUTE DISTANCE ---------- */
@@ -63,8 +63,9 @@ const getRouteDistanceKm = async (
 export default function WasteMap() {
   const mapRef = useRef<MapView | null>(null);
 
-  const [location, setLocation] =
-    useState<Location.LocationObject | null>(null);
+  const [location, setLocation] = useState<Location.LocationObject | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [junkShops, setJunkShops] = useState<JunkShop[]>([]);
   const [selectedShopId, setSelectedShopId] = useState<string | null>(null);
@@ -83,21 +84,21 @@ export default function WasteMap() {
 
     const res = await fetch(url);
     const json = await res.json();
-    
-  console.log("Places status:", json.status);
+
+    console.log("Places status:", json.status);
     if (json.status !== "OK") return;
 
     const shops: JunkShop[] = [];
 
     for (const item of json.results.slice(0, 8)) {
-      console.log("Getting route for:", item.name);
+      // console.log("Getting route for:", item.name);
       const distance = await getRouteDistanceKm(
         lat,
         lng,
         item.geometry.location.lat,
         item.geometry.location.lng
       );
-      console.log("Distance:", distance);
+      // console.log("Distance:", distance);
       if (distance === null) continue;
 
       shops.push({
@@ -116,37 +117,30 @@ export default function WasteMap() {
 
   /* ---------- LOCATION ---------- */
 
-useEffect(() => {
-  (async () => {
-    try {
-      const { status } =
-        await Location.requestForegroundPermissionsAsync();
+  useEffect(() => {
+    (async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
 
-      if (status !== "granted") {
-        Alert.alert("แจ้งเตือน", "กรุณาอนุญาตการเข้าถึงตำแหน่ง");
-        return;
+        if (status !== "granted") {
+          Alert.alert("แจ้งเตือน", "กรุณาอนุญาตการเข้าถึงตำแหน่ง");
+          return;
+        }
+
+        const loc = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+
+        setLocation(loc);
+
+        await fetchNearbyJunkShops(loc.coords.latitude, loc.coords.longitude);
+      } catch (e) {
+        console.log("LOCATION ERROR:", e);
+      } finally {
+        setLoading(false);
       }
-
-      const loc = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
-
-      setLocation(loc);
-
-      await fetchNearbyJunkShops(
-        loc.coords.latitude,
-        loc.coords.longitude
-      );
-
-    } catch (e) {
-      console.log("LOCATION ERROR:", e);
-    } finally {
-      // ⭐ ไม่ว่าอะไรจะเกิด ต้องหยุด loading
-      setLoading(false);
-    }
-  })();
-}, []);
-
+    })();
+  }, []);
 
   if (loading) {
     return (
@@ -175,9 +169,7 @@ useEffect(() => {
         </Text>
 
         <Pressable
-          onPress={() => router.push("/shop_form/form")
-        
-          }
+          onPress={() => router.push("/shop_form/form")}
           className="ml-2 flex-row items-center px-3 py-1.5 rounded-full border border-[#1E8B79]"
         >
           <Ionicons name="add" size={16} color="#1E8B79" />
@@ -186,8 +178,6 @@ useEffect(() => {
           </Text>
         </Pressable>
       </View>
-
-
 
       {/* Map */}
       <View className="h-2/5">
@@ -198,20 +188,26 @@ useEffect(() => {
           initialRegion={region}
           showsUserLocation
         >
-          {junkShops.map((shop) => (
-            <Marker
-              key={shop.id}
-              coordinate={{
-                latitude: shop.latitude,
-                longitude: shop.longitude,
-              }}
-              pinColor={
-                shop.id === selectedShopId ? "red" : "dodgerblue"
-              }
-              title={shop.name}
-              description={`${shop.distance.toFixed(1)} กม.`}
-            />
-          ))}
+          {junkShops.map((shop) => {
+            const isSelected = shop.id === selectedShopId;
+
+            return (
+              <Marker
+                // 🔥 แก้ไขสำคัญ: เปลี่ยน key เพื่อบังคับให้แผนที่วาดสีใหม่ทันที
+                key={`${shop.id}-${isSelected}`}
+                coordinate={{
+                  latitude: shop.latitude,
+                  longitude: shop.longitude,
+                }}
+                // ถ้าเลือก = สีแดง (#FF3B30), ถ้าไม่เลือก = สีเขียวธีม (#1E8B79)
+                pinColor={isSelected ? "#FF3B30" : "#1E8B79"}
+                onPress={() => setSelectedShopId(shop.id)}
+                zIndex={isSelected ? 999 : 1}
+                title={shop.name}
+                description={`${shop.distance.toFixed(1)} กม.`}
+              />
+            );
+          })}
         </MapView>
       </View>
 
@@ -225,8 +221,9 @@ useEffect(() => {
 
             return (
               <View
-                className={`rounded-xl mb-3 p-4 ${selected ? "bg-[#E6F6F3]" : "bg-white"
-                  }`}
+                className={`rounded-xl mb-3 p-4 ${
+                  selected ? "bg-[#E6F6F3]" : "bg-white"
+                }`}
               >
                 <Pressable
                   onPress={() => {
@@ -270,11 +267,11 @@ useEffect(() => {
                 {selected && (
                   <Pressable
                     className="mt-3 bg-[#1E8B79] py-2 rounded-lg items-center"
-                    onPress={() =>
-                      Linking.openURL(
-                        `https://www.google.com/maps/dir/?api=1&destination=${item.latitude},${item.longitude}`
-                      )
-                    }
+                    onPress={() => {
+                      // แก้ไข Link URL ให้ถูกต้อง (ของเดิมตกเครื่องหมาย $)
+                      const url = `https://www.google.com/maps/search/?api=1&query=${item.latitude},${item.longitude}`;
+                      Linking.openURL(url);
+                    }}
                   >
                     <Text className="text-white font-semibold">
                       นำทางด้วย Google Maps

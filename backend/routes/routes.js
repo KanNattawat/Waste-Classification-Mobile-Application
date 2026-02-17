@@ -16,6 +16,9 @@ router.post('/vote', controller.vote);
 router.get('/uniqueWaste', controller.getUniqueWaste);
 router.put('/updateFeedback', controller.updateFeedback);
 router.get('/getWaste', controller.getWaste)
+router.post('/recycle-shop', createRecycleShop);
+
+
 
 router.get('/getusers',authMiddleware, adminCheck, controller.getUsers);
 router.post('/edituser',authMiddleware, adminCheck ,controller.editUser);

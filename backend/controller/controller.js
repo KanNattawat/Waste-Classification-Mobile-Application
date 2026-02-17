@@ -421,6 +421,55 @@ export const vote = async (req, res) => {
     }
 }
 
+
+export const createRecycleShop = async (req, res) => {
+    try {
+
+        const { user_id, shop_name, tel_num, location, accepted_cate } = req.body;
+
+        if (!user_id || !shop_name || !tel_num) {
+            return res.status(400).json({ error: "กรุณากรอกข้อมูล User_ID, Shop_name และ Tel_num ให้ครบถ้วน" });
+        }
+
+        const newShop = await prisma.recycleShop.create({
+            data: {
+                User_ID: Number(user_id),    
+                Shop_name: shop_name,
+                Tel_num: tel_num,
+                Location: location,       
+                Accepted_cate: accepted_cate  
+            }
+        });
+
+        res.status(201).json({
+            msg: "สร้างร้านรับซื้อขยะสำเร็จ",
+            shop: newShop
+        });
+
+    } catch (error) {
+        console.error("createRecycleShop error:", error);
+        res.status(500).json({ error: "Server error", details: String(error) });
+    }
+};
+
+export const getRecycleShops = async (req, res) => {
+    try {
+        const userId = req.query.userId;
+        
+        const whereCondition = userId ? { User_ID: Number(userId) } : {};
+
+        const shops = await prisma.recycleShop.findMany({
+            where: whereCondition
+        });
+
+        res.status(200).json(shops);
+    } catch (error) {
+        console.error("getRecycleShops error:", error);
+        res.status(500).json({ error: "Server error" });
+    }
+};
+}
+
 export const getUniqueWaste = async (req, res) => {
     try {
         const { userId } = req.query
