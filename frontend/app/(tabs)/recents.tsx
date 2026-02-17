@@ -38,10 +38,6 @@ const formatDate = (iso: string) =>
   });
 
 
-
-
-
-
 const Recents = () => {
   const router = useRouter();
   const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -91,7 +87,7 @@ const Recents = () => {
   const renderItem: ListRenderItem<HistoryItem> = ({ item }) => (
     <TouchableOpacity
       activeOpacity={0.8}
-      onPress={() => router.push(`/event/${item.Waste_ID}`)}
+      onPress={() => router.push(`/history_result/${item.Waste_ID}`)}
       className="
         flex-row items-center
         bg-white

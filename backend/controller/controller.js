@@ -1,5 +1,5 @@
 import { prisma } from "../prisma/prisma.js";
-
+import seedrandom from 'seedrandom';
 
 
 export const getMe = async (req, res) => {
@@ -25,10 +25,10 @@ export const getMe = async (req, res) => {
 };
 
 
-export const uploadtoStorage = async (req, res) => {
+export const uploadWaste = async (req, res) => {
     try {
         const { user_id, wastetype, image_path, probs } = req.body
-        //image_path อาจจะไม่ต้องใช้แล้วเพราะใช้แค่ user_id กับ img_id ก็พอในการดึงรูปจาก firebase
+
         const wasteMap = {
             "ขยะย่อยสลาย": 1,
             "ขยะอันตราย": 2,
@@ -38,7 +38,7 @@ export const uploadtoStorage = async (req, res) => {
         const wasteid = wasteMap[wastetype];
         console.log("probs:", probs)
 
-        const img = await prisma.waste.create({
+        const waste = await prisma.waste.create({
             data: {
                 User_ID: parseInt(user_id),
                 WasteType_ID: wasteid,
@@ -47,9 +47,10 @@ export const uploadtoStorage = async (req, res) => {
                 Vote_wastetype: [0, 0, 0, 0]
             }
         })
-        res.json({ imgid: img.Waste_ID })
+        res.json({ wasteid: waste.Waste_ID })
     } catch (error) {
         console.log(error);
+        res.status(500)
     }
 }
 
@@ -69,6 +70,7 @@ export const getHistory = async (req, res) => {
         })
     } catch (error) {
         console.log(error);
+        res.status(500)
     }
 }
 
@@ -78,19 +80,16 @@ export const getHistoryData = async (req, res) => {
         const waste = req.query.wasteId;
         const userid = req.query.userId;
         if (!waste) {
-            return res.status(400).json({ error: "Null imageId" });
+            return res.status(400).json({ error: "not found wasteId" });
         }
-        console.log(waste)
         const [wasteData, isVote] = await Promise.all([
             prisma.waste.findFirst({
                 where: { Waste_ID: Number(waste) },
             }),
-            prisma.waste.findFirst({
-                where: { Waste_ID: Number(waste) },
+            prisma.wasteVote.findFirst({
+                where: { Waste_ID: Number(waste), User_ID: Number(userid) },
             })
         ])
-
-
 
         if (!wasteData) {
             return res.status(404).json({ error: "ไม่พบข้อมูล" });
@@ -364,6 +363,7 @@ export const editUser = async (req, res) => {
         res.status(200).json(updateUser)
     } catch (error) {
         console.log(error)
+        res.status(500)
     }
 }
 
@@ -380,6 +380,7 @@ export const deleteUser = async (req, res) => {
         res.status(200).json(deleteUser)
     } catch (error) {
         console.log(error)
+        res.status(500)
     }
 }
 
@@ -387,7 +388,6 @@ export const vote = async (req, res) => {
     try {
         const { wasteID, userID, vote } = req.body
 
-        console.log(vote)
         const addVoteDetail = await prisma.wasteVote.create({
             data: {
                 Waste_ID: Number(wasteID),
@@ -401,8 +401,6 @@ export const vote = async (req, res) => {
                 Waste_ID: Number(wasteID)
             }
         })
-
-
         if (getWaste) {
             const score = getWaste.Vote_wastetype
             vote === 'ขยะอินทรีย์' ? score[0] += 1 : vote === 'ขยะอันตราย' ? score[1] += 1 : vote === 'ขยะทั่วไป' ? score[2] += 1 : score[3] += 1
@@ -416,9 +414,102 @@ export const vote = async (req, res) => {
                 }
             })
         }
-
-        res.status(200)
+        res.status(200).json({ ok: true });
     } catch (error) {
         console.log(error)
+        res.status(500)
     }
 }
+
+export const getUniqueWaste = async (req, res) => {
+    try {
+        const { userId } = req.query
+        const vote = await prisma.wasteVote.findMany({
+            select: { Waste_ID: true },
+            where: {
+                User_ID: Number(userId)
+            }
+        })
+        const voteId = vote.map(x => x.Waste_ID)
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+
+        const wasteId = await prisma.waste.findMany({
+            select: { Waste_ID: true },
+            where: {
+                User_ID: {
+                    not: Number(userId)
+                },
+                Timestamp: {
+                    lte: startOfToday
+                },
+                Is_correct: { equals: false },
+            },
+            orderBy: {
+                Waste_ID: "asc"
+            }
+        })
+
+        const dateSeed = new Date().toISOString().split('T')[0];
+        const rng = seedrandom(`${userId}-${dateSeed}`); //สุ่มเลข 0-1
+        const shuffled = wasteId.sort(() => 0.5 - rng());
+        const selectedIds = shuffled.slice(0, 5).map(item => item.Waste_ID);
+        const waste = await prisma.waste.findMany({
+            where: { Waste_ID: { in: selectedIds } },
+            orderBy: {
+                Waste_ID: "asc"
+            }
+        });
+        res.status(200).json({ item: waste })
+    } catch (error) {
+        console.log('error', error)
+        res.status(500)
+    }
+}
+
+export const updateFeedback = async (req, res) => {
+    try {
+        const { wasteId, status, selectedType } = req.body
+        console.log('updateFeedback', wasteId, status, selectedType)
+        if (!wasteId) {
+            return res.status(400).json({ ok: false, message: 'wasteId is required' });
+        }
+
+        const update = status === false 
+            ? { Vote_wastetype: selectedType }
+            : { Is_correct: status }
+        const updateWaste = await prisma.waste.update({
+            where: { Waste_ID: Number(wasteId) },
+            data: update,
+            
+        })
+
+        res.status(200).json({ ok: true })
+    }
+    catch (error) {
+        console.log('error', error)
+        res.status(500)
+    }
+}
+
+export const getWaste = async (req, res) => {
+    try {
+        const waste = req.query.wasteId;
+        if (!waste) {
+            return res.status(400).json({ error: "not found wasteId" });
+        }
+        const wasteData = await prisma.waste.findFirst({
+                where: { Waste_ID: Number(waste) },
+            })
+
+
+        if (!wasteData) {
+            return res.status(404).json({ error: "ไม่พบข้อมูล" });
+        }
+
+        res.status(200).json({ item: wasteData });
+    } catch (error) {
+        console.error("getHistoryData error:", error);
+        res.status(500).json({ error: "server error" });
+    }
+};

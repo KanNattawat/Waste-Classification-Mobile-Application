@@ -1,7 +1,7 @@
 import { ensureModelLoaded, preprocessImage } from '@/lib/tflite';
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from 'react';
-import { Alert, Image, StyleSheet, Text, TouchableOpacity, View, SafeAreaView, ScrollView } from 'react-native';
+import { Alert, Image, StyleSheet, Text, TouchableOpacity, View, SafeAreaView, ScrollView, Pressable, Modal } from 'react-native';
 import Loading from '@/components/loading';
 import axios from 'axios';
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -10,42 +10,41 @@ import { API_URL } from "@/config";
 
 const ProgressBar = ({ label, percent, color }: { label: string, percent: number, color: string }) => {
   return (
-    <View style={styles.container} className='bg-white p-4 rounded-lg mb-4 shadow-md'>
-      <View style={styles.labelRow}>
-        <Text className='text-xl' >{label}</Text>
-        <Text className='text-xl'>{percent.toFixed(1)}%</Text>
+    <View className="bg-white p-4 rounded-lg mb-[15px] shadow-md">
+      <View className="flex-row justify-between mb-1.5">
+        <Text className="text-xl text-gray-800">{label}</Text>
+        <Text className="text-xl font-medium text-gray-800">{percent.toFixed(1)}%</Text>
       </View>
-      <View style={styles.barBackground}>
+
+      <View className="h-3 bg-gray-300 rounded-full overflow-hidden">
         <View
-          style={[
-            styles.barFill,
-            { width: `${percent}%`, backgroundColor: color },
-          ]}
+          style={{ width: `${percent}%`, backgroundColor: color }}
+          className="h-full rounded-full"
         />
       </View>
     </View>
   );
 };
 
-const uploadToDB = async (wastetype: string, image_path: string, userId: string | null, probs: Array<number>): Promise<string> => {
-  try {
-    const res = await axios.post(`${API_URL}/wasteupload`, {
-      user_id: userId,
-      wastetype: wastetype,
-      image_path: image_path,
-      probs: [...probs],
-    });
-    return res.data.imgid as string;
-  } catch (error: any) {
-    console.log('error จ้าไอสัส',error);
-    return "error";
-  }
+type WastePrediction = {
+  label: string;
+  score: number;
 };
+
+type WasteUpload = {
+  sortedResult: WastePrediction[];
+  wasteId: string
+};
+
+
 
 const Index = () => {
   const { photo } = useLocalSearchParams<{ photo: string }>();
-  const [result, setResult] = useState<any>(null);
+  const [waste, setWaste] = useState<WasteUpload>();
   const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+  const [selectType, setSelectType] = useState("")
   const router = useRouter();
 
   const wasteDescriptions: Record<string, string> = {
@@ -109,11 +108,64 @@ const Index = () => {
     "ขยะรีไซเคิล": "ขยะรีไซเคิล",
   };
 
+  const handleFeedbackCorrect = async () => {
+    try {
+      const res = await axios.put(`${API_URL}/updateFeedback`, {
+        wasteId: waste?.wasteId,
+        status: true,
+        selectedType: [0,0,0,0]
+      })
+      router.back()
+
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const handleFeedbackInCorrect = async () => {
+    try {
+      console.log('1')
+      const selected = selectType === "ขยะอินทรีย์" ? [1,0,0,0] : selectType === "ขยะอันตราย" ?  [0,1,0,0] :
+      selectType === "ขยะทั่วไป" ?  [0,0,1,0] :  selectType === "ขยะรีไซเคิล" ?  [0,0,0,1] : []
+      const res = await axios.put(`${API_URL}/updateFeedback`, {
+        wasteId: waste?.wasteId,
+        status: false,
+        selectedType: selected
+      })
+      console.log('2')
+      router.back()
+    } catch (error) {
+
+    }
+  }
+
+
+  const uploadToDB = async (wastetype: string, image_path: string, probs: Array<number>, userId: string | null) => {
+    try {
+      const res = await axios.post(`${API_URL}/wasteupload`, {
+        user_id: userId,
+        wastetype: wastetype,
+        image_path: image_path,
+        probs: [...probs],
+      });
+
+      console.log('data', res.data.wasteid)
+
+      saveImage(photo, userId, res.data.imgid);
+      return res.data.wasteid
+
+    } catch (error: any) {
+      console.log('error', error);
+      return "error";
+    }
+  };
 
   useEffect(() => {
     (async () => {
       try {
         if (!photo) throw new Error("Missing image uri");
+        const userId = await AsyncStorage.getItem("userId");
+        setUserId(userId)
         const model = await ensureModelLoaded();
         const input = await preprocessImage(photo);
         const outputs = model.runSync([input.data]);
@@ -123,11 +175,20 @@ const Index = () => {
           return accu;
         }, {});
         const sortedClass = Object.entries(mappingClass).sort((a, b) => b[1] - a[1]);
+
         console.log('class: ', sortedClass);
-        setResult(sortedClass);
-        const userId = await AsyncStorage.getItem("userId");
-        const res = await uploadToDB(sortedClass[0][0], photo, userId, outputs[0]);
-        saveImage(photo, userId, res);
+        console.log('output0: ', outputs[0])
+        const wasteId = await uploadToDB(sortedClass[0][0], photo, outputs[0], userId);
+
+        setWaste({
+          sortedResult: sortedClass.map(([label, score]) => ({
+            label,
+            score,
+          })),
+          wasteId: wasteId,
+        });
+
+
       } catch (e) {
         Alert.alert("Predict error", String(e));
       } finally {
@@ -148,15 +209,15 @@ const Index = () => {
             </Text>
 
 
-            <Image source={{ uri: photo }} style={imgstyles.image} className="shadow-md object-cover" />
+            <Image source={{ uri: photo }} style={imgstyles.image} className="shadow-md object-cover h-full" />
 
             <View style={descStyles.container} className='border-2 border-[#DAD9D9]' >
-              {result && (
+              {waste && (
                 <>
                   <Text className={`font-semibold text-2xl mb-2 text-center`}>
-                    {displayNames[result[0][0]]}
+                    {displayNames[waste.sortedResult[0].label]}
                   </Text>
-                  {wasteDescriptions[result[0][0]].split("\n").slice(1).map((line, index) => (
+                  {wasteDescriptions[waste.sortedResult[0].label].split("\n").slice(1).map((line, index) => (
                     <Text
                       key={index}
                       style={[
@@ -172,43 +233,124 @@ const Index = () => {
 
 
               <View style={{ width: "95%", marginTop: 32 }}>
-                {result.slice(0, 3).map(([label, prob]: any, index: number) => (
+                {waste?.sortedResult.map((item, index: number) => (
                   <ProgressBar
                     key={index}
-                    label={displayNames[label]}
-                    percent={prob * 100}
+                    label={displayNames[item.label]}
+                    percent={item.score * 100}
                     color={
-                      label === 'ขยะรีไซเคิล' ? "#FCD92C" :
-                        label === 'ขยะอันตราย' ? "#EF4545" :
-                          label === 'ขยะย่อยสลาย' ? "#28C45C" : "#38AFFF"
+                      item.label === 'ขยะรีไซเคิล' ? "#FCD92C" :
+                        item.label === 'ขยะอันตราย' ? "#EF4545" :
+                          item.label === 'ขยะย่อยสลาย' ? "#28C45C" : "#38AFFF"
                     }
                   />
 
                 ))}
               </View>
-                <Text className='text-black text-xl mt-8 text-center font-bold'>ผลลัพธ์ถูกต้องหรือไม่</Text>
+              <Text className='text-black text-xl mt-8 text-center font-bold'>ผลลัพธ์ถูกต้องหรือไม่</Text>
               <View className='flex flex-row justify-center'>
+
                 <View style={btnstyles2.container} className='mx-4'>
                   <TouchableOpacity
                     style={btnstyles2.greenButton} className='bg-[#239147]'
                     activeOpacity={0.7}
-                    onPress={() => router.back()}
+                    onPress={() => handleFeedbackCorrect()}
                   >
                     <Text style={btnstyles2.buttonText}>ถูกต้อง</Text>
                   </TouchableOpacity>
                 </View>
+
                 <View style={btnstyles2.container} className='mx-4'>
                   <TouchableOpacity
                     style={btnstyles2.greenButton} className='bg-[#AB2D2D]'
                     activeOpacity={0.7}
-                    onPress={() => router.back()}
+                    onPress={() => setOpen(true)}
                   >
                     <Text style={btnstyles2.buttonText}>ไม่ถูกต้อง</Text>
                   </TouchableOpacity>
                 </View>
+
               </View>
 
             </View>
+
+
+
+            {open &&
+              <Modal transparent visible={open} animationType="fade" statusBarTranslucent={true}>
+                <View className="relative flex-1 bg-black/60 justify-center items-center px-2">
+                  <View className=" bg-white w-full p-6 rounded-3xl items-center shadow-2xl">
+                    <Pressable className='absolute top-2 right-6 onHold' onPress={()=>setOpen(false)}>
+                      <Text className="text-3xl font-bold text-gray-800 text-center">
+                        x 
+                      </Text>
+                      </Pressable>
+                    <Text className="text-2xl font-bold text-gray-800 text-center">เลือกประเภทที่ถูกต้อง</Text>
+                    
+                    
+                    <View className='flex flex-row flex-wrap gap-3 items-center justify-between mt-6'>
+
+                      <Pressable className={`flex flex-row bg-[#EF4545] w-[48%] px-3 py-4 rounded-lg 
+                      items-center ${selectType !== "ขยะอันตราย" && selectType !== "" && "opacity-80"} gap-3`}
+                        onPress={() => { selectType === "" ? setSelectType("ขยะอันตราย") : setSelectType("") }}
+                        disabled={(selectType !== "" && selectType !== "ขยะอันตราย")}
+                      >
+                        <View className='flex flex-row bg-white border-2 border-[#CCCCCC] rounded-lg w-8 h-8 items-center justify-center'>
+                          {selectType === "ขยะอันตราย" && (
+                            <Text className="text-black font-bold text-xl">✓</Text>
+                          )}
+                        </View>
+                        <Text className='text-xl font-bold'>ขยะอันตราย</Text>
+                      </Pressable>
+
+                      <Pressable className={`flex flex-row bg-[#28C45C] w-[48%] px-3 py-4 rounded-lg 
+                      ${selectType !== "ขยะอินทรีย์" && selectType !== "" && 'opacity-80'} items-center gap-3`}
+                        onPress={() => { selectType === "" ? setSelectType("ขยะอินทรีย์") : setSelectType("") }}
+                        disabled={(selectType !== "" && selectType !== "ขยะอินทรีย์")}
+                      >
+                        <View className='flex flex-row bg-white border-2 border-[#CCCCCC] rounded-lg w-8 h-8 items-center justify-center'>
+                          {selectType === "ขยะอินทรีย์" && (<Text className="text-black font-bold text-xl">✓</Text>)}
+                        </View>
+                        <Text className='text-xl font-bold'>ขยะอินทรีย์</Text>
+                      </Pressable>
+
+                      <Pressable className={`flex flex-row bg-[#2F98DD] w-[48%] px-3 py-4 rounded-lg 
+                      ${selectType !== 'ขยะทั่วไป' && selectType !== "" && 'opacity-80'} items-center gap-3`}
+                        onPress={() => { selectType === "" ? setSelectType("ขยะทั่วไป") : setSelectType("") }}
+                        disabled={(selectType !== "" && selectType !== "ขยะทั่วไป")}>
+                        <View className='flex flex-row bg-white border-2 border-[#CCCCCC] rounded-lg w-8 h-8 items-center justify-center'>
+                          {selectType === "ขยะทั่วไป" && (<Text className="text-black font-bold text-xl">✓</Text>)}
+
+                        </View>
+                        <Text className='text-xl font-bold'>ขยะทั่วไป</Text>
+                      </Pressable>
+
+                      <Pressable className={`flex flex-row bg-[#FCD92C] w-[48%] px-3 py-4 rounded-lg items-center
+                      ${selectType !== 'ขยะรีไซเคิล' && selectType !== "" && 'opacity-80'} gap-3`}
+                        onPress={() => { selectType === "" ? setSelectType("ขยะรีไซเคิล") : setSelectType("") }}
+                        disabled={(selectType !== "" && selectType !== "ขยะรีไซเคิล")}>
+                        <View className='flex flex-row bg-white border-2 border-[#CCCCCC] rounded-lg w-8 h-8 items-center justify-center'>
+                          {selectType === "ขยะรีไซเคิล" && (<Text className="text-black font-bold text-xl">✓</Text>)}
+
+                        </View>
+                        <Text className='text-xl font-bold'>ขยะรีไซเคิล</Text>
+                      </Pressable>
+
+
+                    </View>
+
+                    <Pressable
+                      className="mt-8 bg-[#1E8B79] w-[47%] py-4 rounded-xl items-center"
+                      onPress={() => handleFeedbackInCorrect()}
+                    >
+                      <Text className="text-white text-lg font-bold">ยืนยัน</Text>
+                    </Pressable>
+
+
+                  </View>
+                </View>
+              </Modal>
+            }
           </>
         )}
       </ScrollView>
@@ -223,22 +365,6 @@ const imgstyles = StyleSheet.create({
     margin: 10,
     borderRadius: 10,
   },
-});
-
-const styles = StyleSheet.create({
-  container: { marginBottom: 15 },
-  labelRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 5,
-  },
-  barBackground: {
-    height: 12,
-    backgroundColor: "#ccc",
-    borderRadius: 6,
-    overflow: "hidden",
-  },
-  barFill: { height: "100%", borderRadius: 6 },
 });
 
 const btnstyles2 = StyleSheet.create({

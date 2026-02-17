@@ -10,15 +10,15 @@ import tipsData from '@/assets/tips.json';
 import ScreenScroll from "@/components/ScreenScroll";
 
 type homeData = {
-  userName:string,
-  point:number,
-  graph:{
+  userName: string,
+  point: number,
+  graph: {
     _count: {
-      Waste_ID:number
-    }; WasteType_ID: string 
-}[],
-  weekData:number,
-  streak:number
+      Waste_ID: number
+    }; WasteType_ID: string
+  }[],
+  weekData: number,
+  streak: number
 }
 
 export default function Index() {
@@ -28,28 +28,29 @@ export default function Index() {
 
 
   const raw = useMemo(
-    () =>{
-      const getId = (id:string) =>{
-        const item = homeData?.graph.find((x) =>{
-        return x.WasteType_ID == id
-      })
-        console.log(item)
+    () => {
+      const getId = (id: string) => {
+        const item = homeData?.graph.find((x) => {
+          return x.WasteType_ID == id
+        })
         return item?._count.Waste_ID || 0
       }
 
       return [
-      { key: "recycle", label: "ขยะรีไซเคิล", value: getId("4"), color: "#FCD92C" },
-      { key: "danger", label: "ขยะอันตราย", value: getId("2"), color: "#EF4545" },
-      { key: "general", label: "ขยะทั่วไป", value: getId("3"), color: "#38AFFF" },
-      { key: "compost", label: "ขยะอินทรีย์", value: getId("1"), color: "#28C45C" },
-      { key: "none", label: "-", value: 0, color: "#CCCCCC" }
-    ];
-  },
+        { key: "recycle", label: "ขยะรีไซเคิล", value: getId("4"), color: "#FCD92C" },
+        { key: "danger", label: "ขยะอันตราย", value: getId("2"), color: "#EF4545" },
+        { key: "general", label: "ขยะทั่วไป", value: getId("3"), color: "#38AFFF" },
+        { key: "compost", label: "ขยะอินทรีย์", value: getId("1"), color: "#28C45C" },
+        { key: "none", label: "-", value: 0, color: "#CCCCCC" }
+      ];
+    },
     [homeData]
   );
 
 
   const selected = raw.find((x) => x.key === selectedKey) || raw[4];
+
+
   const data = raw.map((x) => {
     const isSelected = x.key === selectedKey;
 
@@ -77,7 +78,7 @@ export default function Index() {
 
   useFocusEffect(useCallback(() => { fetchHome(); }, []));
 
- 
+
 
   function darkenColor(hex: string, amount = 0.25) {
     const num = parseInt(hex.replace("#", ""), 16);
@@ -126,7 +127,8 @@ export default function Index() {
                 innerRadius={90}
                 centerLabelComponent={() => (
                   <View className="items-center">
-                    <Text className={`tracking-[2px] font-bold text-xl opacity-60 ${selectedKey === "recycle" ? "text-yellow-500" : selectedKey === "danger" ? "text-red-500" : selectedKey === "general" ? "text-blue-500" : "text-green-500"}`}>
+                    <Text className={`tracking-[2px] font-bold text-xl opacity-60 ${selectedKey === "recycle" ? "text-yellow-500" : selectedKey === "danger" 
+                      ? "text-red-500" : selectedKey === "general" ? "text-blue-500" : selectedKey === "compost" ? "text-green-500" : "#CCCCCC"}`}>
                       {selected.label.toUpperCase()}
                     </Text>
 

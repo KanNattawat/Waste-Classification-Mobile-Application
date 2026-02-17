@@ -1,0 +1,254 @@
+import { ensureModelLoaded, preprocessImage } from '@/lib/tflite';
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from 'react';
+import { Alert, Image, Text, TouchableOpacity, View, SafeAreaView, ScrollView, Pressable, Modal } from 'react-native';
+import Loading from '@/components/loading';
+import axios from 'axios';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { saveImage } from "@/lib/storage";
+import { API_URL } from "@/config";
+
+const ProgressBar = ({ label, percent, color }: { label: string, percent: number, color: string }) => {
+  return (
+    <View className='bg-white p-4 rounded-lg mb-4 shadow-md'>
+      <View className="flex-row justify-between mb-1.5">
+        <Text className='text-xl'>{label}</Text>
+        <Text className='text-xl'>{percent.toFixed(1)}%</Text>
+      </View>
+      <View className="h-3 bg-gray-300 rounded-full overflow-hidden">
+        <View
+          style={{ width: `${percent}%`, backgroundColor: color }}
+          className="h-full rounded-full"
+        />
+      </View>
+    </View>
+  );
+};
+
+type WastePrediction = {
+  label: string;
+  score: number;
+};
+
+type WasteUpload = {
+  sortedResult: WastePrediction[];
+  wasteId: string
+};
+
+const Index = () => {
+  const { photo } = useLocalSearchParams<{ photo: string }>();
+  const [waste, setWaste] = useState<WasteUpload>();
+  const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+  const [selectType, setSelectType] = useState("")
+  const router = useRouter();
+
+  const wasteDescriptions: Record<string, string> = {
+    "ขยะย่อยสลาย": `ขยะอินทรีย์...`, // (ข้อมูลเหมือนเดิม)
+    "ขยะอันตราย": `ขยะอันตราย...`, 
+    "ขยะทั่วไป": `ขยะทั่วไป...`,
+    "ขยะรีไซเคิล": `ขยะรีไซเคิล...`,
+  };
+
+  const displayNames: Record<string, string> = {
+    "ขยะย่อยสลาย": "ขยะอินทรีย์",
+    "ขยะอันตราย": "ขยะอันตราย",
+    "ขยะทั่วไป": "ขยะทั่วไป",
+    "ขยะรีไซเคิล": "ขยะรีไซเคิล",
+  };
+
+  const handleFeedbackCorrect = async () => {
+    try {
+      await axios.put(`${API_URL}/updateFeedback`, {
+        wasteId: waste?.wasteId,
+        status: true,
+        selectedType: [0, 0, 0, 0]
+      })
+      router.back()
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const handleFeedbackInCorrect = async () => {
+    try {
+      const selected = selectType === "ขยะอินทรีย์" ? [1, 0, 0, 0] : selectType === "ขยะอันตราย" ? [0, 1, 0, 0] :
+        selectType === "ขยะทั่วไป" ? [0, 0, 1, 0] : selectType === "ขยะรีไซเคิล" ? [0, 0, 0, 1] : []
+      await axios.put(`${API_URL}/updateFeedback`, {
+        wasteId: waste?.wasteId,
+        status: false,
+        selectedType: selected
+      })
+      router.back()
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const uploadToDB = async (wastetype: string, image_path: string, probs: Array<number>, userId: string | null) => {
+    try {
+      const res = await axios.post(`${API_URL}/wasteupload`, {
+        user_id: userId,
+        wastetype: wastetype,
+        image_path: image_path,
+        probs: [...probs],
+      });
+      saveImage(photo, userId, res.data.imgid);
+      return res.data.wasteid
+    } catch (error: any) {
+      return "error";
+    }
+  };
+
+  useEffect(() => {
+    (async () => {
+      try {
+        if (!photo) throw new Error("Missing image uri");
+        const userId = await AsyncStorage.getItem("userId");
+        setUserId(userId)
+        const model = await ensureModelLoaded();
+        const input = await preprocessImage(photo);
+        const outputs = model.runSync([input.data]);
+        const className = ["ขยะย่อยสลาย", "ขยะอันตราย", "ขยะทั่วไป", "ขยะรีไซเคิล"];
+        const mappingClass = className.reduce<Record<string, number>>((accu, current, index) => {
+          accu[current] = outputs[0][index];
+          return accu;
+        }, {});
+        const sortedClass = Object.entries(mappingClass).sort((a, b) => b[1] - a[1]);
+        const wasteId = await uploadToDB(sortedClass[0][0], photo, outputs[0], userId);
+
+        setWaste({
+          sortedResult: sortedClass.map(([label, score]) => ({ label, score })),
+          wasteId: wasteId,
+        });
+      } catch (e) {
+        Alert.alert("Predict error", String(e));
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [photo]);
+
+  return (
+    <SafeAreaView className="flex-1 bg-[#F9F8FA] pt-8">
+      <ScrollView contentContainerStyle={{ flexGrow: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }}>
+        {loading ? (
+          <Loading />
+        ) : (
+          <>
+            <Text className="text-3xl font-bold text-[#1E8B79] mb-4 text-center">
+              ผลลัพธ์การคัดแยกขยะ
+            </Text>
+
+            <Image 
+              source={{ uri: photo }} 
+              className="w-[90%] h-[200px] m-2.5 rounded-xl shadow-md object-cover" 
+            />
+
+            <View className="mt-3 px-4 py-4 bg-white rounded-xl border-2 border-[#DAD9D9] shadow-sm w-[95%] self-center">
+              {waste && (
+                <>
+                  <Text className="font-semibold text-2xl mb-2 text-center text-[#2E7D32]">
+                    {displayNames[waste.sortedResult[0].label]}
+                  </Text>
+                  {wasteDescriptions[waste.sortedResult[0].label].split("\n").slice(1).map((line, index) => (
+                    <Text
+                      key={index}
+                      className={`text-lg text-[#444] leading-6 mb-1.5 ${line.startsWith("-") ? "pl-3" : ""}`}
+                    >
+                      {line}
+                    </Text>
+                  ))}
+                </>
+              )}
+
+              <View className="w-full mt-8">
+                {waste?.sortedResult.map((item, index: number) => (
+                  <ProgressBar
+                    key={index}
+                    label={displayNames[item.label]}
+                    percent={item.score * 100}
+                    color={
+                      item.label === 'ขยะรีไซเคิล' ? "#FCD92C" :
+                      item.label === 'ขยะอันตราย' ? "#EF4545" :
+                      item.label === 'ขยะย่อยสลาย' ? "#28C45C" : "#38AFFF"
+                    }
+                  />
+                ))}
+              </View>
+
+              <Text className="text-black text-xl mt-8 text-center font-bold">ผลลัพธ์ถูกต้องหรือไม่</Text>
+              
+              <View className="flex-row justify-center mt-2">
+                <View className="mx-4 py-2.5 items-center justify-center">
+                  <TouchableOpacity
+                    className="bg-[#239147] py-4 px-10 rounded-lg"
+                    activeOpacity={0.7}
+                    onPress={() => handleFeedbackCorrect()}
+                  >
+                    <Text className="text-white text-base font-bold">ถูกต้อง</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View className="mx-4 py-2.5 items-center justify-center">
+                  <TouchableOpacity
+                    className="bg-[#AB2D2D] py-4 px-10 rounded-lg"
+                    activeOpacity={0.7}
+                    onPress={() => setOpen(true)}
+                  >
+                    <Text className="text-white text-base font-bold">ไม่ถูกต้อง</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+
+            {open &&
+              <Modal transparent visible={open} animationType="fade" statusBarTranslucent={true}>
+                <View className="flex-1 bg-black/60 justify-center items-center px-2">
+                  <View className="bg-white w-full p-6 rounded-3xl items-center shadow-2xl relative">
+                    <Pressable className="absolute top-2 right-6" onPress={() => setOpen(false)}>
+                      <Text className="text-3xl font-bold text-gray-800">x</Text>
+                    </Pressable>
+                    
+                    <Text className="text-2xl font-bold text-gray-800 text-center mb-6">เลือกประเภทที่ถูกต้อง</Text>
+                    
+                    <View className="flex-row flex-wrap gap-3 justify-between">
+                      {[
+                        { id: "ขยะอันตราย", label: "ขยะอันตราย", color: "bg-[#EF4545]" },
+                        { id: "ขยะอินทรีย์", label: "ขยะอินทรีย์", color: "bg-[#28C45C]" },
+                        { id: "ขยะทั่วไป", label: "ขยะทั่วไป", color: "bg-[#2F98DD]" },
+                        { id: "ขยะรีไซเคิล", label: "ขยะรีไซเคิล", color: "bg-[#FCD92C]" }
+                      ].map((type) => (
+                        <Pressable 
+                          key={type.id}
+                          className={`flex-row ${type.color} w-[48%] px-3 py-4 rounded-lg items-center gap-3 ${selectType !== type.id && selectType !== "" ? "opacity-80" : ""}`}
+                          onPress={() => setSelectType(selectType === type.id ? "" : type.id)}
+                          disabled={selectType !== "" && selectType !== type.id}
+                        >
+                          <View className="bg-white border-2 border-[#CCCCCC] rounded-lg w-8 h-8 items-center justify-center">
+                            {selectType === type.id && <Text className="text-black font-bold text-xl">✓</Text>}
+                          </View>
+                          <Text className="text-xl font-bold text-white">{type.label}</Text>
+                        </Pressable>
+                      ))}
+                    </View>
+
+                    <Pressable
+                      className="mt-8 bg-[#1E8B79] w-[47%] py-4 rounded-xl items-center"
+                      onPress={() => handleFeedbackInCorrect()}
+                    >
+                      <Text className="text-white text-lg font-bold">ยืนยัน</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              </Modal>
+            }
+          </>
+        )}
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+export default Index;

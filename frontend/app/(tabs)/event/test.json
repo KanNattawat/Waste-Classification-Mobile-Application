@@ -1,0 +1,122 @@
+[
+    {
+        "Image_path": "file:///data/user/0/com.anonymous.myapp/cache/ImagePicker/a5c1d621-f907-4e66-a309-7981fec1f315.jpeg",
+        "Is_correct": false,
+        "Probs": [
+            1,
+            1.271895477827911e-9,
+            2.145513211537775e-10,
+            7.345643648903888e-9
+        ],
+        "Timestamp": "2026-02-13T12:42:57.579Z",
+        "User_ID": 250,
+        "Vote_wastetype": [
+            [Array
+            ],
+            [Array
+            ],
+            [Array
+            ],
+            [Array
+            ]
+        ],
+        "WasteType_ID": 1,
+        "Waste_ID": 39
+    },
+    {
+        "Image_path": "file:///data/user/0/com.anonymous.myapp/cache/ImagePicker/e5e5b66e-044b-4251-856b-6da9c1c26e4d.jpeg",
+        "Is_correct": false,
+        "Probs": [
+            0.00002914422475441825,
+            0.9687477946281433,
+            0.0003968983655795455,
+            0.03082623891532421
+        ],
+        "Timestamp": "2026-02-13T12:43:08.734Z",
+        "User_ID": 250,
+        "Vote_wastetype": [
+            [Array
+            ],
+            [Array
+            ],
+            [Array
+            ],
+            [Array
+            ]
+        ],
+        "WasteType_ID": 2,
+        "Waste_ID": 40
+    },
+    {
+        "Image_path": "file:///data/user/0/com.anonymous.myapp/cache/ImagePicker/ca0058a8-02fd-427b-acca-8da47360f9b5.jpeg",
+        "Is_correct": false,
+        "Probs": [
+            3.972425687004399e-12,
+            1.220330347190268e-11,
+            1.892725386143379e-11,
+            1
+        ],
+        "Timestamp": "2026-02-12T10:23:01.063Z",
+        "User_ID": 250,
+        "Vote_wastetype": [
+            [Array
+            ],
+            [Array
+            ],
+            [Array
+            ],
+            [Array
+            ]
+        ],
+        "WasteType_ID": 4,
+        "Waste_ID": 23
+    },
+    {
+        "Image_path": "file:///data/user/0/com.anonymous.myapp/cache/ImagePicker/ffd0248b-0549-4ed8-ae34-9206efea9047.jpeg",
+        "Is_correct": false,
+        "Probs": [
+            0.0001850921980803832,
+            0.2131544649600983,
+            0.4948623776435852,
+            0.2917980253696442
+        ],
+        "Timestamp": "2026-02-12T10:24:33.546Z",
+        "User_ID": 250,
+        "Vote_wastetype": [
+            [Array
+            ],
+            [Array
+            ],
+            [Array
+            ],
+            [Array
+            ]
+        ],
+        "WasteType_ID": 3,
+        "Waste_ID": 24
+    },
+    {
+        "Image_path": "file:///data/user/0/com.anonymous.myapp/cache/ImagePicker/74ab1fbc-f5f2-432e-b06a-816142345717.jpeg",
+        "Is_correct": false,
+        "Probs": [
+            1.181591977039709e-11,
+            1.459652884672202e-11,
+            2.011861857664776e-11,
+            1
+        ],
+        "Timestamp": "2026-02-12T10:59:07.415Z",
+        "User_ID": 250,
+        "Vote_wastetype": [
+            [Array
+            ],
+            [Array
+            ],
+            [Array
+            ],
+            [Array
+            ]
+        ],
+        "WasteType_ID": 4,
+        "Waste_ID": 25
+    }
+]

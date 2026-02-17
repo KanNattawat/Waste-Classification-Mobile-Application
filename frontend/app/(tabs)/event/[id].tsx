@@ -7,7 +7,11 @@ import { API_URL } from "@/config";
 import VoteCard from '@/components/VoteCard';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Loading from "@/components/loading";
+import { useRouter } from "expo-router"
+import {mapAndSortVotes, mapAndSortProbs, calculateTotal} from "@/utils/wasteDataTransform"
 
+type ProbsList = [string, number][];
+type VoteList = [string, number, Number][];
 interface HistoryItem {
   Vote_wastetype: any;
   Waste_ID: number;
@@ -16,10 +20,10 @@ interface HistoryItem {
   Image_path: string;
   timestamp: string;
   Probs: number[];
-  total:number
+  total: number;
+  isVoted: boolean;
 }
 
-type WasteDataList = [string, number, number][];
 
 const EventDetail = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -27,10 +31,38 @@ const EventDetail = () => {
   const [selectedVote, setSelectedVote] = useState("");
   const [userId, setUserId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true);
-  const [stat, setStat] = useState<{ vote: WasteDataList, prob: WasteDataList }>({
+  const [stat, setStat] = useState<{ vote: VoteList, prob: ProbsList }>({
     vote: [],
     prob: []
   });
+  const router = useRouter();
+
+  const fetchStats = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/gethistorybyid`,
+        { params: { wasteId: id, userId: userId } }
+      )
+      const data = res.data;
+      
+      const total = calculateTotal(data.item.Vote_wastetype)
+      const vote = mapAndSortVotes(data.item.Vote_wastetype)
+      const probs = mapAndSortProbs(data.item.Probs)
+
+      setItem((prev) => ({
+        ...(prev || {}),
+        ...data.item,
+        total,
+        isVoted: data.isVoted,
+      }));
+      setStat({ vote: vote, prob: probs })
+    } catch (error) {
+      console.log('error: ', error)
+    }
+    finally {
+      setLoading(false)
+    }
+  };
+
 
   useEffect(() => {
     (async () => {
@@ -41,42 +73,13 @@ const EventDetail = () => {
 
   useEffect(() => {
     if (!id || !userId) return;
-    const fetchStats = async () => {
-      try {
-        const res = await axios.get(`${API_URL}/gethistorybyid`,
-          { params: { wasteId: id, userId: userId } }
-        )
-        const data = res.data;
-        const labels = ["ขยะอินทรีย์", "ขยะอันตราย", "ขยะทั่วไป", "ขยะรีไซเคิล"];
-        //vote
-        const voteArray = data.item.Vote_wastetype
-        const total = voteArray.reduce((sum: number, i: number) => { sum += i; return sum }, 0)
-
-        const mappedProb = labels.map((l, i) => [l, data.item.Probs[i] ?? [], data.item.Vote_wastetype[i]] as [string, number, number]);
-        const mappedVote = labels.map((l, i) => {
-          const votenumber = voteArray[i]
-          const percent = total > 0 ? ((votenumber / total) * 100).toFixed(2) : 0
-
-          return [l, data.item.Vote_wastetype[i] ?? [], percent] as [string, number, number]
-        });
-        const sortedmappedVote = mappedVote.sort((a, b) => b[1] - a[1]);
-        console.log('data', mappedProb)
-        // [label, votenumber, percentage]
-        setItem({...data.item, total:total})
-        setStat({ vote: sortedmappedVote, prob: mappedProb })
-      } catch (error) {
-        console.log('error: ', error)
-      }
-      finally {
-        setLoading(false)
-      }
-    };
-
+    setLoading(true)
     fetchStats()
   }, [id, userId])
 
 
   const voteHandler = async () => {
+    if (!selectedVote) return;
     try {
       const res = await axios.post(`${API_URL}/vote`,
         {
@@ -85,6 +88,8 @@ const EventDetail = () => {
           vote: selectedVote
         }
       )
+      console.log("POST done:", res.status);
+      router.push("/(tabs)/event"); 
     } catch (error) {
       console.log(error)
     }
@@ -95,31 +100,33 @@ const EventDetail = () => {
   }
 
   const colorMap: { [key: string]: string } = {
-  "ขยะอันตราย": "[#EF4545]",
-  "ขยะอินทรีย์": "[#28C45C]",
-  "ขยะทั่วไป": "[#2F98DD]",
-  "ขยะรีไซเคิล": "[#FCD92C]"
-};
+    "ขยะอันตราย": "bg-[#EF4545]",
+    "ขยะอินทรีย์": "bg-[#28C45C]",
+    "ขยะทั่วไป": "bg-[#2F98DD]",
+    "ขยะรีไซเคิล": "bg-[#FCD92C]"
+  };
 
   return (
-    <View className='flex bg-[#F9F8FA] w-full h-full justify-start items-center'>
+    <View className='relative flex bg-[#F9F8FA] w-full h-full justify-start items-center'>
+      <Pressable className='absolute top-10 left-7 z-50' onPress={()=>{router.back()}}>
+        <Image source={require('@/assets/images/back1.png')} />
+      </Pressable>
 
-      <View className='flex w-full max-w-[340px] mt-16' >
+      <View className='flex w-full max-w-[340px] mt-28' >
         <Image
           className='w-full h-[200px] rounded-lg' source={{ uri: item?.Image_path }}
           resizeMode='cover'
-
         />
       </View>
 
       <View className='flex p-8 w-full h-full'>
         <View className='w-full bg-white rounded-lg p-4' style={shadow.card}>
           <View className='flex flex-row justify-center w-full'>
-            <View className='flex-1'><Text className='text-xl'>ผลลัพธ์ปัจจุบัน</Text></View>
+            <View className='flex'><Text className='text-xl'>ผลลัพธ์ปัจจุบัน</Text></View>
             <View className='flex-1 items-end'>
               {stat.vote.length > 0 ? (
                 <Text className='text-xl font-bold'>
-                  {stat.vote[0][0]} {stat.vote[0][2]}%
+                  {Number(stat.vote[0][1]) > 0 ? `${stat.vote[0][0]} ${stat.vote[0][2]}%` : "-"}
                 </Text>
               ) : <Text>error</Text>}
             </View>
@@ -127,8 +134,8 @@ const EventDetail = () => {
           <View className='flex flex-row justify-center w-full'>
             <View className='flex-1'><Text className='text-xl'>ผลลัพธ์จากระบบ</Text></View>
             <View className='flex-1 items-end'>
-              <Text className='text-xl font-bold'>{item?.WasteType_ID === 1 ? "ขยะอินทรีย์" : item?.WasteType_ID === 1
-                ? "ขยะอันตราย" : item?.WasteType_ID === 1 ? "ขยะรีไซเคิล" : "ขยะทั่วไป"}</Text>
+              <Text className='text-xl font-bold'>{item?.WasteType_ID === 1 ? "ขยะอินทรีย์" : item?.WasteType_ID === 2
+                ? "ขยะอันตราย" : item?.WasteType_ID === 4 ? "ขยะรีไซเคิล" : "ขยะทั่วไป"}</Text>
             </View>
           </View>
         </View>
@@ -149,12 +156,13 @@ const EventDetail = () => {
                 votePercent={String(percent)}
                 selectedVote={selectedVote}
                 setSelectedVote={setSelectedVote}
-                isOwner={userId === String(item?.User_ID)}
+                isVoted={userId !== String(item?.User_ID) && item?.isVoted !== true}
               />
             ))}
           </View>
+
           <View className='flex-row w-full justify-center'>
-            {userId !== String(item?.User_ID) && (
+            {(userId !== String(item?.User_ID) && item?.isVoted !== true) && (
               <Pressable className='py-3 bg-[#1E8B79] rounded-xl items-center w-[47%] mt-4' onPress={voteHandler} >
                 <Text className='text-xl text-white  text-center '>ส่งผลโหวต</Text>
               </Pressable>)}

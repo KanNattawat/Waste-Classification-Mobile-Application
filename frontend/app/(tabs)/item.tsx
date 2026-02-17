@@ -1,7 +1,7 @@
 import React from 'react'
 import { Text, View, Image, Pressable, Modal } from 'react-native'
 import { useState } from 'react'
-import {useRouter} from 'expo-router'
+import { useRouter } from 'expo-router'
 
 const Item = () => {
   const [open, setOpen] = useState(false)
@@ -12,7 +12,7 @@ const Item = () => {
 
 
       <View className='w-full max-h-[40%] object-cover'>
-        <Pressable className='absolute left-5 top-10 z-50' onPress={()=>{router.push('/point')}}>
+        <Pressable className='absolute left-5 top-10 z-50' onPress={() => { router.push('/point') }}>
           <Image className=' w-14 h-14 ' source={require(`@/assets/images/back1.png`)} />
         </Pressable>
         <Image className='w-full h-full' source={require(`@/assets/images/item.png`)} />
@@ -70,11 +70,7 @@ const Item = () => {
               </View>
             </View>
           </View>
-        </Modal>
-      }
-
-
-
+        </Modal>}
     </View>
   )
 }

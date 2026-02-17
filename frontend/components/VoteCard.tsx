@@ -8,29 +8,26 @@ interface VoteCardProps {
     wasteType: string
     votePercent: string
     voteNumber: number
-    isOwner:boolean
+    isVoted:boolean
 }
 
-const VoteCard = ({ selectedVote, setSelectedVote, bg, wasteType, votePercent, voteNumber, isOwner }: VoteCardProps) => {
-    console.log(votePercent)
+const VoteCard = ({ selectedVote, setSelectedVote, bg, wasteType, votePercent, voteNumber, isVoted }: VoteCardProps) => {
     return (
         <Pressable className='bg-[#CCCCCC] rounded-lg overflow-hidden h-16 relative'
-            disabled={(selectedVote !== "" && selectedVote !== wasteType) || isOwner}
+            disabled={(selectedVote !== "" && selectedVote !== wasteType) || !isVoted}
             onPress={() => {
                 selectedVote === "" ? setSelectedVote(wasteType) : setSelectedVote("")
-            }}
-        >
+            }}>
             <View
-                className={`absolute left-0 top-0 bottom-0 bg-${bg} rounded-lg flex-row items-center py-1 ${selectedVote !== wasteType && selectedVote !== "" && 'opacity-80'}`}
+                className={`absolute left-0 top-0 bottom-0 ${bg} rounded-lg flex-row items-center py-1 ${selectedVote !== wasteType && selectedVote !== "" && 'opacity-80'}`}
                 style={[
                     { width: `${parseFloat(votePercent)}%` as any },
-                ]}
-            >
+                ]}>
             </View>
 
 
             <View className='flex-row items-center px-3 py-1 w-full justify-between pointer-events-none'>
-                <View className={`w-6 h-6 border-2 border-[#CCCCCC] bg-white rounded-md mr-3 justify-center items-center `}>
+                <View className={`w-6 h-6 border-2 border-[#CCCCCC] bg-white rounded-md mr-3 justify-center items-center`}>
                     {selectedVote === wasteType && (
                         <Text className="text-black font-bold text-xs">✓</Text>
                     )}
