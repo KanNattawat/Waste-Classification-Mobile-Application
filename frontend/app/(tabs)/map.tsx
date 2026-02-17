@@ -72,6 +72,7 @@ export default function WasteMap() {
   /* ---------- FETCH PLACES ---------- */
 
   const fetchNearbyJunkShops = async (lat: number, lng: number) => {
+    console.log("Fetching places...");
     const url =
       `https://maps.googleapis.com/maps/api/place/nearbysearch/json` +
       `?location=${lat},${lng}` +
@@ -82,18 +83,21 @@ export default function WasteMap() {
 
     const res = await fetch(url);
     const json = await res.json();
+    
+  console.log("Places status:", json.status);
     if (json.status !== "OK") return;
 
     const shops: JunkShop[] = [];
 
     for (const item of json.results.slice(0, 8)) {
+      console.log("Getting route for:", item.name);
       const distance = await getRouteDistanceKm(
         lat,
         lng,
         item.geometry.location.lat,
         item.geometry.location.lng
       );
-
+      console.log("Distance:", distance);
       if (distance === null) continue;
 
       shops.push({
@@ -112,8 +116,9 @@ export default function WasteMap() {
 
   /* ---------- LOCATION ---------- */
 
-  useEffect(() => {
-    (async () => {
+useEffect(() => {
+  (async () => {
+    try {
       const { status } =
         await Location.requestForegroundPermissionsAsync();
 
@@ -127,10 +132,21 @@ export default function WasteMap() {
       });
 
       setLocation(loc);
-      fetchNearbyJunkShops(loc.coords.latitude, loc.coords.longitude);
+
+      await fetchNearbyJunkShops(
+        loc.coords.latitude,
+        loc.coords.longitude
+      );
+
+    } catch (e) {
+      console.log("LOCATION ERROR:", e);
+    } finally {
+      // ⭐ ไม่ว่าอะไรจะเกิด ต้องหยุด loading
       setLoading(false);
-    })();
-  }, []);
+    }
+  })();
+}, []);
+
 
   if (loading) {
     return (
