@@ -57,18 +57,18 @@ export const uploadWaste = asyncHandler(async (req, res) => {
         }),
     )
 
-    if(canUpdatePoint < 5){
+    if (canUpdatePoint < 5) {
         operations.push(
-                    prisma.user.update({
-            where: {
-                User_ID: Number(user_id)
-            },
-            data: {
-                Points: {
-                    increment: 1
+            prisma.user.update({
+                where: {
+                    User_ID: Number(user_id)
+                },
+                data: {
+                    Points: {
+                        increment: 1
+                    }
                 }
-            }
-        })
+            })
         )
     }
 
@@ -407,32 +407,6 @@ export const vote = asyncHandler(async (req, res) => {
 
     res.status(200).json({ ok: true });
 })
-        })
-
-        const getWaste = await prisma.waste.findUnique({
-            where: {
-                Waste_ID: Number(wasteID)
-            }
-        })
-        if (getWaste) {
-            const score = getWaste.Vote_wastetype
-            vote === 'ขยะอินทรีย์' ? score[0] += 1 : vote === 'ขยะอันตราย' ? score[1] += 1 : vote === 'ขยะทั่วไป' ? score[2] += 1 : score[3] += 1
-
-            await prisma.waste.update({
-                where: { Waste_ID: Number(wasteID) },
-                data: {
-                    Vote_wastetype: {
-                        set: score
-                    }
-                }
-            })
-        }
-        res.status(200).json({ ok: true });
-    } catch (error) {
-        console.log(error)
-        res.status(500)
-    }
-}
 
 
 export const createRecycleShop = async (req, res) => {
@@ -446,11 +420,11 @@ export const createRecycleShop = async (req, res) => {
 
         const newShop = await prisma.recycleShop.create({
             data: {
-                User_ID: Number(user_id),    
+                User_ID: Number(user_id),
                 Shop_name: shop_name,
                 Tel_num: tel_num,
-                Location: location,       
-                Accepted_cate: accepted_cate  
+                Location: location,
+                Accepted_cate: accepted_cate
             }
         });
 
@@ -468,7 +442,7 @@ export const createRecycleShop = async (req, res) => {
 export const getRecycleShops = async (req, res) => {
     try {
         const userId = req.query.userId;
-        
+
         const whereCondition = userId ? { User_ID: Number(userId) } : {};
 
         const shops = await prisma.recycleShop.findMany({
@@ -481,7 +455,7 @@ export const getRecycleShops = async (req, res) => {
         res.status(500).json({ error: "Server error" });
     }
 };
-}
+
 
 export const getUniqueWaste = asyncHandler(async (req, res) => {
     const startOfToday = new Date();
