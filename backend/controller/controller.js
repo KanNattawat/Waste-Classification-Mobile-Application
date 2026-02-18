@@ -76,7 +76,6 @@ export const uploadWaste = asyncHandler(async (req, res) => {
         operations
     )
     const waste = result[0];
-
     res.status(201).json({ wasteid: waste.Waste_ID })
 })
 

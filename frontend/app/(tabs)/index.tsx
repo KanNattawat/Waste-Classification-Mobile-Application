@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { Image, Text, View, SafeAreaView, ScrollView } from 'react-native';
+import { Image, Text, View, SafeAreaView, ScrollView, Pressable } from 'react-native';
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "@/config";
@@ -8,6 +8,8 @@ import { PieChart } from 'react-native-gifted-charts';
 import WasteType from '@/components/WasteType';
 import tipsData from '@/assets/tips.json';
 import ScreenScroll from "@/components/ScreenScroll";
+import * as SecureStore from 'expo-secure-store';
+import { useAuth } from "@/contexts/AuthContext";
 
 type homeData = {
   userName: string,
@@ -24,8 +26,17 @@ type homeData = {
 export default function Index() {
   const [homeData, setHomeData] = useState<homeData | null>(null);
   const [selectedKey, setSelectedKey] = useState("recycle");
+  const [open, setIsopen] = useState(false);
+  const { setToken } = useAuth();
 
-
+  const handleLogout = async () => {
+    try {
+      await SecureStore.deleteItemAsync('authToken');
+      setToken("");
+    } catch (error) {
+      console.log("Logout error:", error);
+    }
+  };
 
   const raw = useMemo(
     () => {
@@ -104,8 +115,22 @@ export default function Index() {
           <View className="flex flex-col text-center bg-white px-4 pb-4 pt-16 shadow">
             <View className='px-4'>
               <Text className='text-[#7F7B7B] text-lg'>สวัสดี</Text>
-              <View className="flex flex-row justify-between items-center">
-                <Text className='text-2xl'>{homeData?.userName}</Text>
+              <View className="flex  flex-row justify-between items-center">
+                <Pressable className='relative gap-x-2 flex flex-row justify-center items-center'
+                  onPress={() => { open ? setIsopen(false) : setIsopen(true) }}>
+                  <Text className='text-2xl'>{homeData?.userName}</Text>
+                  <Image
+                    source={require("@/assets/images/logout.png")}
+                    className="w-5 h-5"
+                  />
+                  {open && (
+                    <Pressable 
+                    onPress={handleLogout}
+                    className='w-full top-full p-2 items-center justify-center absolute rounded-xl border-2 border-[#D9D9D9] bg-white'>
+                      <Text className='text-l'>Logout</Text>
+                    </Pressable>
+                  )}
+                </Pressable>
                 <View className='flex flex-row justify-center items-center'>
                   <Image
                     source={require("@/assets/images/coin.png")}
@@ -127,7 +152,7 @@ export default function Index() {
                 innerRadius={90}
                 centerLabelComponent={() => (
                   <View className="items-center">
-                    <Text className={`tracking-[2px] font-bold text-xl opacity-60 ${selectedKey === "recycle" ? "text-yellow-500" : selectedKey === "danger" 
+                    <Text className={`tracking-[2px] font-bold text-xl opacity-60 ${selectedKey === "recycle" ? "text-yellow-500" : selectedKey === "danger"
                       ? "text-red-500" : selectedKey === "general" ? "text-blue-500" : selectedKey === "compost" ? "text-green-500" : "#CCCCCC"}`}>
                       {selected.label.toUpperCase()}
                     </Text>

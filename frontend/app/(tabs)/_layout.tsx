@@ -53,7 +53,7 @@ const _layout = () => {
     <>
       <Tabs
         screenOptions={{
-          headerShown: false, // ⭐ สำคัญมาก — ปิด header (คำว่า map จะหาย)
+          headerShown: false,
           tabBarActiveTintColor: "#4C944C",
           tabBarInactiveTintColor: "#95a5a6",
           tabBarStyle: {
@@ -160,17 +160,6 @@ const _layout = () => {
         />
 
         <Tabs.Screen
-          name="profile"
-          options={{
-            title: "ร้านรับของ",
-            headerShown: false,
-            tabBarIcon: ({ color }) => (
-              <Ionicons name="person" size={28} color={color} />
-            ),
-          }}
-        />
-
-        <Tabs.Screen
           name="point"
           options={{
             title: "แลกรางวัล",
@@ -213,6 +202,17 @@ const _layout = () => {
             headerShown: false,
             tabBarIcon: ({ color }) => (
               <Ionicons name="time" size={28} color={color} />
+            ),
+          }}
+        />
+
+        <Tabs.Screen
+          name="map"
+          options={{
+            title: "ร้านรับของ",
+            headerShown: false,
+            tabBarIcon: ({ color }) => (
+              <Ionicons name="map" size={28} color={color} />
             ),
           }}
         />
