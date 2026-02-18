@@ -17,6 +17,7 @@ router.get('/uniqueWaste', controller.getUniqueWaste);
 router.put('/updateFeedback', controller.updateFeedback);
 router.get('/getWaste', controller.getWaste)
 router.post('/recycle-shop', controller.createRecycleShop);
+router.get('/recycle-shop2', controller.getRecycleShops);
 
 
 

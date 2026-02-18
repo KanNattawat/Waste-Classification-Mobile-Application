@@ -74,7 +74,7 @@ const RecyclingForm = () => {
                 location: [region.latitude, region.longitude], // Backend ต้องการ Float[]
                 accepted_cate: selectedCategories // Backend ต้องการ Int[] (Array ของ ID)
             };
-            const API_URL = 'https://waste-classification-mobile-application.onrender.com'; 
+            const API_URL = 'https://waste-classification-mobile-application.onrender.com/recycle-shop'; 
 
             const response = await axios.post(API_URL, payload);
 

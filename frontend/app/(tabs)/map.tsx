@@ -25,15 +25,13 @@ type JunkShop = {
   longitude: number;
   address: string;
   distance: number;
+  isOwner?: boolean; // ✨ เพิ่มตัวแปรเช็คว่าเป็นร้านของ user หรือไม่
 };
 
 /* ---------- API KEY ---------- */
-
-// ⚠️ อย่าลืมตรวจสอบ Quota ของ API Key ด้วยนะครับ
 const GOOGLE_API_KEY = "AIzaSyDOTi8DE-fCsrIPvkHXwuB0Aq_qkffvq-c";
 
 /* ---------- REAL ROUTE DISTANCE ---------- */
-
 const getRouteDistanceKm = async (
   originLat: number,
   originLng: number,
@@ -70,10 +68,50 @@ export default function WasteMap() {
   const [junkShops, setJunkShops] = useState<JunkShop[]>([]);
   const [selectedShopId, setSelectedShopId] = useState<string | null>(null);
 
+  /* ---------- MOCK USER DATA ---------- */
+  // ⚠️ ฟังก์ชันนี้จำลองการดึงข้อมูลจาก Database ของคุณ
+  const fetchUserOwnedShops = async (
+    currentLat: number,
+    currentLng: number
+  ): Promise<JunkShop[]> => {
+    // สมมติว่านี่คือข้อมูลที่ดึงมาจาก Database ของ User
+    const myShopsFromDB = [
+      {
+        id: "my-shop-001",
+        name: "ร้านรีไซเคิลของฉัน (My Shop)",
+        latitude: 13.7563, // ใส่พิกัดจริงจาก DB
+        longitude: 100.5018, // ใส่พิกัดจริงจาก DB
+        address: "สาขาหลัก กรุงเทพฯ",
+      },
+    ];
+
+    const processedShops: JunkShop[] = [];
+
+    for (const shop of myShopsFromDB) {
+      // คำนวณระยะทางของร้านตัวเองด้วย เพื่อให้ข้อมูลครบถ้วน
+      const distance = await getRouteDistanceKm(
+        currentLat,
+        currentLng,
+        shop.latitude,
+        shop.longitude
+      );
+
+      processedShops.push({
+        ...shop,
+        distance: distance ?? 0,
+        isOwner: true, // ✨ ระบุว่าเป็นเจ้าของ
+      });
+    }
+
+    return processedShops;
+  };
+
   /* ---------- FETCH PLACES ---------- */
 
   const fetchNearbyJunkShops = async (lat: number, lng: number) => {
     console.log("Fetching places...");
+
+    // 1. ดึงร้านจาก Google Places (ร้านทั่วไป)
     const url =
       `https://maps.googleapis.com/maps/api/place/nearbysearch/json` +
       `?location=${lat},${lng}` +
@@ -85,34 +123,37 @@ export default function WasteMap() {
     const res = await fetch(url);
     const json = await res.json();
 
-    console.log("Places status:", json.status);
-    if (json.status !== "OK") return;
+    const googleShops: JunkShop[] = [];
 
-    const shops: JunkShop[] = [];
+    if (json.status === "OK") {
+      for (const item of json.results.slice(0, 8)) {
+        const distance = await getRouteDistanceKm(
+          lat,
+          lng,
+          item.geometry.location.lat,
+          item.geometry.location.lng
+        );
+        if (distance === null) continue;
 
-    for (const item of json.results.slice(0, 8)) {
-      // console.log("Getting route for:", item.name);
-      const distance = await getRouteDistanceKm(
-        lat,
-        lng,
-        item.geometry.location.lat,
-        item.geometry.location.lng
-      );
-      // console.log("Distance:", distance);
-      if (distance === null) continue;
-
-      shops.push({
-        id: item.place_id,
-        name: item.name,
-        latitude: item.geometry.location.lat,
-        longitude: item.geometry.location.lng,
-        address: item.vicinity,
-        distance,
-      });
+        googleShops.push({
+          id: item.place_id,
+          name: item.name,
+          latitude: item.geometry.location.lat,
+          longitude: item.geometry.location.lng,
+          address: item.vicinity,
+          distance,
+          isOwner: false,
+        });
+      }
+      // เรียงร้านทั่วไปตามระยะทาง
+      googleShops.sort((a, b) => a.distance - b.distance);
     }
 
-    shops.sort((a, b) => a.distance - b.distance);
-    setJunkShops(shops);
+    // 2. ดึงร้านของ User (ร้านของฉัน)
+    const myShops = await fetchUserOwnedShops(lat, lng);
+
+    // 3. รวมร้าน: เอา [ร้านของฉัน] ไว้หน้าสุด + ตามด้วย [ร้านทั่วไป]
+    setJunkShops([...myShops, ...googleShops]);
   };
 
   /* ---------- LOCATION ---------- */
@@ -190,21 +231,27 @@ export default function WasteMap() {
         >
           {junkShops.map((shop) => {
             const isSelected = shop.id === selectedShopId;
+            // ✨ กำหนดสี Pin: ร้านเรา(ทอง/เหลือง), เลือก(แดง), ทั่วไป(เขียว)
+            let pinColor = "#1E8B79"; // default green
+            if (shop.isOwner) pinColor = "#F59E0B"; // gold for owner
+            if (isSelected) pinColor = "#FF3B30"; // red for selected
 
             return (
               <Marker
-                // 🔥 แก้ไขสำคัญ: เปลี่ยน key เพื่อบังคับให้แผนที่วาดสีใหม่ทันที
                 key={`${shop.id}-${isSelected}`}
                 coordinate={{
                   latitude: shop.latitude,
                   longitude: shop.longitude,
                 }}
-                // ถ้าเลือก = สีแดง (#FF3B30), ถ้าไม่เลือก = สีเขียวธีม (#1E8B79)
-                pinColor={isSelected ? "#FF3B30" : "#1E8B79"}
+                pinColor={pinColor}
                 onPress={() => setSelectedShopId(shop.id)}
-                zIndex={isSelected ? 999 : 1}
+                zIndex={isSelected ? 999 : shop.isOwner ? 998 : 1}
                 title={shop.name}
-                description={`${shop.distance.toFixed(1)} กม.`}
+                description={
+                  shop.isOwner
+                    ? "ร้านของคุณ"
+                    : `${shop.distance.toFixed(1)} กม.`
+                }
               />
             );
           })}
@@ -221,8 +268,12 @@ export default function WasteMap() {
 
             return (
               <View
-                className={`rounded-xl mb-3 p-4 ${
-                  selected ? "bg-[#E6F6F3]" : "bg-white"
+                className={`rounded-xl mb-3 p-4 border ${
+                  selected
+                    ? "bg-[#E6F6F3] border-[#1E8B79]"
+                    : item.isOwner
+                    ? "bg-[#FFFBF0] border-[#F59E0B]" // ✨ Highlight ร้านตัวเอง (สีเหลืองอ่อน)
+                    : "bg-white border-gray-100"
                 }`}
               >
                 <Pressable
@@ -250,11 +301,21 @@ export default function WasteMap() {
                     );
                   }}
                 >
-                  <View className="flex-row justify-between">
-                    <Text className="text-lg font-semibold text-[#1E8B79] flex-1">
-                      {item.name}
-                    </Text>
-                    <Text className="text-gray-500">
+                  <View className="flex-row justify-between items-start">
+                    <View className="flex-1">
+                      {/* ✨ Badge ร้านของคุณ */}
+                      {item.isOwner && (
+                        <View className="bg-[#F59E0B] self-start px-2 py-0.5 rounded-md mb-1">
+                          <Text className="text-white text-xs font-bold">
+                            ร้านของคุณ
+                          </Text>
+                        </View>
+                      )}
+                      <Text className="text-lg font-semibold text-[#1E8B79]">
+                        {item.name}
+                      </Text>
+                    </View>
+                    <Text className="text-gray-500 ml-2">
                       {item.distance.toFixed(1)} กม.
                     </Text>
                   </View>
@@ -268,9 +329,21 @@ export default function WasteMap() {
                   <Pressable
                     className="mt-3 bg-[#1E8B79] py-2 rounded-lg items-center"
                     onPress={() => {
-                      // แก้ไข Link URL ให้ถูกต้อง (ของเดิมตกเครื่องหมาย $)
-                      const url = `https://www.google.com/maps/search/?api=1&query=${item.latitude},${item.longitude}`;
-                      Linking.openURL(url);
+                      // ✨ แก้ไข Link ให้ถูกต้องสำหรับเปิด Google Maps App
+                      const url = Platform.select({
+                        ios: `maps://app?daddr=${item.latitude},${item.longitude}`,
+                        android: `google.navigation:q=${item.latitude},${item.longitude}`,
+                      });
+                      // Fallback เป็น Web ถ้าเปิด App ไม่ได้
+                      const webUrl = `https://www.google.com/maps/dir/?api=1&destination=${item.latitude},${item.longitude}`;
+
+                      Linking.canOpenURL(url!).then((supported) => {
+                        if (supported) {
+                          Linking.openURL(url!);
+                        } else {
+                          Linking.openURL(webUrl);
+                        }
+                      });
                     }}
                   >
                     <Text className="text-white font-semibold">
