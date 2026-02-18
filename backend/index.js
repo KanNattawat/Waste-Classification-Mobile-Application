@@ -5,7 +5,7 @@ import auth_router from './routes/auth_routes.js';
 import router from './routes/routes.js'; 
 import helmet from "helmet";
 import cookieParser from 'cookie-parser';
-
+import {errorHandler} from './middlewares/errorMiddleware.js'
 dotenv.config();
 const app = express();
 app.use(cookieParser());
@@ -19,6 +19,7 @@ app.use(helmet())
 
 app.use("/auth", auth_router);
 app.use("/", router)
+app.use(errorHandler)
 
 app.listen(process.env.PORT, async () => {
     console.log('Service running at', process.env.PORT);
