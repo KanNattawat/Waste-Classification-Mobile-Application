@@ -74,10 +74,7 @@ const RecyclingForm = () => {
                 location: [region.latitude, region.longitude], // Backend ต้องการ Float[]
                 accepted_cate: selectedCategories // Backend ต้องการ Int[] (Array ของ ID)
             };
-
-            // ⚠️ เปลี่ยน IP เป็น IP เครื่องคอมฯ ของคุณ (ห้ามใช้ localhost ถ้าเทสบนมือถือ)
-            // เช็ค IP ด้วยคำสั่ง ipconfig (Windows) หรือ ifconfig (Mac)
-            const API_URL = 'http://192.168.1.XX:PORT/api/recycle-shop'; 
+            const API_URL = 'https://waste-classification-mobile-application.onrender.com'; 
 
             const response = await axios.post(API_URL, payload);
 
