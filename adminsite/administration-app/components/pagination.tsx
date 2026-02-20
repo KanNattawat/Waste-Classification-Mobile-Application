@@ -13,8 +13,9 @@ const Pagination = ({current, total}:pageNumber) => {
     const buttonsToShow = 10;
 
     const getPaginationNumber = () => {
-        let start = Math.max(1, current - Math.floor(buttonsToShow / 2))
-        start = Math.min(start, Math.max(1, total - buttonsToShow + 1))
+        // start คือตัวแปรกำหนดค่าเริ่มต้นของปุ่มแรกที่จะแสดงผลใน pagination
+        let start = Math.max(1, current - Math.floor(buttonsToShow/2))//หาจุด start ของปุ่มว่าอยู่หน้าไหน
+        start = Math.min(start, Math.max(1, total-buttonsToShow+1))//กันเกินขอบขวา
         return Array.from({ length: Math.min(buttonsToShow, total) }, (_, i) => start + i);
     };
 
@@ -54,9 +55,6 @@ const Pagination = ({current, total}:pageNumber) => {
                     {num}
                 </button>
             ))}
-
-
-
             <button
                 disabled={current === total}
                 onClick={() => navigate(current+1)}

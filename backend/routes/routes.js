@@ -17,8 +17,4 @@ router.get('/uniqueWaste', controller.getUniqueWaste);
 router.put('/updateFeedback', controller.updateFeedback);
 router.get('/getWaste', controller.getWaste)
 
-router.get('/getusers',authMiddleware, adminCheck, controller.getUsers);
-router.post('/edituser',authMiddleware, adminCheck ,controller.editUser);
-router.delete('/deleteuser',authMiddleware, adminCheck ,controller.deleteUser);
-router.post('/addAdmin', authController.adminRegister);
 export default router

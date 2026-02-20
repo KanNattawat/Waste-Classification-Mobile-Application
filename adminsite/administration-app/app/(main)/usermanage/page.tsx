@@ -1,7 +1,9 @@
 import Searchbar from "@/components/searchBar";
-import Pagination from "@/components/pagination"
-import Table from "@/components/table"
-import { cookies } from 'next/headers';type SearchParams = {
+import Pagination from "@/components/pagination";
+import Table from "@/components/userTable";
+import { cookies } from 'next/headers';
+
+type SearchParams = {
   page?: string;
   username?: string;
 };
@@ -13,7 +15,7 @@ const page = async ({ searchParams }: { searchParams: SearchParams }) => {
   const currentPage = page ?? '1';
   const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value;
-  const res = await fetch(`${process.env.API_BASE_URL}/getusers?current=${currentPage}${usernameQuery}`,{
+  const res = await fetch(`${process.env.API_BASE_URL}/manage_router/getusers?current=${currentPage}${usernameQuery}`,{
    headers:{
     'Authorization':`Bearer ${token}`
    }
