@@ -6,17 +6,24 @@ import {
     TextInput,
     TouchableOpacity,
     Dimensions,
+    Alert,          // เพิ่ม Alert
+    ActivityIndicator // เพิ่ม Loading
 } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import axios from 'axios'; // เพิ่ม Axios
 
 const { width } = Dimensions.get('window');
 
 const RecyclingForm = () => {
+    // สมมติว่าได้ User ID มาจากการ Login (ในแอปจริงอาจจะดึงจาก AsyncStorage หรือ Context)
+    const currentUserId = 1; 
+
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
+    const [loading, setLoading] = useState(false); // State สำหรับรอ API
 
     const [region, setRegion] = useState({
         latitude: 13.7367,
@@ -25,7 +32,6 @@ const RecyclingForm = () => {
         longitudeDelta: 0.01,
     });
 
-    // ✅ state สำหรับ checkbox หมวดหมู่
     const [selectedCategories, setSelectedCategories] = useState([]);
 
     const toggleCategory = (id) => {
@@ -44,6 +50,55 @@ const RecyclingForm = () => {
         { id: 5, label: 'e-waste', icon: 'battery-charging' },
         { id: 6, label: 'อื่นๆ', icon: 'dots-horizontal' },
     ];
+
+    // ✅ ฟังก์ชันส่งข้อมูลไปยัง Backend
+    const onSubmit = async () => {
+        // 1. Validation ตรวจสอบข้อมูลเบื้องต้น
+        if (!name.trim() || !phone.trim()) {
+            Alert.alert("ข้อมูลไม่ครบ", "กรุณากรอกชื่อและเบอร์โทรศัพท์");
+            return;
+        }
+        if (selectedCategories.length === 0) {
+            Alert.alert("ข้อมูลไม่ครบ", "กรุณาเลือกหมวดหมู่ขยะอย่างน้อย 1 ประเภท");
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            // 2. เตรียมข้อมูล Payload ให้ตรงกับ Backend
+            const payload = {
+                user_id: currentUserId,
+                shop_name: name,
+                tel_num: phone,
+                location: [region.latitude, region.longitude], // Backend ต้องการ Float[]
+                accepted_cate: selectedCategories // Backend ต้องการ Int[] (Array ของ ID)
+            };
+            const API_URL = 'https://waste-classification-mobile-application.onrender.com/recycle-shop'; 
+
+            const response = await axios.post(API_URL, payload);
+
+            if (response.status === 201 || response.status === 200) {
+                Alert.alert("สำเร็จ", "เพิ่มข้อมูลร้านรับซื้อเรียบร้อยแล้ว", [
+                    { 
+                        text: "ตกลง", 
+                        onPress: () => {
+                            // Reset Form
+                            setName('');
+                            setPhone('');
+                            setSelectedCategories([]);
+                            // navigation.goBack(); // ถ้ามีการใช้ Navigation ให้ uncomment บรรทัดนี้
+                        }
+                    }
+                ]);
+            }
+        } catch (error) {
+            console.log(error);
+            Alert.alert("เกิดข้อผิดพลาด", "ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <KeyboardAwareScrollView
@@ -81,6 +136,7 @@ const RecyclingForm = () => {
                     style={styles.map}
                     region={region}
                     showsUserLocation
+                    onRegionChangeComplete={(r) => setRegion(r)} // อัปเดตพิกัดเมื่อเลื่อนแมพ
                 >
                     <Marker coordinate={region} />
                 </MapView>
@@ -98,7 +154,7 @@ const RecyclingForm = () => {
                         });
                     }}
                     query={{
-                        key: 'AIzaSyDOTi8DE-fCsrIPvkHXwuB0Aq_qkffvq-c',
+                        key: 'AIzaSyDOTi8DE-fCsrIPvkHXwuB0Aq_qkffvq-c', // อย่าลืมใส่ API Key จริงของคุณ
                         language: 'th',
                         components: 'country:th',
                     }}
@@ -149,8 +205,16 @@ const RecyclingForm = () => {
             </View>
 
             {/* ปุ่มยืนยัน */}
-            <TouchableOpacity style={styles.submitBtn}>
-                <Text style={styles.submitBtnText}>ยืนยัน</Text>
+            <TouchableOpacity 
+                style={[styles.submitBtn, loading && { opacity: 0.7 }]} 
+                onPress={onSubmit}
+                disabled={loading}
+            >
+                {loading ? (
+                    <ActivityIndicator color="#fff" />
+                ) : (
+                    <Text style={styles.submitBtnText}>ยืนยัน</Text>
+                )}
             </TouchableOpacity>
         </KeyboardAwareScrollView>
     );
@@ -209,6 +273,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#ddd',
         fontSize: 14,
+        backgroundColor: '#fff', // เพิ่มพื้นหลังให้ชัด
     },
 
     /* Categories */
