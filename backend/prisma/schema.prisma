@@ -27,7 +27,6 @@ model User {
   Role Role? @default(USER)
   Points Int @default(0)
   
-  // relations
   waste   Waste[]
   pointHistory  PointHistory[]
   recycleShop  RecycleShop[]
@@ -42,9 +41,8 @@ model Waste {
   Timestamp  DateTime @default(now())
   Probs   Float[]
   Is_correct Boolean @default(false)
-  Vote_wastetype Int[] @default([0, 0, 0, 0])
+  Vote_wastetype Int[] @default([0, 0, 0, 0]) //[อินทรีย์, อันตราย, ทั่วไป, รีไซเคิล]
 
-  // relations
   user   User   @relation(fields: [User_ID], references: [User_ID])
   wasteType  WasteType  @relation(fields: [WasteType_ID], references: [WasteType_ID])
   wasteVote  WasteVote[]
@@ -54,7 +52,6 @@ model WasteType {
   WasteType_ID   Int     @id @default(autoincrement())
   Waste_name String
 
-  // relations
   waste Waste[]
 }
 
@@ -64,7 +61,7 @@ model PointHistory {
   User_ID    Int
   History_Detail   String
   History_Type  History_Type
-  // relations
+
   user  User  @relation(fields: [User_ID], references: [User_ID])
 }
 

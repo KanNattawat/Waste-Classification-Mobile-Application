@@ -1,19 +1,23 @@
 import Pagination from "@/components/pagination"
-import Table from "@/components/userTable"
 import Image from 'next/image';
-
 import { cookies } from 'next/headers'; type SearchParams = {
   page?: string;
   username?: string;
 };
+import Filter from "@/components/filter"
+
+type WasteVote = {
+  label: string;
+  percentage: number;
+}
 
 type Waste = {
   Waste_ID: string
   WasteType_ID: string
   Timestamp: string
-  Vote_wastetype: any
-  Total_Vote:number
-  Agreement_Rate:number
+  Vote_wastetype: WasteVote[]
+  Total_Vote: number
+  Agreement_Rate: number
 }
 
 
@@ -33,7 +37,6 @@ const page = async ({ searchParams }: { searchParams: SearchParams }) => {
   const waste = data.wasteData
 
   const totalPage = data.totalPage
-  console.log('wasteData',waste)
   const safePage = Math.min(totalPage, Number(currentPage))
   const wasteTypeMapping = {
     '1': 'ขยะอินทรีย์',
@@ -44,9 +47,13 @@ const page = async ({ searchParams }: { searchParams: SearchParams }) => {
 
   return (
     <div>
-      <div className="flex flex-col justify-start items-center bg-[#F4F4F4] w-full h-screen min-h-screen p-10">
+      <div className="flex flex-col justify-start items-center bg-[#F4F4F4] w-full h-screen min-h-screen p-10 gap-y-4">
+        {/* filter */}
+        <Filter/>
 
-        <div className="flex flex-col bg-white w-[90%] h-[85%] rounded-md shadow-xl overflow-hidden">
+
+      {/* table */}
+        <div className="flex flex-col bg-white w-[90%] h-[60%] rounded-md shadow-xl overflow-hidden">
 
           <div className="grow overflow-auto">
             <table className="w-full text-left table-auto min-w-max text-slate-800">
@@ -66,21 +73,37 @@ const page = async ({ searchParams }: { searchParams: SearchParams }) => {
                       <Image src="/images/test.png" width={120} height={120} alt="" className="object-contain rounded-md" />
                     </td>
                     <td className="p-4">
-                      <p className="text-sm">{wasteTypeMapping[(item.WasteType_ID as keyof typeof wasteTypeMapping)] || ''}</p>
+                      <p className="text-sm text-slate-600">{wasteTypeMapping[(item.WasteType_ID as keyof typeof wasteTypeMapping)] || ''}</p>
                     </td>
-                    <td className="p-4">
-                      <p className="text-sm">
-                        {item.Vote_wastetype[0].label} {item.Vote_wastetype[0].percentage}%
-                        {item.Vote_wastetype[1].label} {item.Vote_wastetype[1].percentage}%
-                        {item.Vote_wastetype[2].label} {item.Vote_wastetype[2].percentage}%
-                        {item.Vote_wastetype[3].label} {item.Vote_wastetype[3].percentage}%
-                      </p>
+                    <td className="p-4 min-w-50">
+                      <div className="space-y-2">
+                        {item.Vote_wastetype.map((v: any, i: number) => {
+                          const displayPercent = isNaN(v.percentage) ? 0 : v.percentage;
+                          return (
+                            <div key={i} className="group">
+                              <div className="flex justify-between mb-1">
+                                <span className="text-[13px] font-medium text-slate-600">{v.label}</span>
+                                <span className="text-[13px] font-bold text-slate-400 group-hover:text-slate-800 transition-colors">
+                                  {displayPercent}%
+                                </span>
+                              </div>
+                              <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                                <div
+                                  className={`h-full bg-[#1E8B79] transition-all duration-500 ease-out rounded-full`}
+                                  style={{ width: `${displayPercent}%` }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </td>
                     <td className="p-4 ">
-                      <p className="text-sm">{item.Timestamp.toString().split('T')[0]}</p>
+                      <p className="text-sm text-slate-600">{item.Timestamp.toString().split('T')[0]}</p>
                     </td>
-                    <td className="p-4 ">
-                      <p className="text-sm">จำนวนโหวต: {item.Total_Vote} AgreementRate: {item.Agreement_Rate}</p>
+                    <td className="p-4 flex-row justify-between">
+                      <p className="text-sm text-slate-600">จำนวนโหวต: {item.Total_Vote}</p>
+                      <p className="text-sm text-slate-600">AgreementRate: {!isNaN(item.Agreement_Rate) ? item.Agreement_Rate + "%" : "No vote"}</p>
                     </td>
                   </tr>
                 ))}
@@ -93,6 +116,8 @@ const page = async ({ searchParams }: { searchParams: SearchParams }) => {
           </div>
 
         </div>
+
+
       </div>
     </div>
   );

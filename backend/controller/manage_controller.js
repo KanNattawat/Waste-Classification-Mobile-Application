@@ -84,7 +84,9 @@ export const getWaste = asyncHandler(async (req, res) => {
         prisma.waste.findMany({
             skip: offset,
             take: limit,
-            // อย่าลืมใส่ where: { isCorrect: false }
+            where:{
+                Is_correct:false
+            }
         }),
         prisma.waste.count({})
     ]);
