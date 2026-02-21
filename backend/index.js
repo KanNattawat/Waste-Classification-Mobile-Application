@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import auth_router from './routes/auth_routes.js';
+import manage_router from './routes/manage_routes.js'
 import router from './routes/routes.js'; 
 import helmet from "helmet";
 import cookieParser from 'cookie-parser';
@@ -17,6 +18,7 @@ app.use(cors({
 
 app.use(helmet())
 
+app.use("/manage_router", manage_router)
 app.use("/auth", auth_router);
 app.use("/", router)
 app.use(errorHandler)

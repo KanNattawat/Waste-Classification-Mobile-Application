@@ -27,8 +27,18 @@ const Nav = () => {
                     <img src="/images/Shopping.png" alt="" className="h-7 w-7" />
                     <p className="text-xl">จัดการร้านรับของ</p>
                 </div>
-
             </Link>
+
+            <Link href={"/exportimage?page=1"}>
+                <div className="group relative flex flex-row items-center justify-start gap-3 pl-6 h-14 hover:bg-[#2C2C2C] transition cursor-pointer">
+                    <div className='absolute left-0 w-1 h-8 bg-transparent group-hover:bg-[#1E8B79] transition-all rounded-r-lg'>
+
+                    </div>
+                    <img src="/images/Shopping.png" alt="" className="h-7 w-7" />
+                    <p className="text-xl">Feedback</p>
+                </div>
+            </Link>
+
             <Link
                 className='flex flex-row mt-auto h-14 items-center gap-3 justify-center hover:bg-[#2C2C2C] transition-colors cursor-pointer'
                 onClick={deleteCookie}

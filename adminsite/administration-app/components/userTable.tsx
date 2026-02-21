@@ -6,7 +6,7 @@ type User = {
     Email?: string;
 };
 
-const Table = ({ user }: { user: [User] }) => {
+const UserTable = ({ user }: { user: [User] }) => {
 
     return (
         <div className="relative h-full w-full overflow-auto bg-clip-border shadow-xl rounded-md">
@@ -22,7 +22,7 @@ const Table = ({ user }: { user: [User] }) => {
                 </thead>
 
                 <tbody>
-                    {user.map((item, index) => (
+                    {user.map((item:User, index:number) => (
                         <tr key={index} className="hover:bg-slate-50 border-b border-slate-100 last:border-none">
                             <td className="p-4">
                                 <p className="text-sm font-bold">{item.User_name}</p>
@@ -46,4 +46,4 @@ const Table = ({ user }: { user: [User] }) => {
     )
 }
 
-export default Table
+export default UserTable

@@ -283,78 +283,7 @@ export const getHome = asyncHandler(async (req, res) => {
 })
 
 
-export const getUsers = asyncHandler(async (req, res) => {
-    const currentPage = Number(req.query.current) || 1;
-    const userName = req.query.username
-    const limit = 11
-    const offset = (currentPage - 1) * limit
 
-    const [users, total] = await Promise.all(
-        [
-            prisma.user.findMany({
-                skip: offset,
-                take: limit,
-                where: {
-                    User_name: userName ? { contains: userName } : undefined
-                }
-            }),
-            prisma.user.count({
-                where: {
-                    User_name: userName ? { contains: userName } : undefined
-                }
-            })
-        ])
-
-    console.log(users)
-
-
-    const totalPage = Math.ceil(total / limit)
-    console.log(total)
-
-    res.status(200).json(
-        {
-            user: users,
-            totalPage: totalPage
-        }
-    );
-})
-
-export const editUser = asyncHandler(async (req, res) => {
-    const { userName, email, fullName, identify } = req.body
-
-    const userId = await prisma.user.findUnique({
-        where: {
-            User_name: identify
-        }
-    })
-
-    console.log(userId.User_ID)
-
-    const updateUser = await prisma.user.update({
-        where: {
-            User_ID: userId.User_ID
-        },
-        data: {
-            Full_name: fullName,
-            Email: email,
-            User_name: userName
-        }
-    })
-    console.log(updateUser);
-    res.status(200).json(updateUser)
-})
-
-
-export const deleteUser = asyncHandler(async (req, res) => {
-    const { identify } = req.body
-    const deleteUser = await prisma.user.delete({
-        where: {
-            User_name: identify
-        }
-    })
-
-    res.status(200).json(deleteUser)
-})
 
 export const vote = asyncHandler(async (req, res) => {
     const { wasteID, userID, vote } = req.body

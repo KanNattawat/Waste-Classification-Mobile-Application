@@ -30,7 +30,7 @@ const page = ({ params, searchParams }: Props) => {
     const { errors } = formState
     const doSubmit = async (data: any) => {
         try {
-            const req = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/edituser`, {
+            const req = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/manage_router/edituser`, {
                 method: "POST",
                 credentials:'include',
                 headers: {
@@ -53,7 +53,7 @@ const page = ({ params, searchParams }: Props) => {
     };
 
     const deleteUser = async () => {
-        const req = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/deleteuser`, {
+        const req = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/manage_router/deleteuser`, {
             method: "DELETE",
             credentials:'include',
             headers: {

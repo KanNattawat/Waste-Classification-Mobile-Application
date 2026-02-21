@@ -22,8 +22,4 @@ router.put('/update_recycle-shop', controller.updateRecycleShop);
 
 
 
-router.get('/getusers',authMiddleware, adminCheck, controller.getUsers);
-router.post('/edituser',authMiddleware, adminCheck ,controller.editUser);
-router.delete('/deleteuser',authMiddleware, adminCheck ,controller.deleteUser);
-router.post('/addAdmin', authController.adminRegister);
 export default router

@@ -112,11 +112,9 @@ export const authMiddleware = (req, res, next) => {
     if (!token) {
         return res.status(401).json({ error: "No token provided" });
     }
-    console.log(token)
     try {
         const decoded = jwt.verify(token, process.env.JWT);
         req.user = decoded;
-        console.log(req.user)
         next();
     } catch (err) {
         console.log(err)
