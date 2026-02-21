@@ -10,19 +10,16 @@ import {
 } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import * as Location from "expo-location";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 
 /* ---------- CONFIG ---------- */
-// ⚠️ เปลี่ยนเป็น IP เครื่องคอมของคุณ (อย่าใช้ localhost ถ้ารันบนมือถือจริง)
-// วิธีเช็ค: เปิด cmd พิมพ์ ipconfig ดู IPv4 Address
-const API_URL = "https://waste-classification-mobile-application.onrender.com"; // <-- แก้ตรงนี้
+const API_URL = "https://waste-classification-mobile-application.onrender.com";
 
 /* ---------- TYPES ---------- */
-
 type JunkShop = {
   id: string;
   name: string;
@@ -31,10 +28,11 @@ type JunkShop = {
   address: string;
   distance: number;
   isOwner?: boolean;
+  status?: boolean; // ✅ เพิ่ม properties status
 };
 
 /* ---------- API KEY ---------- */
-const GOOGLE_API_KEY = "AIzaSyDOTi8DE-fCsrIPvkHXwuB0Aq_qkffvq-c";
+const GOOGLE_API_KEY = "AIzaSyDOTi8DE-fCsrIPvkHXwuB0Aq_qkffvq-c"; // แนะนำให้ซ่อน API Key ไว้ใน .env
 
 /* ---------- HELPER: Calculate Distance ---------- */
 const getRouteDistanceKm = async (
@@ -66,17 +64,13 @@ const getRouteDistanceKm = async (
 export default function WasteMap() {
   const mapRef = useRef<MapView | null>(null);
 
-  const [location, setLocation] = useState<Location.LocationObject | null>(
-    null
-  );
+  const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [loading, setLoading] = useState(true);
   const [junkShops, setJunkShops] = useState<JunkShop[]>([]);
   const [selectedShopId, setSelectedShopId] = useState<string | null>(null);
 
-  // สมมติว่าได้ UserId มาจากการ Login (ในแอปจริงควรดึงจาก Context หรือ Storage)
-  const currentUserId = "1"; // <-- ใส่ ID ของ user ที่ login อยู่เพื่อทดสอบ
+  const currentUserId = "1";
 
-  /* ---------- FETCH USER SHOPS FROM DB ---------- */
   /* ---------- FETCH USER SHOPS FROM DB ---------- */
   const fetchUserOwnedShops = async (
     currentLat: number,
@@ -92,21 +86,13 @@ export default function WasteMap() {
       }
 
       const dbShops = await response.json();
-      
-      // log ดูข้อมูลจริง
-      console.log("DB Data:", JSON.stringify(dbShops, null, 2));
-
       const processedShops: JunkShop[] = [];
 
       for (const shop of dbShops) {
-        // 🔥 แก้ไข 1: Location เป็น Array [Lat, Long] อยู่แล้ว ไม่ต้อง Split
-        // เช็คว่าเป็น Array และมีค่าครบ 2 ตัวไหม
         if (!Array.isArray(shop.Location) || shop.Location.length < 2) {
-            console.warn(`Shop ID ${shop.Shop_ID} invalid location format`);
             continue;
         }
 
-        // ดึงค่าออกมาตรงๆ (ใน Prisma: Float[] -> JS: Array)
         const shopLat = shop.Location[0];
         const shopLng = shop.Location[1];
 
@@ -120,14 +106,14 @@ export default function WasteMap() {
         );
 
         processedShops.push({
-          // 🔥 แก้ไข 2: ใช้ชื่อ Field ให้ตรงกับ Schema (Shop_ID, Shop_name)
           id: `db-${shop.Shop_ID}`, 
           name: shop.Shop_name,
           latitude: shopLat,
           longitude: shopLng,
-          address: shop.Tel_num, // ใช้เบอร์โทรแทนที่อยู่ไปก่อน เพราะใน DB ไม่มี field Address
+          address: shop.Tel_num,
           distance: distance ?? 0,
           isOwner: true,
+          status: shop.Status, // ✅ ดึง Status จาก API มาเก็บไว้
         });
       }
 
@@ -142,7 +128,6 @@ export default function WasteMap() {
   const fetchNearbyJunkShops = async (lat: number, lng: number) => {
     console.log("Fetching places...");
 
-    // 1. ดึงร้านจาก Google Places
     const url =
       `https://maps.googleapis.com/maps/api/place/nearbysearch/json` +
       `?location=${lat},${lng}` +
@@ -178,36 +163,47 @@ export default function WasteMap() {
       googleShops.sort((a, b) => a.distance - b.distance);
     }
 
-    // 2. ดึงร้านของ User จาก DB จริง
     const myShops = await fetchUserOwnedShops(lat, lng);
-
-    // 3. รวมร้าน: เอา [ร้านของฉัน] ไว้หน้าสุด
     setJunkShops([...myShops, ...googleShops]);
   };
 
-  /* ---------- LOCATION ---------- */
-  useEffect(() => {
-    (async () => {
-      try {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== "granted") {
-          Alert.alert("แจ้งเตือน", "กรุณาอนุญาตการเข้าถึงตำแหน่ง");
-          return;
+  /* ---------- LOCATION & RELOAD DATA ---------- */
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true; 
+
+      const loadData = async () => {
+        setLoading(true);
+        try {
+          const { status } = await Location.requestForegroundPermissionsAsync();
+          if (status !== "granted") {
+            Alert.alert("แจ้งเตือน", "กรุณาอนุญาตการเข้าถึงตำแหน่ง");
+            if (isActive) setLoading(false);
+            return;
+          }
+
+          const loc = await Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.Balanced,
+          });
+
+          if (isActive) {
+            setLocation(loc);
+            await fetchNearbyJunkShops(loc.coords.latitude, loc.coords.longitude);
+          }
+        } catch (e) {
+          console.log("LOCATION ERROR:", e);
+        } finally {
+          if (isActive) setLoading(false);
         }
+      };
 
-        const loc = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.Balanced,
-        });
+      loadData();
 
-        setLocation(loc);
-        await fetchNearbyJunkShops(loc.coords.latitude, loc.coords.longitude);
-      } catch (e) {
-        console.log("LOCATION ERROR:", e);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+      return () => {
+        isActive = false;
+      };
+    }, [])
+  );
 
   if (loading) {
     return (
@@ -240,7 +236,7 @@ export default function WasteMap() {
         >
           <Ionicons name="add" size={16} color="#1E8B79" />
           <Text className="ml-1 text-[#1E8B79] text-sm font-medium">
-            เพิ่มร้านของฉัน
+            เพิ่มร้าน
           </Text>
         </Pressable>
       </View>
@@ -313,11 +309,21 @@ export default function WasteMap() {
                 >
                   <View className="flex-row justify-between items-start">
                     <View className="flex-1">
+                      {/* ✅ แก้ไขส่วนป้าย Tag ด้านบนชื่อร้าน */}
                       {item.isOwner && (
-                        <View className="bg-[#F59E0B] self-start px-2 py-0.5 rounded-md mb-1">
-                          <Text className="text-white text-xs font-bold">
-                            ร้านของคุณ
-                          </Text>
+                        <View className="flex-row items-center mb-1">
+                           <View className="bg-[#F59E0B] px-2 py-0.5 rounded-md mr-2">
+                            <Text className="text-white text-xs font-bold">
+                              ร้านของคุณ
+                            </Text>
+                          </View>
+                          
+                          {/* ✅ แสดง Tag สถานะร้าน (เปิดให้บริการ หรือ รอการตรวจสอบ) */}
+                           <View className={`px-2 py-0.5 rounded-md ${item.status ? 'bg-green-100 border border-green-500' : 'bg-gray-100 border border-gray-400'}`}>
+                                <Text className={`text-xs font-bold ${item.status ? 'text-green-600' : 'text-gray-600'}`}>
+                                    {item.status ? 'เปิดให้บริการ' : 'รอการตรวจสอบ'}
+                                </Text>
+                           </View>
                         </View>
                       )}
                       <Text className="text-lg font-semibold text-[#1E8B79]">
@@ -333,25 +339,49 @@ export default function WasteMap() {
                   </Text>
                 </Pressable>
 
+                {/* ส่วนปุ่มด้านล่างเมื่อโดนเลือก (Expanded Menu) */}
                 {selected && (
-                  <Pressable
-                    className="mt-3 bg-[#1E8B79] py-2 rounded-lg items-center"
-                    onPress={() => {
-                       const url = Platform.select({
-                        ios: `maps://app?daddr=${item.latitude},${item.longitude}`,
-                        android: `google.navigation:q=${item.latitude},${item.longitude}`,
-                      });
-                      const webUrl = `http://googleusercontent.com/maps.google.com/maps?daddr=${item.latitude},${item.longitude}`;
-                      Linking.canOpenURL(url!).then((supported) => {
-                        if (supported) Linking.openURL(url!);
-                        else Linking.openURL(webUrl);
-                      });
-                    }}
-                  >
-                    <Text className="text-white font-semibold">
-                      นำทางด้วย Google Maps
-                    </Text>
-                  </Pressable>
+                  <View className="mt-3">
+                    <Pressable
+                      className={`bg-[#1E8B79] py-2 rounded-lg items-center ${item.isOwner ? 'mb-2' : ''}`}
+                      onPress={() => {
+                         const url = Platform.select({
+                          ios: `maps://app?daddr=${item.latitude},${item.longitude}`,
+                          android: `google.navigation:q=${item.latitude},${item.longitude}`,
+                        });
+                        const webUrl = `http://googleusercontent.com/maps.google.com/maps?daddr=${item.latitude},${item.longitude}`;
+                        Linking.canOpenURL(url!).then((supported) => {
+                          if (supported) Linking.openURL(url!);
+                          else Linking.openURL(webUrl);
+                        });
+                      }}
+                    >
+                      <View className="flex-row items-center">
+                        <Ionicons name="navigate" size={16} color="white" style={{ marginRight: 6 }} />
+                        <Text className="text-white font-semibold">
+                          นำทางด้วย Google Maps
+                        </Text>
+                      </View>
+                    </Pressable>
+
+                    {item.isOwner && (
+                      <Pressable
+                        className="border border-[#1E8B79] bg-white py-2 rounded-lg items-center flex-row justify-center"
+                        onPress={() => {
+                          const realShopId = item.id.replace('db-', '');
+                          router.push({
+                            pathname: "/shop_form/edit_form", 
+                            params: { shopId: realShopId }
+                          });
+                        }}
+                      >
+                        <Ionicons name="create-outline" size={18} color="#1E8B79" style={{ marginRight: 6 }} />
+                        <Text className="text-[#1E8B79] font-semibold">
+                          แก้ไขข้อมูลร้าน
+                        </Text>
+                      </Pressable>
+                    )}
+                  </View>
                 )}
               </View>
             );

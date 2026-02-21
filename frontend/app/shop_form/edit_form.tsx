@@ -14,17 +14,17 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import axios from 'axios';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
-// ✅ รับ prop route และ navigation เข้ามา
-const EditShopScreen = ({ route, navigation }) => {
-    // สมมติว่าส่งข้อมูลร้านที่ต้องการแก้ไขมาทาง route params ชื่อ 'shopData'
-    // ตัวอย่างการ navigate มาหน้านี้: navigation.navigate('EditShop', { shopData: item });
-    const shopData = route.params?.shopData;
-
-    const [loading, setLoading] = useState(true); // โหลดข้อมูลเริ่มต้น
-    const [saving, setSaving] = useState(false); // กำลังบันทึก
+const EditShopScreen = () => {
+    const router = useRouter(); 
+    const { shopId } = useLocalSearchParams(); // ✅ รับ shopId มาจากหน้าที่แล้ว
+    
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [shopStatus, setShopStatus] = useState(null); // เก็บสถานะร้าน
 
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
@@ -45,27 +45,52 @@ const EditShopScreen = ({ route, navigation }) => {
         { id: 6, label: 'อื่นๆ', icon: 'dots-horizontal' },
     ];
 
-    // ✅ useEffect เพื่อกำหนดค่าเริ่มต้นจาก shopData ที่ส่งเข้ามา
-    useEffect(() => {
-        if (shopData) {
-            setName(shopData.Shop_name || '');
-            setPhone(shopData.Tel_num || '');
-            setSelectedCategories(shopData.Accepted_cate || []);
-
-            if (shopData.Location && shopData.Location.length === 2) {
-                setRegion({
-                    latitude: shopData.Location[0],
-                    longitude: shopData.Location[1],
-                    latitudeDelta: 0.005, // ซูมเข้ามาหน่อยให้เห็นจุดชัดๆ
-                    longitudeDelta: 0.005,
-                });
-            }
-        } else {
-            Alert.alert("ผิดพลาด", "ไม่พบข้อมูลร้านที่ต้องการแก้ไข");
-            navigation.goBack();
+    // ✅ ฟังก์ชันสำหรับดึงข้อมูลร้านจาก API โดยใช้ shopId
+    const fetchShopData = async () => {
+        if (!shopId) {
+            Alert.alert("ผิดพลาด", "ไม่พบรหัสร้านที่ต้องการแก้ไข");
+            router.back();
+            return;
         }
-        setLoading(false);
-    }, [shopData]);
+
+        try {
+            // ไปดึงข้อมูลร้านมาจาก DB (สมมติว่าเป็น userId = 1 ตามหน้าเก่า)
+            // หมายเหตุ: API เส้นนี้อาจจะต้องเปลี่ยนถ้ามีเส้นดึงร้านโดยใช้ ID ตรงๆ
+            const response = await axios.get(`https://waste-classification-mobile-application.onrender.com/recycle-shop2?userId=1`);
+            
+            // หาข้อมูลร้านที่ตรงกับ shopId ที่ส่งมา
+            const currentShop = response.data.find(shop => String(shop.Shop_ID) === String(shopId));
+
+            if (currentShop) {
+                setName(currentShop.Shop_name || '');
+                setPhone(currentShop.Tel_num || '');
+                setSelectedCategories(currentShop.Accepted_cate || []);
+                setShopStatus(currentShop.Status);
+
+                if (currentShop.Location && currentShop.Location.length === 2) {
+                    setRegion({
+                        latitude: currentShop.Location[0],
+                        longitude: currentShop.Location[1],
+                        latitudeDelta: 0.005,
+                        longitudeDelta: 0.005,
+                    });
+                }
+            } else {
+                Alert.alert("ผิดพลาด", "ไม่พบข้อมูลร้านในระบบ");
+                router.back();
+            }
+        } catch (error) {
+            console.error("Error fetching shop data:", error);
+            Alert.alert("ผิดพลาด", "ไม่สามารถดึงข้อมูลร้านได้");
+            router.back();
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchShopData();
+    }, [shopId]);
 
 
     const toggleCategory = (id) => {
@@ -76,7 +101,6 @@ const EditShopScreen = ({ route, navigation }) => {
         );
     };
 
-    // ✅ ฟังก์ชันสำหรับอัปเดตข้อมูล (ใช้ PUT)
     const onUpdate = async () => {
         if (!name.trim() || !phone.trim()) {
             Alert.alert("ข้อมูลไม่ครบ", "กรุณากรอกชื่อและเบอร์โทรศัพท์");
@@ -90,7 +114,6 @@ const EditShopScreen = ({ route, navigation }) => {
         setSaving(true);
 
         try {
-            // Payload สำหรับการอัปเดต
             const payload = {
                 shop_name: name,
                 tel_num: phone,
@@ -98,33 +121,26 @@ const EditShopScreen = ({ route, navigation }) => {
                 accepted_cate: selectedCategories
             };
             
-            // ใส่ IP Address หรือ URL ของ Backend คุณ
-            const API_URL = `https://waste-classification-mobile-application.onrender.com/update_recycle-shop/${shopData.Shop_ID}`; 
+            const API_URL = `https://waste-classification-mobile-application.onrender.com/update_recycle-shop/${shopId}`; 
 
-            // ใช้ axios.put
             const response = await axios.put(API_URL, payload);
 
             if (response.status === 200) {
                 Alert.alert("สำเร็จ", "แก้ไขข้อมูลร้านเรียบร้อยแล้ว", [
                     {
                         text: "ตกลง",
-                        onPress: () => {
-                            // อาจจะส่ง params กลับไปบอกหน้าก่อนหน้าว่าให้ refresh ข้อมูล
-                            navigation.goBack(); 
-                        }
+                        onPress: () => router.back()
                     }
                 ]);
             }
         } catch (error) {
             console.log('Update error:', error);
-             // แสดง error ที่ชัดเจนขึ้นถ้า backend ส่งมา
             const errorMessage = error.response?.data?.error || "ไม่สามารถแก้ไขข้อมูลได้ กรุณาลองใหม่อีกครั้ง";
             Alert.alert("เกิดข้อผิดพลาด", errorMessage);
         } finally {
             setSaving(false);
         }
     };
-
 
     if (loading) {
         return (
@@ -140,19 +156,15 @@ const EditShopScreen = ({ route, navigation }) => {
             enableOnAndroid
             keyboardShouldPersistTaps="handled"
         >
-            {/* Header อาจจะใส่ปุ่ม Back หรือเปลี่ยน Title */}
             <Text style={styles.headerText}>แก้ไขข้อมูลร้าน</Text>
             
-            {/* แสดงสถานะ (ถ้าต้องการ) */}
             <View style={styles.statusContainer}>
                  <Text style={styles.label}>สถานะร้าน: </Text>
-                 <Text style={{ color: shopData?.Status ? 'green' : 'orange', fontWeight: 'bold' }}>
-                     {shopData?.Status ? 'เปิดใช้งาน' : 'รอการตรวจสอบ/ปิดใช้งาน'}
+                 <Text style={{ color: shopStatus ? 'green' : 'orange', fontWeight: 'bold' }}>
+                     {shopStatus ? 'เปิดใช้งาน' : 'รอการตรวจสอบ/ปิดใช้งาน'}
                  </Text>
             </View>
 
-
-            {/* ข้อมูลพื้นฐาน */}
             <View style={styles.inputGroup}>
                 <Text style={styles.label}>ชื่อร้าน / ผู้ติดต่อ</Text>
                 <TextInput
@@ -172,20 +184,17 @@ const EditShopScreen = ({ route, navigation }) => {
                 />
             </View>
 
-            {/* แผนที่ - เพิ่ม draggable เพื่อให้ลากหมุดแก้ไขตำแหน่งได้ละเอียดขึ้น */}
             <Text style={styles.label}>ตำแหน่งที่ตั้ง (ลากหมุดเพื่อแก้ไข)</Text>
             <View style={styles.mapContainer}>
                 <MapView
                     provider={PROVIDER_GOOGLE}
                     style={styles.map}
                     region={region}
-                    // onRegionChangeComplete={setRegion} // เอาอันนี้ออกถ้าไม่อยากให้ map ขยับตามตอนพิมพ์ search
                 >
                     <Marker 
                         coordinate={region} 
-                        draggable // ✅ ทำให้หมุดลากได้
+                        draggable 
                         onDragEnd={(e) => {
-                            // ✅ อัปเดต state เมื่อลากหมุดเสร็จ
                             setRegion({
                                 ...region,
                                 latitude: e.nativeEvent.coordinate.latitude,
@@ -195,6 +204,7 @@ const EditShopScreen = ({ route, navigation }) => {
                     />
                 </MapView>
 
+                {/* ⚠️ อย่าลืมใส่ API Key ของคุณตรงนี้นะครับ */}
                 <GooglePlacesAutocomplete
                     placeholder="ค้นหาเพื่อเปลี่ยนตำแหน่ง..."
                     fetchDetails
@@ -208,7 +218,7 @@ const EditShopScreen = ({ route, navigation }) => {
                         });
                     }}
                     query={{
-                        key: 'YOUR_GOOGLE_MAPS_API_KEY', // ⚠️ ใส่ API Key ของคุณ
+                        key: 'YOUR_GOOGLE_MAPS_API_KEY', 
                         language: 'th',
                         components: 'country:th',
                     }}
@@ -220,7 +230,6 @@ const EditShopScreen = ({ route, navigation }) => {
                 />
             </View>
 
-            {/* หมวดหมู่ */}
             <Text style={styles.label}>หมวดหมู่ของที่รับ (เลือกที่ต้องการแก้ไข)</Text>
             <View style={styles.categoryBox}>
                 <View style={styles.categoryGrid}>
@@ -239,184 +248,51 @@ const EditShopScreen = ({ route, navigation }) => {
                                     <Icon
                                         name={item.icon}
                                         size={30}
-                                        color={isSelected ? '#fff' : '#555'}
+                                        color={isSelected ? '#fff' : '#108a74'}
                                     />
                                 </TouchableOpacity>
-                                <Text
-                                    style={[
-                                        styles.categoryLabel,
-                                        isSelected && styles.categoryLabelSelected,
-                                    ]}
-                                >
-                                    {item.label}
-                                </Text>
+                                <Text style={styles.categoryText}>{item.label}</Text>
                             </View>
                         );
                     })}
                 </View>
             </View>
 
-            {/* ปุ่มบันทึกการแก้ไข */}
-            <View style={styles.buttonGroup}>
-                {/* ปุ่มยกเลิก */}
-                 <TouchableOpacity 
-                    style={styles.cancelBtn} 
-                    onPress={() => navigation.goBack()}
-                    disabled={saving}
-                >
-                    <Text style={styles.cancelBtnText}>ยกเลิก</Text>
-                </TouchableOpacity>
+            <TouchableOpacity 
+                style={[styles.saveBtn, saving && { opacity: 0.7 }]} 
+                onPress={onUpdate}
+                disabled={saving}
+            >
+                {saving ? (
+                    <ActivityIndicator color="#fff" />
+                ) : (
+                    <Text style={styles.saveBtnText}>บันทึกการแก้ไข</Text>
+                )}
+            </TouchableOpacity>
 
-                {/* ปุ่มบันทึก */}
-                <TouchableOpacity 
-                    style={[styles.submitBtn, saving && { opacity: 0.7 }]} 
-                    onPress={onUpdate}
-                    disabled={saving}
-                >
-                    {saving ? (
-                        <ActivityIndicator color="#fff" />
-                    ) : (
-                        <Text style={styles.submitBtnText}>บันทึกการแก้ไข</Text>
-                    )}
-                </TouchableOpacity>
-            </View>
         </KeyboardAwareScrollView>
     );
 };
 
-// Styles (นำมาจากของเดิม และเพิ่มเติมเล็กน้อย)
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-        padding: 20,
-    },
-    headerText: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#108a74',
-        marginBottom: 15,
-    },
-    statusContainer: {
-        flexDirection: 'row',
-        marginBottom: 20,
-        padding: 10,
-        backgroundColor: '#f0f0f0',
-        borderRadius: 8,
-    },
-    label: {
-        fontSize: 16,
-        marginBottom: 8,
-        color: '#333',
-        fontWeight: '500',
-    },
-    inputGroup: {
-        marginBottom: 10,
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: '#a5d6a7',
-        borderRadius: 10,
-        padding: 10,
-        marginBottom: 15,
-        height: 45,
-        color: '#000',
-    },
-    mapContainer: {
-        height: 250,
-        borderRadius: 15,
-        overflow: 'hidden',
-        marginBottom: 20,
-        borderWidth: 1,
-        borderColor: '#ddd',
-    },
-    map: {
-        ...StyleSheet.absoluteFillObject,
-    },
-    searchContainer: {
-        position: 'absolute',
-        top: 10,
-        width: '90%',
-        alignSelf: 'center',
-        zIndex: 10,
-    },
-    searchInput: {
-        height: 40,
-        borderRadius: 8,
-        borderWidth: 0,
-        backgroundColor: '#fff',
-        elevation: 3, // เงาสำหรับ Android
-        shadowColor: '#000', // เงาสำหรับ iOS
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
-    },
-    categoryBox: {
-        borderWidth: 1,
-        borderColor: '#c8e6c9',
-        borderRadius: 15,
-        padding: 15,
-        marginBottom: 30,
-    },
-    categoryGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-    },
-    categoryItem: {
-        width: '30%',
-        alignItems: 'center',
-        marginBottom: 15,
-    },
-    circleIcon: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        backgroundColor: '#e0e0e0',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 5,
-    },
-    circleIconSelected: {
-        backgroundColor: '#1b8a74',
-    },
-    categoryLabel: {
-        fontSize: 12,
-        color: '#333',
-    },
-    categoryLabelSelected: {
-        color: '#1b8a74',
-        fontWeight: 'bold',
-    },
-    buttonGroup: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 50,
-    },
-    cancelBtn: {
-        flex: 0.45,
-        backgroundColor: '#ccc',
-        padding: 15,
-        borderRadius: 10,
-        alignItems: 'center',
-    },
-    cancelBtnText: {
-        color: '#333',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    submitBtn: {
-        flex: 0.45,
-        backgroundColor: '#1b8a74',
-        padding: 15,
-        borderRadius: 10,
-        alignItems: 'center',
-    },
-    submitBtnText: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
+    container: { flex: 1, backgroundColor: '#fff', padding: 20 },
+    headerText: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
+    statusContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
+    label: { fontSize: 16, fontWeight: 'bold', marginBottom: 8, marginTop: 10 },
+    inputGroup: { marginBottom: 15 },
+    input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12, fontSize: 16, backgroundColor: '#fafafa' },
+    mapContainer: { height: 250, width: '100%', borderRadius: 8, overflow: 'hidden', marginBottom: 20 },
+    map: { ...StyleSheet.absoluteFillObject },
+    searchContainer: { position: 'absolute', top: 10, left: 10, right: 10, zIndex: 1 },
+    searchInput: { height: 44, borderRadius: 8, paddingHorizontal: 10, borderWidth: 1, borderColor: '#ddd', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
+    categoryBox: { marginBottom: 30 },
+    categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginTop: 10 },
+    categoryItem: { width: '30%', alignItems: 'center', marginBottom: 15 },
+    circleIcon: { width: 60, height: 60, borderRadius: 30, backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
+    circleIconSelected: { backgroundColor: '#108a74' },
+    categoryText: { fontSize: 14, color: '#333' },
+    saveBtn: { backgroundColor: '#108a74', padding: 15, borderRadius: 8, alignItems: 'center', marginBottom: 40 },
+    saveBtnText: { color: '#fff', fontSize: 18, fontWeight: 'bold' }
 });
 
 export default EditShopScreen;
