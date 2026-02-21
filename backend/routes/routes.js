@@ -18,6 +18,7 @@ router.put('/updateFeedback', controller.updateFeedback);
 router.get('/getWaste', controller.getWaste)
 router.post('/recycle-shop', controller.createRecycleShop);
 router.get('/recycle-shop2', controller.getRecycleShops);
+router.put('/update_recycle-shop', controller.updateRecycleShop);
 
 
 

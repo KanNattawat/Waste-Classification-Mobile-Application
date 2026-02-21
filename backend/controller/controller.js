@@ -424,7 +424,8 @@ export const createRecycleShop = async (req, res) => {
                 Shop_name: shop_name,
                 Tel_num: tel_num,
                 Location: location,
-                Accepted_cate: accepted_cate
+                Accepted_cate: accepted_cate,
+                Status: false
             }
         });
 
@@ -455,6 +456,39 @@ export const getRecycleShops = async (req, res) => {
         res.status(500).json({ error: "Server error" });
     }
 };
+
+export const updateRecycleShop = asyncHandler(async (req, res) => {
+    const { shopId } = req.params; // รับ shopId จาก URL params
+    const { shop_name, tel_num, location, accepted_cate, status } = req.body; // รับข้อมูลที่จะแก้ไขจาก body
+
+    if (!shopId) {
+        return res.status(400).json({ error: "จำเป็นต้องระบุ Shop ID" });
+    }
+
+    const existingShop = await prisma.recycleShop.findUnique({
+        where: { Shop_ID: Number(shopId) }
+    });
+
+    if (!existingShop) {
+        return res.status(404).json({ error: "ไม่พบร้านค้าที่ต้องการแก้ไข" });
+    }
+
+    const updateData = {};
+    if (shop_name !== undefined) updateData.Shop_name = shop_name;
+    if (tel_num !== undefined) updateData.Tel_num = tel_num;
+    if (location !== undefined) updateData.Location = location;
+    if (accepted_cate !== undefined) updateData.Accepted_cate = accepted_cate;
+
+    const updatedShop = await prisma.recycleShop.update({
+        where: { Shop_ID: Number(shopId) },
+        data: updateData
+    });
+
+    res.status(200).json({
+        msg: "อัปเดตข้อมูลร้านสำเร็จ",
+        shop: updatedShop
+    });
+});
 
 
 export const getUniqueWaste = asyncHandler(async (req, res) => {
