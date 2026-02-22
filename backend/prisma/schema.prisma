@@ -72,6 +72,7 @@ model RecycleShop {
    Tel_num String
    Location Float[] //[Lat, Long]
    Accepted_cate Int[]
+   Status Boolean @default(false)
 
    user  User  @relation(fields: [User_ID], references: [User_ID])
 }
