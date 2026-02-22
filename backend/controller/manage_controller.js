@@ -80,9 +80,9 @@ export const getWaste = asyncHandler(async (req, res) => {
     const currentPage = Number(current) || 1
     const voteLimit = Number(minVote) || 0 //number
     const agreeLimit = Number(minAgree) || 0 //number
-    const types = (selectedType && selectedType.length > 0) ? selectedType?.split(',').map(Number) : null; //3,1,2,4 // query
+    const types = (selectedType && selectedType.length > 0) ? selectedType?.split(',').map(Number) : null; //3,1,2,4 
 
-    const dateParts = (dateRange && dateRange.trim() !== '') ? dateRange?.split(',') : null; //query
+    const dateParts = (dateRange && dateRange.trim() !== '') ? dateRange?.split(',') : null;
     const dateFrom = dateParts !== null ? dateParts[0] : null; //2026-02-17 
     const dateTo = dateParts !== null ? dateParts[1] : null
     const limit = 11;
