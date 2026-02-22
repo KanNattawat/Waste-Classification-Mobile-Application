@@ -5,12 +5,12 @@ import * as Slider from "@radix-ui/react-slider";
 type slider = {
     max: number,
     type: string,
-    label:string
+    label:string,
+    value: number,
+    setValue: React.Dispatch<React.SetStateAction<number>>
 }
 
-const TableSlider = ({ max, type, label }: slider) => {
-    const [value, setValue] = useState([0])
-    console.log(value)
+const TableSlider = ({ max, type, label, value, setValue }: slider) => {
     return (
         <div className="flex flex-col gap-4 w-full">
             <div className='flex justify-between'>
@@ -18,8 +18,8 @@ const TableSlider = ({ max, type, label }: slider) => {
             </div>
             <Slider.Root
                 className="relative flex items-center grow h-5"
-                value={value}
-                onValueChange={setValue}
+                value={[value]}
+                onValueChange={(value)=>{setValue(value[0])}}
                 max={max}
                 step={1}
             >
