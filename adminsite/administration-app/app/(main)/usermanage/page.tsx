@@ -15,7 +15,7 @@ const page = async ({ searchParams }: { searchParams: SearchParams }) => {
   const currentPage = page ?? '1';
   const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value;
-  const res = await fetch(`${process.env.API_BASE_URL}/manage_router/getusers?current=${currentPage}${usernameQuery}`,{
+  const res = await fetch(`${process.env.API_BASE_URL}/manage/getusers?current=${currentPage}${usernameQuery}`,{
    headers:{
     'Authorization':`Bearer ${token}`
    }

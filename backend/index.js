@@ -18,7 +18,7 @@ app.use(cors({
 
 app.use(helmet())
 
-app.use("/manage_router", manage_router)
+app.use("/manage", manage_router)
 app.use("/auth", auth_router);
 app.use("/", router)
 app.use(errorHandler)

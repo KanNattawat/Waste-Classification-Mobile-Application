@@ -8,17 +8,17 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover"
-import { addDays, format } from "date-fns"
+import { addDays, format, endOfDay } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 import { type DateRange } from "react-day-picker"
 
-const DatePicker = () => {
-    //    const [date, setDate] = React.useState<DateRange | undefined>({
-    //     from: new Date(new Date().getFullYear(), 0, 20),
-    //     to: addDays(new Date(new Date().getFullYear(), 0, 20), 20),
-    //   })
-    const [date, setDate] = React.useState<DateRange | undefined>(undefined)
-    console.log(date)
+type DatePicker = {
+    setDate: React.Dispatch<DateRange | undefined>
+    date: DateRange| undefined
+}
+
+const DatePicker = ({setDate,date }: DatePicker) => {
+
     return (
         <Field className="mx-auto w-60">
             <FieldLabel htmlFor="date-picker-range" className='text-end text-md text-[#1E8B79] font-bold'>ช่วงเวลาที่ต้องการ</FieldLabel>
@@ -39,7 +39,7 @@ const DatePicker = () => {
                             ) : (
                                 format(date.from, "LLL dd, y")
                             )
-                        ) }
+                        )}
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">

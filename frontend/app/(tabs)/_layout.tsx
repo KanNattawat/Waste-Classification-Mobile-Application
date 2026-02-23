@@ -9,7 +9,7 @@ const _layout = () => {
   const router = useRouter();
   const [picker, setPicker] = useState(false);
 
-  const takeaPhoto = async (router: ReturnType<typeof useRouter>) => {
+  const takeaPhoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
       alert("กรุณาอนุญาตการเข้าถึงกล้องเพื่อใช้งาน");
@@ -28,7 +28,6 @@ const _layout = () => {
     }
   };
 
-  /* ---------- GALLERY ---------- */
   const pickImage = async () => {
     const { status } =
       await ImagePicker.requestMediaLibraryPermissionsAsync();

@@ -74,6 +74,7 @@ export const adminRegister = async (req, res) => {
 
 
 export const Login = async (req, res) => {
+    console.log('hi')
     try {
         const { User_name, User_password } = req.body
         if (!User_name || !User_password) {
