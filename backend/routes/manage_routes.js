@@ -11,5 +11,11 @@ manage_router.delete('/deleteuser',authMiddleware, adminCheck ,controller.delete
 manage_router.get('/waste',authMiddleware, adminCheck, controller.getWaste);
 manage_router.post('/s3-multi-presigned', authMiddleware, adminCheck,controller.getS3MultiDownloadPresigned);
 
+manage_router.get("/getallitem", authMiddleware, adminCheck, controller.getPointShops);
+manage_router.get("/getallitem/:id", authMiddleware, adminCheck, controller.getPointShopById);
+manage_router.post("/createitem", authMiddleware, adminCheck, controller.createPointShops);
+manage_router.put("/updateitem/:id", authMiddleware, adminCheck, controller.updatePointShop);
+manage_router.delete("/deleteitem/:id", authMiddleware, adminCheck, controller.deletePointShop);
+
 
 export default manage_router

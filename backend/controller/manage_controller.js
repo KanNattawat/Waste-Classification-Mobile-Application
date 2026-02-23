@@ -126,8 +126,8 @@ export const getWaste = asyncHandler(async (req, res) => {
         wasteData: transformedData,
         totalPage: totalPage
     });
-
 });
+
 
 export const getS3MultiDownloadPresigned = asyncHandler(async (req, res) => {
     const { minVote, minAgree, selectedTypes, dateRange } = req.query;
@@ -181,3 +181,91 @@ export const getS3MultiDownloadPresigned = asyncHandler(async (req, res) => {
 
     res.status(200).json({ url: presignedUrl })
 })
+
+export const getPointShops = asyncHandler(async (req, res) => {
+    const items = await prisma.pointShop.findMany({
+        orderBy: {
+            Item_ID: "desc"
+        }
+    });
+
+    res.status(200).json(items);
+});
+
+export const getPointShopById = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const item = await prisma.pointShop.findUnique({
+        where: {
+            Item_ID: Number(id)
+        }
+    });
+
+    if (!item) {
+        return res.status(404).json({ error: "Item not found" });
+    }
+
+    res.status(200).json(item);
+});
+
+export const createPointShops = asyncHandler(async (req, res) => {
+    const { Item_name, Usage_Limit, Point_Usage, Expire_Date } = req.body;
+
+    if (!Item_name || !Usage_Limit || !Point_Usage || !Expire_Date) {
+        return res.status(400).json({ error: "กรุณากรอกข้อมูลให้ครบ" });
+    }
+
+    const item = await prisma.pointShop.create({
+        data: {
+            Item_name,
+            Usage_Limit: Number(Usage_Limit),
+            Point_Usage: Number(Point_Usage),
+            Expire_Date: new Date(Expire_Date)
+        }
+    });
+
+    res.status(201).json({
+        msg: "สร้างสินค้าเรียบร้อย",
+        item
+    });
+});
+
+export const updatePointShop = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { Item_name, Usage_Limit, Point_Usage, Expire_Date } = req.body;
+
+    const existing = await prisma.pointShop.findUnique({
+        where: { Item_ID: Number(id) }
+    });
+
+    if (!existing) {
+        return res.status(404).json({ error: "Item not found" });
+    }
+
+    const updated = await prisma.pointShop.update({
+        where: { Item_ID: Number(id) },
+        data: {
+            Item_name,
+            Usage_Limit: Number(Usage_Limit),
+            Point_Usage: Number(Point_Usage),
+            Expire_Date: new Date(Expire_Date)
+        }
+    });
+
+    res.status(200).json({
+        msg: "อัปเดตสำเร็จ",
+        item: updated
+    });
+});
+
+export const deletePointShop = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    await prisma.pointShop.delete({
+        where: { Item_ID: Number(id) }
+    });
+
+    res.status(200).json({
+        msg: "ลบสำเร็จ"
+    });
+});
