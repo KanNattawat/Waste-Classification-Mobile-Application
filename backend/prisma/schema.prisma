@@ -88,4 +88,12 @@ model WasteVote{
   waste  Waste  @relation(fields: [Waste_ID], references: [Waste_ID])
 }
 
+model PointShop {
+  Item_ID Int @id @default(autoincrement())
+  Item_name String
+  Usage_Limit Int
+  Point_Usage Int
+  Expire_Date DateTime
+}
+
 //npx prisma migrate dev --name init
