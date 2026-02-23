@@ -9,6 +9,7 @@ manage_router.get('/getusers',authMiddleware, adminCheck, controller.getUsers);
 manage_router.post('/edituser',authMiddleware, adminCheck ,controller.editUser);
 manage_router.delete('/deleteuser',authMiddleware, adminCheck ,controller.deleteUser);
 manage_router.get('/waste',authMiddleware, adminCheck, controller.getWaste);
+manage_router.post('/s3-multi-presigned', authMiddleware, adminCheck,controller.getS3MultiDownloadPresigned);
 
 
 export default manage_router

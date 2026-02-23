@@ -7,7 +7,7 @@ import axios from 'axios';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { saveImage } from "@/lib/storage";
 import { API_URL } from "@/config";
-import {getS3Presinged, uploadToS3} from "@/lib/s3Service"
+import {getS3UploadPresinged, uploadToS3} from "@/lib/s3Service"
 
 const ProgressBar = ({ label, percent, color }: { label: string, percent: number, color: string }) => {
   return (
@@ -144,7 +144,7 @@ const Index = () => {
   const uploadToDB = async (wastetype: string, image_path: string, probs: Array<number>, userId: string | null) => {
     try {
       const contentType = 'image/jpeg'
-      const {url, key} = await getS3Presinged(userId, contentType);
+      const {url, key} = await getS3UploadPresinged(userId, contentType);
       await uploadToS3(url, image_path, contentType)
 
       const res = await axios.post(`${API_URL}/wasteupload`, {

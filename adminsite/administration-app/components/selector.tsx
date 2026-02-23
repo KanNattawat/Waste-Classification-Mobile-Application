@@ -48,7 +48,7 @@ const Selector = ({setValue, value}:Selector) => {
                 option: ({ isFocused }) => `py-0.5 ${isFocused && 'bg-blue-100'}`,
                 multiValue: () => "bg-slate-200 rounded-sm flex items-center overflow-hidden ",
                 multiValueLabel: () => "px-2 py-0.5 text-[14.5px] ",
-                multiValueRemove: () => "px-1 hover:bg-red-200 hover:text-red-400 transition-colors",
+                multiValueRemove: () => "px-1 hover:bg-red-200 hover:text-red-400 rounded-sm transition-colors",
                 noOptionsMessage: () => "p-4 text-slate-400 text-[14.5px]",
             }}
             menuPosition="fixed"

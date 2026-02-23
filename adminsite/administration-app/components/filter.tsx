@@ -7,10 +7,12 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { MultiValue } from 'react-select';
 import { type DateRange } from "react-day-picker"
 import { endOfDay } from "date-fns"
+import { getDowloadPresigned, getZipFile } from "@/lib/s3Service"
 interface MyOption {
     value: string;
     label: string;
 }
+import { getToken } from '@/lib/getToken';
 
 const Filter = () => {
     const [vote, setVote] = useState(0)
@@ -59,6 +61,23 @@ const Filter = () => {
         params.set("page", "1");
         router.push(`${pathname}?${params}`);
     }
+
+    const handleExport = async () => {
+        const selectedTypes = types.map((item) => item.value)
+        const dateFrom = date?.from && date.from.toISOString()
+        const dateTo = date?.to && endOfDay(date.to).toISOString()
+        const selectedDate = [dateFrom, dateTo]
+        const query = new URLSearchParams({
+            minVote: String(vote ?? ""),
+            minAgree: String(agreement ?? ""),
+            selectedTypes: String(selectedTypes ?? '1,2,3,4'),
+            dateRange: String(selectedDate ?? ""),
+        }).toString();
+        const token = await getToken()
+        const url = await getDowloadPresigned(token, query)
+        getZipFile(url)
+    }
+
     return (
         <div className="flex flex-row p-8 bg-white w-[90%] h-[40%] rounded-md shadow-xl overflow-hidden">
 
@@ -84,6 +103,7 @@ const Filter = () => {
                 <div className='h-full'>
                     <div className="w-28 max-w-md flex justify-center">
                         <button
+                            onClick={handleExport}
                             type="submit"
                             className="w-full h-10 bg-[#1E8B79] text-white text-md font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all active:scale-95 cursor-pointer"
                         >

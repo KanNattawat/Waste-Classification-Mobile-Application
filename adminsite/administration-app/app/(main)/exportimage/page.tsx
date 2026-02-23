@@ -1,6 +1,6 @@
 import Pagination from "@/components/pagination"
 import Image from 'next/image';
-import { cookies } from 'next/headers';
+import { getToken } from '@/lib/getToken';
 import Filter from "@/components/filter"
 
 type WasteVote = {
@@ -31,8 +31,7 @@ const page = async ({ searchParams }: { searchParams: SearchParams }) => {
 
   const { page, minVote, minAgreemenRate, selectedTypes, dateRange } = await searchParams;
   const currentPage = page ?? '1';
-  const cookieStore = await cookies();
-  const token = cookieStore.get('token')?.value;
+  const token = await getToken()
   const query = new URLSearchParams({
     current: currentPage,
     minVote: String(minVote ?? ""),
@@ -100,7 +99,7 @@ const page = async ({ searchParams }: { searchParams: SearchParams }) => {
                                   {displayPercent}%
                                 </span>
                               </div>
-                              <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                              <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden shadow-inner">
                                 <div
                                   className={`h-full bg-[#1E8B79] transition-all duration-500 ease-out rounded-full`}
                                   style={{ width: `${displayPercent}%` }}

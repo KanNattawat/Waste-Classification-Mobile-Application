@@ -2,9 +2,8 @@ import axios from 'axios';
 import { API_URL } from "@/config";
 import * as FileSystem from "expo-file-system";
 
-export const getS3Presinged = async (userId: string | null, contentType: string) => {
-    console.log('getting presign url', contentType);
-    const res = await axios.post(`${API_URL}/presigned-s3`, {
+export const getS3UploadPresinged = async (userId: string | null, contentType: string) => {
+    const res = await axios.post(`${API_URL}/s3-uploadpresigned`, {
         userId: userId,
         contentType: contentType
     })
@@ -15,7 +14,6 @@ export const getS3Presinged = async (userId: string | null, contentType: string)
 
 
 export const uploadToS3 = async ( presignedUrl:string, fileUri:string, contentType:string) => {
-    console.log('uploading to s3');
     const res = await FileSystem.uploadAsync(presignedUrl, fileUri, {
         httpMethod: "PUT",
         headers: {

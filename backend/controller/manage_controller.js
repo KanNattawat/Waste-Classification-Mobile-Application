@@ -1,7 +1,12 @@
 import { prisma } from "../prisma/prisma.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { Prisma } from '@prisma/client'
-
+import archiver from 'archiver';
+import { PassThrough } from 'stream';
+import { transform, buildWasteFilters, getBaseWasteQuery } from '../utils/rawQuery.js'
+import { s3 } from "../utils/s3.js"
+import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { Upload } from "@aws-sdk/lib-storage";
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 export const getUsers = asyncHandler(async (req, res) => {
     const currentPage = Number(req.query.current) || 1;
     const userName = req.query.username
@@ -77,60 +82,16 @@ export const deleteUser = asyncHandler(async (req, res) => {
 
 export const getWaste = asyncHandler(async (req, res) => {
     const { current, minVote, minAgree, selectedType, dateRange } = req.query;
+    const { voteLimit, agreeLimit, types, dateFrom, dateTo } = await transform(minVote, minAgree, selectedType, dateRange)
     const currentPage = Number(current) || 1
-    const voteLimit = Number(minVote) || 0 //number
-    const agreeLimit = Number(minAgree) || 0 //number
-    const types = (selectedType && selectedType.length > 0) ? selectedType?.split(',').map(Number) : null; //3,1,2,4 
-
-    const dateParts = (dateRange && dateRange.trim() !== '') ? dateRange?.split(',') : null;
-    const dateFrom = dateParts !== null ? dateParts[0] : null; //2026-02-17 
-    const dateTo = dateParts !== null ? dateParts[1] : null
     const limit = 11;
     const offset = (Number(currentPage) - 1) * limit;
 
-    const dateFromFilter = dateFrom
-        ? Prisma.sql`AND "Timestamp" >= CAST(${dateFrom} AS timestamp)`
-        : Prisma.empty;
-
-    const dateToFilter = dateTo
-        ? Prisma.sql`AND "Timestamp" <= CAST(${dateTo} AS timestamp)`
-        : Prisma.empty;
-
-    const typesFilter = types
-        ? Prisma.sql`AND "WasteType_ID" = ANY(${types}::int[])`
-        : Prisma.empty;
-
+    const filters = buildWasteFilters(types, dateFrom, dateTo)
+    const baseQuery = getBaseWasteQuery(filters, voteLimit, agreeLimit)
     const [queryWasteData, countWasteData] = await Promise.all([
-        prisma.$queryRaw`
-            SELECT * FROM (
-                SELECT *, 
-                (SELECT COALESCE(SUM(s), 0) FROM UNNEST("Vote_wastetype") s) as total_vote,
-                (SELECT COALESCE(MAX(m), 0) FROM UNNEST("Vote_wastetype") m) as max_vote
-                FROM "Waste"
-                WHERE "Is_correct" = false
-                ${typesFilter}
-                ${dateFromFilter}
-                ${dateToFilter}
-            ) as subquery
-            WHERE total_vote >= ${voteLimit}
-            AND (CASE WHEN total_vote > 0 THEN (max_vote::float / total_vote::float) * 100 ELSE 0 END) >= ${agreeLimit}
-            ORDER BY "Timestamp" DESC
-            LIMIT ${limit} OFFSET ${offset}
-        `,
-        prisma.$queryRaw`
-            SELECT COUNT(*)::int as count FROM (
-                SELECT 
-                (SELECT COALESCE(SUM(s), 0) FROM UNNEST("Vote_wastetype") s) as total_vote,
-                (SELECT COALESCE(MAX(m), 0) FROM UNNEST("Vote_wastetype") m) as max_vote
-                FROM "Waste"
-                WHERE "Is_correct" = false
-                ${typesFilter}
-                ${dateFromFilter}
-                ${dateToFilter}
-            ) as subquery
-            WHERE total_vote >= ${voteLimit}
-            AND (CASE WHEN total_vote > 0 THEN (max_vote::float / total_vote::float) * 100 ELSE 0 END) >= ${agreeLimit}
-        `
+        prisma.$queryRaw`${baseQuery} ORDER BY "Timestamp" DESC LIMIT ${limit} OFFSET ${offset}`,
+        prisma.$queryRaw`SELECT COUNT(*)::int as count FROM (${baseQuery}) as total`
     ])
     const totalData = countWasteData[0].count
 
@@ -140,10 +101,8 @@ export const getWaste = asyncHandler(async (req, res) => {
         const votes = item.Vote_wastetype;
         const totalVotes = Number(item.total_vote)
         const maxVote = item.max_vote
-        const agreementRate = ((maxVote/totalVotes)*100).toFixed(2)
+        const agreementRate = ((maxVote / totalVotes) * 100).toFixed(2)
         console.log('maxVote:', maxVote, ' totalVotes:', totalVotes)
-
-
         const labeledVotes = votes.map((count, index) => {
             const percent = totalVotes > 0 ? ((count / totalVotes) * 100).toFixed(2) : "0";
             return {
@@ -152,8 +111,6 @@ export const getWaste = asyncHandler(async (req, res) => {
                 percentage: percent
             };
         });
-
-
         return {
             ...item,
             total_vote: totalVotes,
@@ -162,7 +119,7 @@ export const getWaste = asyncHandler(async (req, res) => {
             Agreement_Rate: agreementRate
         };
     });
-    const totalPage =  totalData > 0 ?Math.ceil(totalData / limit) : 1;
+    const totalPage = totalData > 0 ? Math.ceil(totalData / limit) : 1;
     console.log(totalPage)
 
     res.status(200).json({
@@ -171,3 +128,56 @@ export const getWaste = asyncHandler(async (req, res) => {
     });
 
 });
+
+export const getS3MultiDownloadPresigned = asyncHandler(async (req, res) => {
+    const { minVote, minAgree, selectedTypes, dateRange } = req.query;
+    const { voteLimit, agreeLimit, types, dateFrom, dateTo } = await transform(minVote, minAgree, selectedTypes, dateRange)
+    const filters = buildWasteFilters(types, dateFrom, dateTo)
+    const baseQuery = getBaseWasteQuery(filters, voteLimit, agreeLimit)
+    const queryWasteData = await prisma.$queryRaw`${baseQuery} ORDER BY "Timestamp" DESC`
+
+    if (queryWasteData.length > 50) return res.status(400).json({ msg: "Data must not over 50." })
+
+    const zipName = `exports/waste-export-${Date.now()}.zip`;
+    const passThrough = new PassThrough();
+    const archive = archiver('zip', { zlib: { level: 9 } });
+    archive.pipe(passThrough);
+    const parallelUploads3 = new Upload({
+        client: s3,
+        params: {
+            Bucket: process.env.S3_BUCKET,
+            Key: zipName,
+            Body: passThrough,
+            ContentType: 'application/zip'
+        }
+    });
+    
+
+    for (const item of queryWasteData) {
+        const mostVote = Math.max(...item.Vote_wastetype);
+        const mostVoteIndex = item.Vote_wastetype.indexOf(mostVote)
+        const mapping = ['Compostable waste', 'Hazardous waste', 'General waste', 'Recyclable waste'];
+        const folderName = mapping[mostVoteIndex];
+        try {
+            const getObjCommand = new GetObjectCommand({
+                Bucket: process.env.S3_BUCKET,
+                Key: item.Image_path
+            })
+            const response = await s3.send(getObjCommand)
+            archive.append(response.Body, { name: `${folderName}/${item.Image_path.split('/').pop()}` });
+        } catch (error) {
+            console.error(`Failed to add file ${item.Image_path}`, err);
+        }
+    }
+
+    await archive.finalize()
+    await parallelUploads3.done();
+
+    const downloadCommand = new GetObjectCommand({
+        Bucket: process.env.S3_BUCKET,
+        Key: zipName
+    })
+    const presignedUrl = await getSignedUrl(s3, downloadCommand, { expiresIn: 3600 });
+
+    res.status(200).json({ url: presignedUrl })
+})
