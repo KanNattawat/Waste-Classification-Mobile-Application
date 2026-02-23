@@ -182,6 +182,22 @@ export const getPointShops = asyncHandler(async (req, res) => {
     res.status(200).json(items);
 });
 
+export const getPointShopById = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const item = await prisma.pointShop.findUnique({
+        where: {
+            Item_ID: Number(id)
+        }
+    });
+
+    if (!item) {
+        return res.status(404).json({ error: "Item not found" });
+    }
+
+    res.status(200).json(item);
+});
+
 export const createPointShops = asyncHandler(async (req, res) => {
     const { Item_name, Usage_Limit, Point_Usage, Expire_Date } = req.body;
 
