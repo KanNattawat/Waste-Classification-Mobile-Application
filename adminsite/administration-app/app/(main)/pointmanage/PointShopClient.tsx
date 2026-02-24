@@ -269,9 +269,9 @@ export default function PointShopClient({ initialItems, token }: { initialItems:
                   <tr key={item.Item_ID} className="hover:bg-gray-50">
                     {/* 🌟 8. แสดงรูปภาพในตาราง */}
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {item.Image_path ? (
+                      {item.Item_Image_path ? (
                         <img 
-                          src={item.Image_path} 
+                          src={item.Item_Image_path} 
                           alt={item.Item_name} 
                           className="w-12 h-12 object-cover rounded shadow-sm border"
                         />
