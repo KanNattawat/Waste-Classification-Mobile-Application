@@ -7,9 +7,7 @@ import { s3 } from "../utils/s3.js"
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import multer from 'multer';
 
-const upload = multer({ storage: multer.memoryStorage() }).single('Image_path');
 
 export const getUsers = asyncHandler(async (req, res) => {
     const currentPage = Number(req.query.current) || 1;
@@ -213,15 +211,8 @@ export const getPointShopById = asyncHandler(async (req, res) => {
 });
 
 export const createPointShops = asyncHandler(async (req, res) => {
-    // 🌟 ดักจับ FormData ตรงนี้ก่อน เพื่อป้องกัน Error req.body is undefined
-    await new Promise((resolve, reject) => {
-        upload(req, res, (err) => {
-            if (err) reject(err);
-            else resolve();
-        });
-    });
+    // 🌟 เอา Promise ดักจับออก เพราะ Route จัดการให้แล้ว
 
-    // ใส่ || {} ไว้กันเหนียว ในกรณีที่ข้อมูลว่างเปล่า
     const { Item_name, Usage_Limit, Point_Usage, Expire_Date } = req.body || {};
     const file = req.file; 
 
@@ -263,13 +254,7 @@ export const createPointShops = asyncHandler(async (req, res) => {
 export const updatePointShop = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    // 🌟 ดักจับ FormData ตรงนี้ก่อนเช่นกัน
-    await new Promise((resolve, reject) => {
-        upload(req, res, (err) => {
-            if (err) reject(err);
-            else resolve();
-        });
-    });
+    // 🌟 เอา Promise ดักจับออก เพราะ Route จัดการให้แล้ว
 
     const { Item_name, Usage_Limit, Point_Usage, Expire_Date } = req.body || {};
     const file = req.file; 
