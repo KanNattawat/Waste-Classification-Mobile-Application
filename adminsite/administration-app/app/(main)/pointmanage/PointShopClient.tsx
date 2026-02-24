@@ -157,7 +157,7 @@ export default function PointShopClient({ initialItems, token }: { initialItems:
       {/* ฟอร์มเพิ่ม/แก้ไขสินค้า */}
       <div className="bg-gray-50 p-6 rounded-lg border mb-8">
         <h2 className="text-xl font-semibold mb-4 text-gray-700">
-          {editingId ? "✏️ แก้ไขสินค้า" : "➕ เพิ่มสินค้าใหม่"}
+          {editingId ? "แก้ไขสินค้า" : "เพิ่มสินค้าใหม่"}
         </h2>
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
