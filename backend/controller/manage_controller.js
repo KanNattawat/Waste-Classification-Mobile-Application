@@ -185,7 +185,7 @@ export const getS3MultiDownloadPresigned = asyncHandler(async (req, res) => {
 export const getPointShops = asyncHandler(async (req, res) => {
     const items = await prisma.pointShop.findMany({
         orderBy: {
-            Item_ID: "desc"
+            Item_ID: "asc"
         }
     });
 
