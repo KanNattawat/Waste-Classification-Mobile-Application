@@ -93,6 +93,7 @@ model PointShop {
   Item_name String
   Usage_Limit Int
   Point_Usage Int
+  Image_path String
   Expire_Date DateTime
 }
 

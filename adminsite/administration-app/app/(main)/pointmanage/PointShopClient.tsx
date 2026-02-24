@@ -15,12 +15,15 @@ export default function PointShopClient({ initialItems, token }: { initialItems:
     Point_Usage: "",
     Expire_Date: "",
   });
+  
+  // 🌟 1. เพิ่ม State สำหรับเก็บไฟล์รูปภาพ
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
 
-  // ฟังก์ชันใช้ Token ที่รับมาจาก Props แทน LocalStorage
+  // 🌟 2. เอา Content-Type ออกจาก Header พื้นฐาน 
+  // (เพราะเวลาส่ง FormData เบราว์เซอร์จะจัดการใส่ Content-Type: multipart/form-data ให้เองอัตโนมัติ)
   const getAuthHeaders = () => {
     return {
-      "Content-Type": "application/json",
       "Authorization": `Bearer ${token}` 
     };
   };
@@ -29,7 +32,10 @@ export default function PointShopClient({ initialItems, token }: { initialItems:
     setLoading(true);
     try {
       const res = await fetch(`${API_BASE_URL}/getallitem`, {
-        headers: getAuthHeaders(),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}` 
+        },
       });
       const data = await res.json();
       
@@ -50,6 +56,13 @@ export default function PointShopClient({ initialItems, token }: { initialItems:
     setFormData({ ...formData, [name]: value });
   };
 
+  // 🌟 3. ฟังก์ชันจัดการเมื่อผู้ใช้เลือกไฟล์รูปภาพ
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setImageFile(e.target.files[0]);
+    }
+  };
+
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     
@@ -58,17 +71,28 @@ export default function PointShopClient({ initialItems, token }: { initialItems:
       ? `${API_BASE_URL}/updateitem/${editingId}` 
       : `${API_BASE_URL}/createitem`;
 
+    // 🌟 4. เปลี่ยนมาใช้ FormData ในการแพ็กข้อมูลแทน JSON
+    const submitData = new FormData();
+    submitData.append("Item_name", formData.Item_name);
+    submitData.append("Usage_Limit", formData.Usage_Limit.toString());
+    submitData.append("Point_Usage", formData.Point_Usage.toString());
+    submitData.append("Expire_Date", formData.Expire_Date);
+    
+    // ถ้ามีการเลือกไฟล์ ให้แนบไฟล์ไปด้วย (ใช้ชื่อ Image_path ตามที่ Backend จะรับ)
+    if (imageFile) {
+      submitData.append("Image_path", imageFile);
+    }
+
     try {
       const res = await fetch(url, {
         method,
-        headers: getAuthHeaders(),
-        body: JSON.stringify(formData),
+        headers: getAuthHeaders(), // ใช้ Header ที่ไม่มี Content-Type
+        body: submitData, // ส่ง FormData
       });
 
       if (res.ok) {
         alert(editingId ? "อัปเดตสำเร็จ" : "สร้างสินค้าเรียบร้อย");
-        setFormData({ Item_name: "", Usage_Limit: "", Point_Usage: "", Expire_Date: "" });
-        setEditingId(null);
+        cancelEdit(); // เคลียร์ฟอร์มและไฟล์
         fetchItems(); 
       } else {
         const errData = await res.json();
@@ -87,11 +111,19 @@ export default function PointShopClient({ initialItems, token }: { initialItems:
       Point_Usage: item.Point_Usage,
       Expire_Date: new Date(item.Expire_Date).toISOString().split("T")[0], 
     });
+    // 🌟 5. ล้างไฟล์รูปที่อาจค้างอยู่ตอนกดแก้ไข
+    setImageFile(null); 
+    const fileInput = document.getElementById("imageInput") as HTMLInputElement;
+    if (fileInput) fileInput.value = "";
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setFormData({ Item_name: "", Usage_Limit: "", Point_Usage: "", Expire_Date: "" });
+    // 🌟 6. ล้างไฟล์รูปออกเมื่อกดยกเลิก
+    setImageFile(null);
+    const fileInput = document.getElementById("imageInput") as HTMLInputElement;
+    if (fileInput) fileInput.value = "";
   };
 
   const handleDelete = async (id: number) => {
@@ -100,7 +132,10 @@ export default function PointShopClient({ initialItems, token }: { initialItems:
     try {
       const res = await fetch(`${API_BASE_URL}/deleteitem/${id}`, { 
         method: "DELETE",
-        headers: getAuthHeaders(),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
       });
       
       if (res.ok) {
@@ -170,6 +205,22 @@ export default function PointShopClient({ initialItems, token }: { initialItems:
               className="mt-1 p-2 w-full border rounded-md focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
+          
+          {/* 🌟 7. ช่องสำหรับอัปโหลดรูปภาพ */}
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700">
+              รูปภาพสินค้า {editingId && <span className="text-gray-400 font-normal">(อัปโหลดใหม่เมื่อต้องการเปลี่ยนรูปเท่านั้น)</span>}
+            </label>
+            <input
+              id="imageInput"
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              required={!editingId} // บังคับใส่อัปโหลดเฉพาะตอนสร้างใหม่เท่านั้น ตอนแก้ไม่ต้องบังคับ
+              className="mt-1 p-2 w-full border rounded-md focus:ring-blue-500 focus:border-blue-500 bg-white"
+            />
+          </div>
+
           <div className="md:col-span-2 flex gap-2 mt-2">
             <button
               type="submit"
@@ -196,7 +247,7 @@ export default function PointShopClient({ initialItems, token }: { initialItems:
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">รูปภาพ</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ชื่อสินค้า</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Usage Limit</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Point</th>
@@ -216,7 +267,20 @@ export default function PointShopClient({ initialItems, token }: { initialItems:
               ) : (
                 items.map((item: any) => (
                   <tr key={item.Item_ID} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">{item.Item_ID}</td>
+                    {/* 🌟 8. แสดงรูปภาพในตาราง */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {item.Image_path ? (
+                        <img 
+                          src={item.Image_path} 
+                          alt={item.Item_name} 
+                          className="w-12 h-12 object-cover rounded shadow-sm border"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">
+                          ไม่มีรูป
+                        </div>
+                      )}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">{item.Item_name}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{item.Usage_Limit}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-blue-600 font-semibold">{item.Point_Usage}</td>

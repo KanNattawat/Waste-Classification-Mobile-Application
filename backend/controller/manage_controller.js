@@ -7,6 +7,8 @@ import { s3 } from "../utils/s3.js"
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+
+
 export const getUsers = asyncHandler(async (req, res) => {
     const currentPage = Number(req.query.current) || 1;
     const userName = req.query.username
@@ -210,17 +212,40 @@ export const getPointShopById = asyncHandler(async (req, res) => {
 
 export const createPointShops = asyncHandler(async (req, res) => {
     const { Item_name, Usage_Limit, Point_Usage, Expire_Date } = req.body;
+    const file = req.file; // รับไฟล์จาก multer
 
-    if (!Item_name || !Usage_Limit || !Point_Usage || !Expire_Date) {
-        return res.status(400).json({ error: "กรุณากรอกข้อมูลให้ครบ" });
+    // เช็คว่ามีข้อมูลและรูปภาพครบไหม
+    if (!Item_name || !Usage_Limit || !Point_Usage || !Expire_Date || !file) {
+        return res.status(400).json({ error: "กรุณากรอกข้อมูลและอัปโหลดรูปภาพให้ครบถ้วน" });
     }
 
+    // 1. สร้างชื่อไฟล์ใหม่กันซ้ำ และตั้งค่าสำหรับการอัปโหลด
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const fileName = `pointshop/${uniqueSuffix}-${file.originalname.replace(/\s+/g, '-')}`;
+
+    const uploadParams = {
+        Bucket: process.env.S3_BUCKET,
+        Key: fileName,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+    };
+
+    // 2. อัปโหลดขึ้น S3
+    await s3.send(new PutObjectCommand(uploadParams));
+
+    // 3. สร้าง URL ของรูปภาพเพื่อเก็บลง DB
+    // ใช้ AWS_REGION จาก .env ถัามี ถ้าไม่มีก็ใช้ default amazonaws.com
+    const region = process.env.AWS_REGION || 'ap-southeast-1';
+    const Image_path = `https://${process.env.S3_BUCKET}.s3.${region}.amazonaws.com/${fileName}`;
+
+    // 4. บันทึกลง Database
     const item = await prisma.pointShop.create({
         data: {
             Item_name,
             Usage_Limit: Number(Usage_Limit),
             Point_Usage: Number(Point_Usage),
-            Expire_Date: new Date(Expire_Date)
+            Expire_Date: new Date(Expire_Date),
+            Image_path: Image_path // เซฟ Path ลง DB
         }
     });
 
@@ -233,6 +258,7 @@ export const createPointShops = asyncHandler(async (req, res) => {
 export const updatePointShop = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { Item_name, Usage_Limit, Point_Usage, Expire_Date } = req.body;
+    const file = req.file; // อาจจะมีหรือไม่มีก็ได้ (ถ้าเขาไม่ได้เปลี่ยนรูป)
 
     const existing = await prisma.pointShop.findUnique({
         where: { Item_ID: Number(id) }
@@ -242,13 +268,36 @@ export const updatePointShop = asyncHandler(async (req, res) => {
         return res.status(404).json({ error: "Item not found" });
     }
 
+    // ใช้รูปเดิมเป็นค่าตั้งต้น
+    let Image_path = existing.Image_path;
+
+    // ถ้ามีการอัปโหลดรูปภาพมาใหม่ ให้รันสเตปอัปโหลด S3 
+    if (file) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const fileName = `pointshop/${uniqueSuffix}-${file.originalname.replace(/\s+/g, '-')}`;
+
+        const uploadParams = {
+            Bucket: process.env.S3_BUCKET,
+            Key: fileName,
+            Body: file.buffer,
+            ContentType: file.mimetype,
+        };
+
+        await s3.send(new PutObjectCommand(uploadParams));
+        
+        const region = process.env.AWS_REGION || 'ap-southeast-1';
+        Image_path = `https://${process.env.S3_BUCKET}.s3.${region}.amazonaws.com/${fileName}`;
+    }
+
+    // อัปเดต Database
     const updated = await prisma.pointShop.update({
         where: { Item_ID: Number(id) },
         data: {
             Item_name,
             Usage_Limit: Number(Usage_Limit),
             Point_Usage: Number(Point_Usage),
-            Expire_Date: new Date(Expire_Date)
+            Expire_Date: new Date(Expire_Date),
+            Image_path: Image_path // ใช้รูปใหม่ (ถ้ามี) หรือรูปเดิม
         }
     });
 
@@ -260,6 +309,9 @@ export const updatePointShop = asyncHandler(async (req, res) => {
 
 export const deletePointShop = asyncHandler(async (req, res) => {
     const { id } = req.params;
+
+    // Optional: ถ้าคุณอยากประหยัดพื้นที่ S3 คุณสามารถดึง existing.Image_path มาใช้ DeleteObjectCommand เพื่อลบรูปใน S3 ทิ้งด้วยได้นะครับ 
+    // แต่ถ้าไม่ซีเรียส ก็ปล่อยลบแค่ใน DB ตามโค้ดเดิมได้เลย
 
     await prisma.pointShop.delete({
         where: { Item_ID: Number(id) }
