@@ -241,7 +241,7 @@ export const createPointShops = asyncHandler(async (req, res) => {
             Usage_Limit: Number(Usage_Limit),
             Point_Usage: Number(Point_Usage),
             Expire_Date: new Date(Expire_Date),
-            Image_path: Image_path
+            Item_Image_path: Image_path
         }
     });
 
@@ -267,7 +267,7 @@ export const updatePointShop = asyncHandler(async (req, res) => {
         return res.status(404).json({ error: "Item not found" });
     }
 
-    let Image_path = existing.Image_path;
+    let Image_path = existing.Item_Image_path;
 
     if (file) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -293,7 +293,7 @@ export const updatePointShop = asyncHandler(async (req, res) => {
             Usage_Limit: Number(Usage_Limit),
             Point_Usage: Number(Point_Usage),
             Expire_Date: new Date(Expire_Date),
-            Image_path: Image_path
+            Item_Image_path: Image_path
         }
     });
 
