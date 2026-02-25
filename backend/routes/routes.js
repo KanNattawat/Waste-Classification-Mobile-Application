@@ -19,6 +19,7 @@ router.get('/getWaste', controller.getWaste)
 router.post('/recycle-shop', controller.createRecycleShop);
 router.get('/recycle-shop2', controller.getRecycleShops);
 router.put('/update_recycle-shop', controller.updateRecycleShop);
+router.post('/redeem', authMiddleware, controller.redeemItem);
 
 router.post('/s3-uploadpresigned', controller.getS3UploadPresigned);
 
