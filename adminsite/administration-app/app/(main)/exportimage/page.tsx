@@ -2,6 +2,7 @@ import Pagination from "@/components/pagination"
 import Image from 'next/image';
 import { getToken } from '@/lib/getToken';
 import Filter from "@/components/filter"
+import { getImage } from "@/lib/s3Service";
 
 type WasteVote = {
   label: string;
@@ -15,6 +16,7 @@ type Waste = {
   Vote_wastetype: WasteVote[]
   Total_Vote: number
   Agreement_Rate: number
+  Image_path:string
 }
 
 type SearchParams = {
@@ -82,7 +84,7 @@ const page = async ({ searchParams }: { searchParams: SearchParams }) => {
                 {waste.map((item: Waste, index: number) => (
                   <tr key={index} className="hover:bg-slate-50 border-b border-slate-100 last:border-none text-center">
                     <td className="p-4 flex justify-center">
-                      <Image src="/images/test.png" width={120} height={120} alt="" className="object-contain rounded-md" />
+                      <Image src={getImage(item.Image_path)} width={120} height={120} alt="" className="object-contain rounded-md" />
                     </td>
                     <td className="p-4">
                       <p className="text-sm text-slate-600">{wasteTypeMapping[(item.WasteType_ID as keyof typeof wasteTypeMapping)] || ''}</p>

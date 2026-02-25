@@ -184,7 +184,7 @@ const Index = () => {
         console.log('class: ', sortedClass);
         console.log('output0: ', outputs[0])
         const wasteId = await uploadToDB(sortedClass[0][0], photo, outputs[0], userId);
-
+        console.log('wasteId', wasteId)
         setWaste({
           sortedResult: sortedClass.map(([label, score]) => ({
             label,

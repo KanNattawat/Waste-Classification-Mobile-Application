@@ -59,8 +59,10 @@ model WasteType {
 model PointHistory {
   PointHistory_ID Int      @id @default(autoincrement())
   User_ID    Int
+  PointsChanged Int
   History_Detail   String
   History_Type  History_Type
+  Timestamp  DateTime @default(now())
 
   user  User  @relation(fields: [User_ID], references: [User_ID])
 }

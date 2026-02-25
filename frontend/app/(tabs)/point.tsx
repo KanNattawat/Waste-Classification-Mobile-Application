@@ -1,11 +1,44 @@
-import React from 'react'
+import React, { useCallback, useState } from 'react'
 import { Text, View, Image, Pressable, SafeAreaView } from 'react-native';
 import { shadow } from "@/styles/shadow";
 import ScreenScroll from "@/components/ScreenScroll";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
+import axios from 'axios';
+import { API_URL } from "@/config";
+
+type User = {
+  UserName: string,
+  Point: string
+}
+
 
 export default function Point() {
   const router = useRouter();
+  const [user, setUser] = useState<User | undefined>(undefined)
+
+  const fetchUser = async () => {
+    const userId = await AsyncStorage.getItem("userId");
+    const res = await axios(`${API_URL}/user`,
+      {
+        params: {
+          userId: userId
+        }
+      })
+    const data = res.data
+    console.log(data)
+    setUser({
+      UserName:data.User_name,
+      Point:data.Points
+    })
+  }
+  useFocusEffect(
+    useCallback(() => {
+      fetchUser();
+    }, [])
+  );
+
   return (
     <SafeAreaView className="flex-1 flex-col bg-[#F9F8FA] min-h-full">
       <ScreenScroll>
@@ -15,10 +48,10 @@ export default function Point() {
 
             <View className='flex-row items-center bg-white shadow-xl px-8 py-4 rounded-xl' style={shadow.card}>
               <View className='flex-1'>
-                <Text className='text-xl'>Adam Smith</Text>
+                <Text className='text-xl'>{user?.UserName}</Text>
                 <View className='flex flex-row items-center'>
                   <Image className='w-8 h-8 mr-2' source={require("@/assets/images/coin.png")} />
-                  <Text className='text-xl' ><Text className='text-[#1E8B79]'>100</Text> คะแนน</Text>
+                  <Text className='text-xl' ><Text className='text-[#1E8B79]'>{user?.Point}</Text> คะแนน</Text>
                 </View>
               </View>
               <Pressable onPress={() => { router.push('/pointHistory') }}>
@@ -41,19 +74,15 @@ export default function Point() {
 
             <View className='flex flex-row flex-wrap gap-3 items-center justify-between'>
               {/* 1 item */}
-              <Pressable className='flex items-center gap-2 bg-white rounded-xl p-2 w-[48%]' style={shadow.card} onPress={()=>router.push('/item')}>
+              <Pressable className='flex items-center gap-2 bg-white rounded-xl p-2 w-[48%]' style={shadow.card} onPress={() => router.push('/item')}>
                 <Image className="w-full h-32 max-w-[120px]"
-                source={require("@/assets/images/item.png")} />
+                  source={require("@/assets/images/item.png")} />
                 <Text className='text-xl text-center' numberOfLines={1}>ถุงผ้ารักษ์โลก</Text>
                 <View className='flex flex-row items-center'>
                   <Image className='w-4 h-4 mr-2' source={require("@/assets/images/coin.png")} />
                   <Text className='text-lg' ><Text className='text-[#1E8B79]'>100</Text> คะแนน</Text>
                 </View>
               </Pressable>
-
-
-
-
             </View>
           </View>
         </View>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useLocalSearchParams } from 'expo-router'
 import { View, Text, Image, Pressable } from 'react-native';
 import { shadow } from "@/styles/shadow";
@@ -9,6 +9,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Loading from "@/components/loading";
 import { useRouter } from "expo-router"
 import {mapAndSortVotes, mapAndSortProbs, calculateTotal} from "@/utils/wasteDataTransform"
+import {getImage} from "@/lib/s3Service"
 
 type ProbsList = [string, number][];
 type VoteList = [string, number, Number][];
@@ -36,6 +37,7 @@ const EventDetail = () => {
     prob: []
   });
   const router = useRouter();
+  const isSubmitting = useRef(false);
 
   const fetchStats = async () => {
     try {
@@ -80,6 +82,8 @@ const EventDetail = () => {
 
   const voteHandler = async () => {
     if (!selectedVote) return;
+    if (isSubmitting.current) return;
+    isSubmitting.current = true;
     try {
       const res = await axios.post(`${API_URL}/vote`,
         {
@@ -92,6 +96,9 @@ const EventDetail = () => {
       router.push("/(tabs)/event"); 
     } catch (error) {
       console.log(error)
+    }
+    finally{
+      isSubmitting.current = false;
     }
   }
 
@@ -114,7 +121,7 @@ const EventDetail = () => {
 
       <View className='flex w-full max-w-[340px] mt-28' >
         <Image
-          className='w-full h-[200px] rounded-lg' source={{ uri: item?.Image_path }}
+          className='w-full h-[200px] rounded-lg' source={{ uri: getImage(item?.Image_path)}}
           resizeMode='cover'
         />
       </View>

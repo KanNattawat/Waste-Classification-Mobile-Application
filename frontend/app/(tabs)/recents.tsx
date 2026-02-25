@@ -8,6 +8,8 @@ import { API_URL } from "@/config";
 import { useFocusEffect } from "@react-navigation/native";
 import Screen from "@/components/Screen";
 import { shadow } from "@/styles/shadow";
+import {getImage} from "@/lib/s3Service"
+import formatDate from "@/lib/formatDate"
 
 export interface HistoryItem {
   Waste_ID: number;
@@ -29,13 +31,6 @@ const WASTE_LABEL: Record<number, string> = {
 const wasteLabel = (id: number) => WASTE_LABEL[id] ?? "unknown";
 
 
-const formatDate = (iso: string) =>
-  new Date(iso).toLocaleDateString("th-TH-u-ca-gregory", {
-    timeZone: "Asia/Bangkok",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
 
 
 const Recents = () => {
@@ -99,7 +94,7 @@ const Recents = () => {
       style={shadow.card}
     >
       <Image
-        source={{ uri: item.Image_path }}
+        source={{uri:getImage(item.Image_path)}}
         className="w-[80px] h-[60px] rounded-lg"
       />
 

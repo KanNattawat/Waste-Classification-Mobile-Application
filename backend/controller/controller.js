@@ -1,19 +1,19 @@
 import { prisma } from "../prisma/prisma.js";
 import seedrandom from 'seedrandom';
 import { asyncHandler } from "../utils/asyncHandler.js";
-import {PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import {s3} from "../utils/s3.js"
+import { s3 } from "../utils/s3.js"
+import { History_Type } from '@prisma/client'
 
 
-
-export const getMe = asyncHandler(async (req, res) => {
+export const getUser = asyncHandler(async (req, res) => {
+    const { userId } = req.query
     const user = await prisma.user.findUnique({
-        where: { User_ID: req.user.userId },
+        where: { User_ID: Number(userId) },
         select: {
-            User_ID: true,
-            Full_name: true,
             User_name: true,
+            Points: true
         }
     });
 
@@ -21,7 +21,7 @@ export const getMe = asyncHandler(async (req, res) => {
         return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json(user);
+    res.status(200).json(user);
 })
 
 
@@ -72,6 +72,16 @@ export const uploadWaste = asyncHandler(async (req, res) => {
                     Points: {
                         increment: 1
                     }
+                }
+            })
+        )
+        operations.push(
+            prisma.pointHistory.create({
+                data: {
+                    User_ID: Number(user_id),
+                    PointsChanged: 1,
+                    History_Detail: 'uploadWaste',
+                    History_Type: History_Type.GET
                 }
             })
         )
@@ -336,6 +346,14 @@ export const vote = asyncHandler(async (req, res) => {
                     increment: 1
                 }
             }
+        }),
+        prisma.pointHistory.create({
+            data: {
+                User_ID: Number(userID),
+                PointsChanged: 1,
+                History_Detail: 'voteEvent',
+                History_Type: History_Type.GET
+            }
         })
     ])
 
@@ -479,6 +497,7 @@ export const updateFeedback = asyncHandler(async (req, res) => {
     const update = status === false
         ? { Vote_wastetype: selectedType }
         : { Is_correct: status }
+
     const updateWaste = await prisma.waste.update({
         where: { Waste_ID: Number(wasteId) },
         data: update,
@@ -521,9 +540,39 @@ export const getS3UploadPresigned = asyncHandler(async (req, res) => {
         ContentType: contentType,
     });
     const url = await getSignedUrl(s3, command, { expiresIn: 60 });
-    
+
 
     res.status(200).json({ url, key });
+})
+
+export const getPointHistory = asyncHandler(async (req, res) => {
+    const { userId } = req.query;
+    const [pointHistory, user] = await Promise.all([
+        prisma.pointHistory.findMany({
+            select: {
+                PointHistory_ID: true,
+                History_Detail: true,
+                History_Type: true,
+                Timestamp: true,
+                PointsChanged: true
+            },
+            where: {
+                User_ID: Number(userId)
+            },
+            orderBy: { Timestamp: 'desc' }
+        }),
+        prisma.user.findFirst({
+            where: {
+                User_ID: Number(userId)
+            },
+            select: {
+                User_name: true,
+                Points: true
+            }
+        })
+    ])
+
+    res.status(200).json({ user: user, point: pointHistory });
 })
 
 

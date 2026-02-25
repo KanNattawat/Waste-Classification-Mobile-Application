@@ -5,7 +5,7 @@ import { authMiddleware, adminCheck } from '../controller/auth_controller.js';
 
 const router = express.Router()
 
-router.get('/getme',authMiddleware , controller.getMe);
+router.get('/user', controller.getUser);
 router.post('/wasteupload', controller.uploadWaste);
 router.get('/gethistory', controller.getHistory);
 router.get('/getweekly', controller.getWeekly);
@@ -19,7 +19,7 @@ router.get('/getWaste', controller.getWaste)
 router.post('/recycle-shop', controller.createRecycleShop);
 router.get('/recycle-shop2', controller.getRecycleShops);
 router.put('/update_recycle-shop', controller.updateRecycleShop);
-
+router.get('/pointHistory', controller.getPointHistory)
 router.post('/s3-uploadpresigned', controller.getS3UploadPresigned);
 
 

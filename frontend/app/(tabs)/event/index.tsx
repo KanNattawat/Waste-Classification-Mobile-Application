@@ -7,6 +7,9 @@ import axios from 'axios';
 import { API_URL } from "@/config";
 import Loading from "@/components/loading"
 import { useRouter } from "expo-router"
+import {getImage} from "@/lib/s3Service"
+
+
 const WASTE_LABEL: Record<number, string> = {
     1: "ขยะอินทรีย์",
     2: "ขยะอันตราย",
@@ -36,15 +39,16 @@ const Index = () => {
     }, []);
 
     useEffect(() => {
-        console.log('111')
         const fetchData = async () => {
             try {
                 if (!userId) return;
+                console.log('getting data')
                 const res = await axios.get(`${API_URL}/uniqueWaste`, {
                     params: {
                         userId: userId
                     }
                 })
+                console.log(res.data)
                 const labels = ["ขยะอินทรีย์", "ขยะอันตราย", "ขยะทั่วไป", "ขยะรีไซเคิล"];
                 const wasteData = res.data.item.map((i: any) => {
                     const voteNumber = i.Vote_wastetype.map((value: number, index: number) => {
@@ -57,7 +61,6 @@ const Index = () => {
 
                     return { ...i, Vote_wastetype: getMostVote }
                 })
-                console.log('ระเบิด', sortedVote[2].Vote_wastetype[0][0])
                 setWaste([...sortedVote])
 
             } catch (error) {
@@ -95,11 +98,8 @@ const Index = () => {
         "ขยะอันตราย-bg": "bg-[#FFC8C8]",
         "ขยะทั่วไป-bg": "bg-[#EDF8FF]",
         "ขยะรีไซเคิล-bg": "bg-[#FFFCEB]"
-    }
+    } 
 
-
-
-    // console.log('อิอิ', bgColorMap[waste?.[3]?.WasteType_ID])
     return (
         <SafeAreaView>
             <ScreenScroll>
@@ -113,7 +113,7 @@ const Index = () => {
                         </View>
                         {waste?.map((item, index) =>
                             <Pressable key={index} className='flex flex-row items-center bg-white p-3 my-3 rounded-xl' style={shadow.card} onPress={() => router.push(`/event/${item.Waste_ID}`)}>
-                                <Image source={{ uri: item.Image_path }} className='w-[80px] h-[70px] rounded-lg' />
+                                <Image source={{ uri: getImage(item.Image_path)}} className='w-[80px] h-[70px] rounded-lg' />
                                 <View className='flex-1 flex-col ml-3 gap-y-2'>
                                     <View className='flex flex-row items-center justify-between'>
                                         <Text className='text-xl'>ผลลัพธ์จากระบบ</Text>

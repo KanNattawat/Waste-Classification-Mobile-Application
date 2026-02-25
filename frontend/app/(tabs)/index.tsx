@@ -80,7 +80,6 @@ export default function Index() {
       const userId = await AsyncStorage.getItem("userId");
       if (!userId) return;
       const res = await axios.get(`${API_URL}/home`, { params: { userId } });
-      console.log(res.data)
       setHomeData(res.data);
     } catch (err) {
       console.log("Error fetching weekly count", err);

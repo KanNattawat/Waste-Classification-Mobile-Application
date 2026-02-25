@@ -145,7 +145,7 @@ export const getS3MultiDownloadPresigned = asyncHandler(async (req, res) => {
     const parallelUploads3 = new Upload({
         client: s3,
         params: {
-            Bucket: process.env.S3_BUCKET,
+            Bucket: process.env.S3_BUCKET_EXPORT,
             Key: zipName,
             Body: passThrough,
             ContentType: 'application/zip'
@@ -174,13 +174,15 @@ export const getS3MultiDownloadPresigned = asyncHandler(async (req, res) => {
     await parallelUploads3.done();
 
     const downloadCommand = new GetObjectCommand({
-        Bucket: process.env.S3_BUCKET,
+        Bucket: process.env.S3_BUCKET_EXPORT,
         Key: zipName
     })
     const presignedUrl = await getSignedUrl(s3, downloadCommand, { expiresIn: 3600 });
 
     res.status(200).json({ url: presignedUrl })
 })
+
+
 
 export const getPointShops = asyncHandler(async (req, res) => {
     const items = await prisma.pointShop.findMany({
