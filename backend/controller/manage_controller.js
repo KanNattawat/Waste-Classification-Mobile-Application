@@ -7,6 +7,8 @@ import { s3 } from "../utils/s3.js"
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+
+
 export const getUsers = asyncHandler(async (req, res) => {
     const currentPage = Number(req.query.current) || 1;
     const userName = req.query.username
@@ -166,7 +168,7 @@ export const getS3MultiDownloadPresigned = asyncHandler(async (req, res) => {
             const response = await s3.send(getObjCommand)
             archive.append(response.Body, { name: `${folderName}/${item.Image_path.split('/').pop()}` });
         } catch (error) {
-            console.error(`Failed to add file ${item.Image_path}`, err);
+            console.error(`Failed to add file ${item.Image_path}`, error);
         }
     }
 
@@ -187,7 +189,7 @@ export const getS3MultiDownloadPresigned = asyncHandler(async (req, res) => {
 export const getPointShops = asyncHandler(async (req, res) => {
     const items = await prisma.pointShop.findMany({
         orderBy: {
-            Item_ID: "desc"
+            Item_ID: "asc"
         }
     });
 
@@ -211,18 +213,37 @@ export const getPointShopById = asyncHandler(async (req, res) => {
 });
 
 export const createPointShops = asyncHandler(async (req, res) => {
-    const { Item_name, Usage_Limit, Point_Usage, Expire_Date } = req.body;
+    // 🌟 เอา Promise ดักจับออก เพราะ Route จัดการให้แล้ว
 
-    if (!Item_name || !Usage_Limit || !Point_Usage || !Expire_Date) {
-        return res.status(400).json({ error: "กรุณากรอกข้อมูลให้ครบ" });
+    const { Item_name, Usage_Limit, Point_Usage, Expire_Date } = req.body || {};
+    const file = req.file; 
+
+    if (!Item_name || !Usage_Limit || !Point_Usage || !Expire_Date || !file) {
+        return res.status(400).json({ error: "กรุณากรอกข้อมูลและอัปโหลดรูปภาพให้ครบถ้วน" });
     }
+
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const fileName = `pointshop/${uniqueSuffix}-${file.originalname.replace(/\s+/g, '-')}`;
+
+    const uploadParams = {
+        Bucket: process.env.S3_BUCKET,
+        Key: fileName,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+    };
+
+    await s3.send(new PutObjectCommand(uploadParams));
+
+    const region = process.env.AWS_REGION || 'ap-southeast-1';
+    const Image_path = `https://${process.env.S3_BUCKET}.s3.${region}.amazonaws.com/${fileName}`;
 
     const item = await prisma.pointShop.create({
         data: {
             Item_name,
             Usage_Limit: Number(Usage_Limit),
             Point_Usage: Number(Point_Usage),
-            Expire_Date: new Date(Expire_Date)
+            Expire_Date: new Date(Expire_Date),
+            Item_Image_path: Image_path
         }
     });
 
@@ -234,7 +255,11 @@ export const createPointShops = asyncHandler(async (req, res) => {
 
 export const updatePointShop = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { Item_name, Usage_Limit, Point_Usage, Expire_Date } = req.body;
+
+    // 🌟 เอา Promise ดักจับออก เพราะ Route จัดการให้แล้ว
+
+    const { Item_name, Usage_Limit, Point_Usage, Expire_Date } = req.body || {};
+    const file = req.file; 
 
     const existing = await prisma.pointShop.findUnique({
         where: { Item_ID: Number(id) }
@@ -244,13 +269,33 @@ export const updatePointShop = asyncHandler(async (req, res) => {
         return res.status(404).json({ error: "Item not found" });
     }
 
+    let Image_path = existing.Item_Image_path;
+
+    if (file) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const fileName = `pointshop/${uniqueSuffix}-${file.originalname.replace(/\s+/g, '-')}`;
+
+        const uploadParams = {
+            Bucket: process.env.S3_BUCKET,
+            Key: fileName,
+            Body: file.buffer,
+            ContentType: file.mimetype,
+        };
+
+        await s3.send(new PutObjectCommand(uploadParams));
+        
+        const region = process.env.AWS_REGION || 'ap-southeast-1';
+        Image_path = `https://${process.env.S3_BUCKET}.s3.${region}.amazonaws.com/${fileName}`;
+    }
+
     const updated = await prisma.pointShop.update({
         where: { Item_ID: Number(id) },
         data: {
             Item_name,
             Usage_Limit: Number(Usage_Limit),
             Point_Usage: Number(Point_Usage),
-            Expire_Date: new Date(Expire_Date)
+            Expire_Date: new Date(Expire_Date),
+            Item_Image_path: Image_path
         }
     });
 
