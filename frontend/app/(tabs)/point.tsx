@@ -101,10 +101,8 @@ export default function Point() {
 
             <Text className='text-xl my-2'>รางวัล</Text>
 
-            {/* รายการสินค้า */}
             <View className='flex flex-row flex-wrap gap-3 items-center justify-between pb-10'>
 
-              {/* 🌟 3. แสดง Loading spinner ตอนกำลังดึงข้อมูล หรือ วนลูปข้อมูล */}
               {loading ? (
                 <View className="w-full py-10 flex items-center justify-center">
                   <ActivityIndicator size="large" color="#1E8B79" />
@@ -119,11 +117,10 @@ export default function Point() {
                     style={shadow.card}
                     onPress={() => router.push({ pathname: '/item', params: { id: item.Item_ID } })}
                   >
-                    {/* ใช้ uri ในการดึงรูปภาพจาก S3 (URL) */}
                     <Image
                       className="w-full h-32 max-w-[120px]"
                       resizeMode="contain"
-                      source={{ uri: item.Item_Image_path || item.Image_path }} // ใช้ชื่อ field ตาม Database ของคุณ
+                      source={{ uri: item.Item_Image_path || item.Image_path }}
                     />
                     <Text className='text-xl text-center' numberOfLines={1}>{item.Item_name}</Text>
                     <View className='flex flex-row items-center'>

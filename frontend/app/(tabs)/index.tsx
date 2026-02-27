@@ -10,6 +10,7 @@ import tipsData from '@/assets/tips.json';
 import ScreenScroll from "@/components/ScreenScroll";
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from "@/contexts/AuthContext";
+import Loading from "@/components/loading"
 
 type homeData = {
   userName: string,
@@ -27,6 +28,7 @@ export default function Index() {
   const [homeData, setHomeData] = useState<homeData | null>(null);
   const [selectedKey, setSelectedKey] = useState("recycle");
   const [open, setIsopen] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { setToken } = useAuth();
 
   const handleLogout = async () => {
@@ -81,6 +83,7 @@ export default function Index() {
       if (!userId) return;
       const res = await axios.get(`${API_URL}/home`, { params: { userId } });
       setHomeData(res.data);
+      setLoading(false);
     } catch (err) {
       console.log("Error fetching weekly count", err);
     }
@@ -104,6 +107,10 @@ export default function Index() {
     return `#${((1 << 24) + (r << 16) + (g << 8) + b)
       .toString(16)
       .slice(1)}`;
+  }
+
+  if(loading){
+    return <Loading/>
   }
 
   return (

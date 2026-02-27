@@ -35,7 +35,7 @@ const UserTable = ({ user }: { user: [User] }) => {
                             </td>
                             <td className="p-4 text-right">
                                 <Link href={`${process.env.NEXT_PUBLIC_SITE_URL}/usermanage/${item.User_name}?full_name=${item.Full_name}&email=${encodeURIComponent(String(item.Email))}`} className="text-sm font-semibold text-blue-600 hover:text-blue-800">
-                                    Edit
+                                    แก้ไข
                                 </Link>
                             </td>
                         </tr>

@@ -103,13 +103,11 @@ const Index = () => {
     return (
         <SafeAreaView>
             <ScreenScroll>
-                <View className='flex mt-10 w-full bg-[#F9F8FA]'>
+                <View className='flex pt-10 w-full bg-[#F9F8FA]'>
                     <Text className='text-center text-2xl font-bold text-[#1E8B79] mb-3'>ร่วมด้วยช่วยกันแยก</Text>
                     <View className='flex flex-col w-full px-8'>
                         <View className='flex-row items-center bg-white shadow-xl px-8 py-4 rounded-xl' style={shadow.card}>
-                            <Text className='text-xl'>กิจกรรม "ร่วมด้วยช่วยกันแยก" คือกิจกรรมที่เปิดให้ผู้ใช้งานช่วยกันแก้ไขการคัดแยก
-                                ขยะที่ผิดพลาดจากระบบเพื่อเพิ่มความแม่นยำและ
-                                ประสิทธิภาพในการจัดการขยะร่วมกัน</Text>
+                            <Text className='text-xl'>กิจกรรม "ร่วมด้วยช่วยกันแยก" คือกิจกรรมที่เปิดให้ผู้ใช้งานช่วยกันแก้ไขการคัดแยกขยะที่ผิดพลาดจากระบบ เพื่อเพิ่มความแม่นยำและประสิทธิภาพในการจัดการขยะร่วมกัน</Text>
                         </View>
                         {waste?.map((item, index) =>
                             <Pressable key={index} className='flex flex-row items-center bg-white p-3 my-3 rounded-xl' style={shadow.card} onPress={() => router.push(`/event/${item.Waste_ID}`)}>

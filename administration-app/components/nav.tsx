@@ -34,8 +34,8 @@ const Nav = () => {
                     <div className='absolute left-0 w-1 h-8 bg-transparent group-hover:bg-[#1E8B79] transition-all rounded-r-lg'>
 
                     </div>
-                    <img src="/images/Shopping.png" alt="" className="h-7 w-7" />
-                    <p className="text-xl">Feedback</p>
+                    <img src="/images/export.png" alt="" className="h-7 w-7" />
+                    <p className="text-xl">จัดการรูปภาพ</p>
                 </div>
             </Link>
 
@@ -44,8 +44,8 @@ const Nav = () => {
                     <div className='absolute left-0 w-1 h-8 bg-transparent group-hover:bg-[#1E8B79] transition-all rounded-r-lg'>
 
                     </div>
-                    <img src="/images/Shopping.png" alt="" className="h-7 w-7" />
-                    <p className="text-xl">จัดการการแลกแต้ม</p>
+                    <img src="/images/product.png" alt="" className="h-7 w-7" />
+                    <p className="text-xl">จัดการสินค้า</p>
                 </div>
             </Link>
 

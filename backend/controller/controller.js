@@ -118,6 +118,7 @@ export const getHistoryData = asyncHandler(async (req, res) => {
     const [wasteData, isVote] = await Promise.all([
         prisma.waste.findFirst({
             where: { Waste_ID: Number(waste) },
+            orderBy:{Timestamp:'desc'}
         }),
         prisma.wasteVote.findFirst({
             where: { Waste_ID: Number(waste), User_ID: Number(userid) },

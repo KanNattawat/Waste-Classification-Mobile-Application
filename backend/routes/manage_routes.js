@@ -1,5 +1,5 @@
 import express from "express"
-import multer from "multer"; // 🌟 เพิ่มบรรทัดนี้
+import multer from "multer";
 import * as controller from "../controller/manage_controller.js";
 import { authMiddleware, adminCheck } from '../controller/auth_controller.js';
 
