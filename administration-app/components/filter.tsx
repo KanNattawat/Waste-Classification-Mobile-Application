@@ -1,7 +1,14 @@
 'use client'
 import React, { useState } from 'react'
 import TableSlider from '@/components/slider'
-import DatePicker from '@/components/datePicker'
+import dynamic from 'next/dynamic'
+const DatePicker = dynamic(
+  () => import('@/components/datePicker'), 
+  { 
+    ssr: false,
+  }
+)
+
 import Selector from '@/components/selector'
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { MultiValue } from 'react-select';

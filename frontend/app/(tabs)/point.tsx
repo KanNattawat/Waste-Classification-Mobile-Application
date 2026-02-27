@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useCallback } from 'react';
 import React, { useState, useCallback } from 'react';
 import { Text, View, Image, Pressable, SafeAreaView, ActivityIndicator, Alert } from 'react-native';
 import { shadow } from "@/styles/shadow";
@@ -7,12 +8,39 @@ import { useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { API_URL } from "@/config";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
+import axios from 'axios';
+import { API_URL } from "@/config";
+
+type User = {
+  UserName: string,
+  Point: string
+}
+
 
 export default function Point() {
   const router = useRouter();
-  
+  const [user, setUser] = useState<User | undefined>(undefined)
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const fetchUser = async () => {
+    const userId = await AsyncStorage.getItem("userId");
+    const res = await axios(`${API_URL}/user`,
+      {
+        params: {
+          userId: userId
+        }
+      })
+    const data = res.data
+    console.log(data)
+    setUser({
+      UserName: data.User_name,
+      Point: data.Points
+    })
+  }
+
   
   // 🌟 State สำหรับเก็บข้อมูล User (อิงตามฟิลด์ที่คุณได้จาก API /home)
   const [userData, setUserData] = useState({ userName: 'Loading...', point: 0 });
@@ -21,8 +49,19 @@ export default function Point() {
   const fetchItems = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_URL}/manage/getallitem`);
-      setItems(res.data);
+      const response = await fetch('https://waste-classification-mobile-application.onrender.com/manage/getallitem', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('ไม่สามารถดึงข้อมูลสินค้าได้');
+      }
+
+      const data = await response.json();
+      setItems(data);
     } catch (error) {
       console.error("Error fetching items:", error);
       Alert.alert("เกิดข้อผิดพลาด", "ไม่สามารถโหลดข้อมูลรางวัลได้");
@@ -31,29 +70,10 @@ export default function Point() {
     }
   };
 
-  // 🌟 ฟังก์ชันดึงข้อมูล User (นำสไตล์จาก Index มาใช้)
-  const fetchUserData = async () => {
-    try {
-      const userId = await AsyncStorage.getItem("userId");
-      if (!userId) return;
-      
-      // เรียกใช้ /home แบบเดียวกับหน้า Index เพื่อเอา userName และ point
-      const res = await axios.get(`${API_URL}/home`, { params: { userId } });
-      setUserData({
-        userName: res.data.userName,
-        point: res.data.point
-      });
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-    }
-  };
-
-  // 🌟 ใช้ useFocusEffect เพื่อให้โหลดข้อมูลใหม่ทุกครั้งที่เข้ามาหน้านี้
-  // ป้องกันปัญหาคะแนนไม่อัปเดตหลังจากกดยืนยันแลกของรางวัล
   useFocusEffect(
     useCallback(() => {
+      fetchUser();
       fetchItems();
-      fetchUserData();
     }, [])
   );
 
@@ -67,12 +87,10 @@ export default function Point() {
             {/* ส่วนโปรไฟล์ผู้ใช้ และคะแนน */}
             <View className='flex-row items-center bg-white shadow-xl px-8 py-4 rounded-xl' style={shadow.card}>
               <View className='flex-1'>
-                {/* 🌟 แสดงชื่อผู้ใช้จาก State */}
-                <Text className='text-xl'>{userData.userName}</Text>
+                <Text className='text-xl'>{user?.UserName}</Text>
                 <View className='flex flex-row items-center'>
                   <Image className='w-8 h-8 mr-2' source={require("@/assets/images/coin.png")} />
-                  {/* 🌟 แสดงคะแนนจาก State */}
-                  <Text className='text-xl'><Text className='text-[#1E8B79]'>{userData.point}</Text> คะแนน</Text>
+                  <Text className='text-xl' ><Text className='text-[#1E8B79]'>{user?.Point}</Text> คะแนน</Text>
                 </View>
               </View>
               <Pressable onPress={() => { router.push('/pointHistory') }}>
@@ -93,9 +111,8 @@ export default function Point() {
 
             <Text className='text-xl my-2'>รางวัล</Text>
 
-            {/* รายการสินค้า */}
             <View className='flex flex-row flex-wrap gap-3 items-center justify-between pb-10'>
-              
+
               {loading ? (
                 <View className="w-full py-10 flex items-center justify-center">
                   <ActivityIndicator size="large" color="#1E8B79" />
@@ -104,13 +121,13 @@ export default function Point() {
                 <Text className="text-center w-full mt-5 text-gray-500 text-lg">ยังไม่มีรายการของรางวัล</Text>
               ) : (
                 items.map((item) => (
-                  <Pressable 
-                    key={item.Item_ID} 
-                    className='flex items-center gap-2 bg-white rounded-xl p-2 w-[48%] mb-2' 
-                    style={shadow.card} 
+                  <Pressable
+                    key={item.Item_ID}
+                    className='flex items-center gap-2 bg-white rounded-xl p-2 w-[48%] mb-2'
+                    style={shadow.card}
                     onPress={() => router.push({ pathname: '/item', params: { id: item.Item_ID } })}
                   >
-                    <Image 
+                    <Image
                       className="w-full h-32 max-w-[120px]"
                       resizeMode="contain"
                       source={{ uri: item.Item_Image_path || item.Image_path }}

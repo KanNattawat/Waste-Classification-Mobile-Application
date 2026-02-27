@@ -7,6 +7,7 @@ import { API_URL } from "@/config";
 import { shadow } from "@/styles/shadow";
 import PercentCard from "@/components/PercentCard"
 import {mapAndSortVotes, mapAndSortProbs, calculateTotal} from "@/utils/wasteDataTransform"
+import {getImage} from "@/lib/s3Service"
 
 type ProbsList = [string, number][];
 type VoteList = [string, number, string][];
@@ -97,7 +98,7 @@ export default function HistoryDetail() {
       </Pressable>
       <View className='flex w-full max-w-[340px] mt-28' >
         <Image
-          className='w-full h-[200px] rounded-lg' source={{ uri: waste?.Image_path }}
+          className='w-full h-[200px] rounded-lg' source={{ uri: getImage(waste?.Image_path) }}
           resizeMode='cover'
         />
       </View>

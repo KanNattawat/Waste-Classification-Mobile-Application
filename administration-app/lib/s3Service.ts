@@ -20,3 +20,7 @@ export const getZipFile = (url: string) => {
     link.click();
     link.remove();
 }
+
+export const getImage = (url:string)=>{
+    return `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}${url}`
+}

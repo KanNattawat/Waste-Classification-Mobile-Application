@@ -26,3 +26,8 @@ export const uploadToS3 = async ( presignedUrl:string, fileUri:string, contentTy
         throw new Error(`S3 upload failed: ${res.status} ${res.body}`);
     }
 }
+
+
+export const getImage = (url:string|undefined)=>{
+    return `https://s3-wasteclassification-project.s3.ap-southeast-7.amazonaws.com/${url}`
+}
