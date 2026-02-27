@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, Image, Pressable, Modal, ActivityIndicator, Alert } from 'react-native';
+import { Text, View, Image, Pressable, Modal, ActivityIndicator, Alert, ScrollView } from 'react-native'; 
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Item = () => {
   const router = useRouter();
@@ -22,34 +23,40 @@ const Item = () => {
       setLoading(true);
       const token = await SecureStore.getItemAsync('authToken');
 
-      // 1. ดึงข้อมูลสินค้า (ใช้ API จากรอบที่แล้ว)
+      if (!id) return;
+
       const itemRes = await fetch(`https://waste-classification-mobile-application.onrender.com/manage/getallitem/${id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      const itemJson = await itemRes.json();
       
-      // 2. ดึงข้อมูล User (เพื่อเอา Points มาแสดง)
-      const userRes = await fetch(`https://waste-classification-mobile-application.onrender.com/getMe`, { 
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const userJson = await userRes.json();
+      if (itemRes.ok) {
+        const itemJson = await itemRes.json();
+        setItemData(itemJson);
+      }
 
-      setItemData(itemJson);
-      setUserPoints(userJson.Points || 0);
+      const userId = await AsyncStorage.getItem("userId"); 
+      
+      if (userId) {
+        const userRes = await fetch(`https://waste-classification-mobile-application.onrender.com/home?userId=${userId}`, { 
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (userRes.ok) {
+          const userJson = await userRes.json();
+          setUserPoints(userJson.point || 0); 
+        }
+      }
 
     } catch (error) {
-      console.error(error);
-      Alert.alert("เกิดข้อผิดพลาด", "ไม่สามารถโหลดข้อมูลได้");
+      console.error("Fetch Error:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  // 🌟 ฟังก์ชันจัดการตอนกดยืนยันแลกแต้ม
   const handleRedeem = async () => {
     try {
       setRedeeming(true);
-      // 🌟 ใช้ SecureStore ดึง Token
       const token = await SecureStore.getItemAsync('authToken');
 
       const res = await fetch(`https://waste-classification-mobile-application.onrender.com/redeem`, {
@@ -58,7 +65,7 @@ const Item = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ itemId: id }) // ส่งแค่ ID สินค้าไป
+        body: JSON.stringify({ itemId: id }) 
       });
 
       const result = await res.json();
@@ -66,7 +73,7 @@ const Item = () => {
       if (res.ok) {
         setOpen(false);
         Alert.alert("สำเร็จ", `แลก ${itemData.Item_name} เรียบร้อยแล้ว!`, [
-          { text: "ตกลง", onPress: () => router.back() } // แลกเสร็จให้เด้งกลับไปหน้าเดิม
+          { text: "ตกลง", onPress: () => router.back() } 
         ]);
       } else {
         setOpen(false);
@@ -102,54 +109,65 @@ const Item = () => {
   const isEnoughPoints = userPoints >= itemData.Point_Usage;
 
   return (
-    <View className='relative flex justify-start w-full h-full bg-[#F9F8FA]'>
-
-      {/* รูปภาพสินค้า */}
-      <View className='w-full h-[40%] bg-white object-cover'>
-        <Pressable className='absolute left-5 top-12 z-50 bg-white/70 rounded-full p-2' onPress={() => { router.back() }}>
-          <Image className=' w-10 h-10 ' source={require(`@/assets/images/back1.png`)} />
-        </Pressable>
-        {/* ดึงรูปจาก URL S3 */}
-        <Image className='w-full h-full' resizeMode="contain" source={{ uri: itemData.Item_Image_path }} />
-      </View>
-
-      <View className='flex flex-row justify-between mx-4 mt-4'>
-        <Text className='text-lg font-bold text-[#1E8B79]'>
-          ใช้ {itemData.Point_Usage} คะแนน
-        </Text>
-        <Text className={`text-lg font-bold ${isEnoughPoints ? 'text-[#1E8B79]' : 'text-red-500'}`}>
-          คะแนนของคุณ {userPoints}
-        </Text>
-      </View>
-
-      <Text className='text-2xl font-bold mx-4 mt-2'>แลกรับ {itemData.Item_name}</Text>
+    // 🌟 เพิ่ม pt-12 (Padding Top) เข้าไป เพื่อดันทุกอย่างลงมาให้พ้น Status Bar และกล้องหน้า
+    <View className='flex-1 bg-[#F9F8FA] pt-12'>
       
-      <Text className='text-xl font-bold mx-4 mt-4'>รายละเอียด</Text>
-      <Text className='text-lg mx-4 mt-2 text-gray-600'>
-        จำกัดสิทธิ์การแลก: {itemData.Usage_Limit} สิทธิ์ {'\n'}
-        หมดเขต: {new Date(itemData.Expire_Date).toLocaleDateString("th-TH")}
-      </Text>
+      {/* 🌟 ปรับ top เป็น 14 เพื่อให้อยู่ในระดับเดียวกับขอบบนของรูปภาพพอดี */}
+      <Pressable className='absolute left-5 top-14 z-50 bg-white/80 rounded-full p-2 shadow-sm' onPress={() => { router.back() }}>
+        <Image className='w-8 h-8' source={require(`@/assets/images/back1.png`)} />
+      </Pressable>
 
-      <Text className='text-xl font-bold mx-4 mt-6'>เงื่อนไขและข้อตกลง</Text>
-      <Text className='text-md mx-4 mt-2 text-gray-600'>
-        วิธีการได้รับคะแนน {"\n"}
-        คุณจะได้คะแนนเมื่อทำกิจกรรมดังต่อไปนี้ {"\n"}
-        1. ถ่ายรูปเพื่อคัดแยกขยะ รับ 1 คะแนน <Text className='text-[#FF0000]'>(จำกัดวันละ 5 ครั้ง)</Text>  {"\n"}
-        2. เข้าร่วมกิจกรรมร่วมด้วยช่วยกันแยก รับ 1 คะแนน  <Text className='text-[#FF0000]'>(จำกัดวันละ 5 ครั้ง)</Text>
-      </Text>
+      <ScrollView 
+        className='flex-1' 
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 50 }} 
+        showsVerticalScrollIndicator={false}
+      >
+        
+        {/* รูปภาพสินค้า: เพิ่ม rounded-t-3xl เผื่ออยากให้ขอบบนของรูปดูโค้งมนเข้ากับระยะที่เว้นไว้ (ถ้าไม่ชอบลบ rounded-t-3xl ออกได้ครับ) */}
+        <View className='w-full h-[320px] bg-white items-center justify-center pt-8 rounded-t-3xl overflow-hidden'>
+          <Image className='w-full h-full' resizeMode="contain" source={{ uri: itemData.Item_Image_path }} />
+        </View>
 
-      <View className='flex flex-row w-full justify-center mt-auto mb-10'>
-        {/* 🌟 ถ้าแต้มไม่พอ ปุ่มจะจางลงและกดไม่ได้ */}
-        <Pressable 
-          className={`mt-4 py-4 px-8 rounded-xl ${isEnoughPoints ? 'bg-[#1E8B79]' : 'bg-gray-400'}`} 
-          onPress={() => isEnoughPoints ? setOpen(true) : Alert.alert("คะแนนไม่พอ", "คุณมีคะแนนไม่เพียงพอที่จะแลกรางวัลนี้")}
-        >
-          <Text className='text-xl font-bold text-white'>{isEnoughPoints ? 'ยืนยันการแลกคะแนน' : 'คะแนนไม่เพียงพอ'}</Text>
-        </Pressable>
-      </View>
+        <View className='px-5 mt-6'>
+          <View className='flex flex-row justify-between items-center'>
+            <Text className='text-lg font-bold text-[#1E8B79]'>
+              ใช้ {itemData.Point_Usage} คะแนน
+            </Text>
+            <Text className={`text-base font-bold ${isEnoughPoints ? 'text-[#1E8B79]' : 'text-red-500'}`}>
+              คะแนนของคุณ: {userPoints}
+            </Text>
+          </View>
 
-      {/* Modal ยืนยัน */}
-      {open &&
+          <Text className='text-3xl font-bold mt-3 text-gray-800'>{itemData.Item_name}</Text>
+          
+          <Text className='text-xl font-bold mt-6 text-gray-800'>รายละเอียด</Text>
+          <Text className='text-base mt-2 text-gray-600 leading-6'>
+            จำกัดสิทธิ์การแลก: {itemData.Usage_Limit} สิทธิ์ {'\n'}
+            หมดเขต: {new Date(itemData.Expire_Date).toLocaleDateString("th-TH")}
+          </Text>
+
+          <Text className='text-xl font-bold mt-6 text-gray-800'>เงื่อนไขและข้อตกลง</Text>
+          <Text className='text-base mt-2 text-gray-600 leading-6'>
+            วิธีการได้รับคะแนน {"\n"}
+            คุณจะได้คะแนนเมื่อทำกิจกรรมดังต่อไปนี้ {"\n"}
+            1. ถ่ายรูปเพื่อคัดแยกขยะ รับ 1 คะแนน <Text className='text-[#FF0000]'>(จำกัดวันละ 5 ครั้ง)</Text>  {"\n"}
+            2. เข้าร่วมกิจกรรมร่วมด้วยช่วยกันแยก รับ 1 คะแนน  <Text className='text-[#FF0000]'>(จำกัดวันละ 5 ครั้ง)</Text>
+          </Text>
+        </View>
+
+        <View className='px-5 mt-10'>
+          <Pressable 
+            className={`py-4 w-full items-center rounded-2xl shadow-sm ${isEnoughPoints ? 'bg-[#1E8B79]' : 'bg-gray-400'}`} 
+            onPress={() => isEnoughPoints ? setOpen(true) : Alert.alert("คะแนนไม่พอ", "คุณมีคะแนนไม่เพียงพอที่จะแลกรางวัลนี้")}
+          >
+            <Text className='text-xl font-bold text-white'>{isEnoughPoints ? 'ยืนยันการแลกคะแนน' : 'คะแนนไม่เพียงพอ'}</Text>
+          </Pressable>
+        </View>
+
+      </ScrollView>
+
+      {/* Modal ยืนยัน (โค้ดเดิม) */}
+      {open && (
         <Modal transparent visible={open} animationType="fade" statusBarTranslucent={true}>
           <View className="flex-1 bg-black/60 justify-center items-center px-6">
             <View className="bg-white w-full p-8 rounded-3xl items-center shadow-2xl">
@@ -169,7 +187,7 @@ const Item = () => {
                 <Pressable
                   className={`w-[45%] py-4 rounded-xl items-center ${redeeming ? 'bg-gray-400' : 'bg-[#1E8B79]'}`}
                   onPress={handleRedeem}
-                  disabled={redeeming} // ป้องกันการกดย้ำๆ
+                  disabled={redeeming}
                 >
                   {redeeming ? (
                     <ActivityIndicator color="white" />
@@ -180,7 +198,8 @@ const Item = () => {
               </View>
             </View>
           </View>
-        </Modal>}
+        </Modal>
+      )}
     </View>
   )
 }

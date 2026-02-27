@@ -6,24 +6,25 @@ import {
     TextInput,
     TouchableOpacity,
     Dimensions,
-    Alert,          // เพิ่ม Alert
-    ActivityIndicator // เพิ่ม Loading
+    Alert,          
+    ActivityIndicator 
 } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import axios from 'axios'; // เพิ่ม Axios
+import axios from 'axios'; 
+import { Stack, useRouter } from 'expo-router'; // 🌟 1. เพิ่ม useRouter
 
 const { width } = Dimensions.get('window');
 
 const RecyclingForm = () => {
-    // สมมติว่าได้ User ID มาจากการ Login (ในแอปจริงอาจจะดึงจาก AsyncStorage หรือ Context)
+    const router = useRouter(); // 🌟 2. เรียกใช้งาน router
     const currentUserId = 1; 
 
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
-    const [loading, setLoading] = useState(false); // State สำหรับรอ API
+    const [loading, setLoading] = useState(false); 
 
     const [region, setRegion] = useState({
         latitude: 13.7367,
@@ -51,9 +52,7 @@ const RecyclingForm = () => {
         { id: 6, label: 'อื่นๆ', icon: 'dots-horizontal' },
     ];
 
-    // ✅ ฟังก์ชันส่งข้อมูลไปยัง Backend
     const onSubmit = async () => {
-        // 1. Validation ตรวจสอบข้อมูลเบื้องต้น
         if (!name.trim() || !phone.trim()) {
             Alert.alert("ข้อมูลไม่ครบ", "กรุณากรอกชื่อและเบอร์โทรศัพท์");
             return;
@@ -66,13 +65,12 @@ const RecyclingForm = () => {
         setLoading(true);
 
         try {
-            // 2. เตรียมข้อมูล Payload ให้ตรงกับ Backend
             const payload = {
                 user_id: currentUserId,
                 shop_name: name,
                 tel_num: phone,
-                location: [region.latitude, region.longitude], // Backend ต้องการ Float[]
-                accepted_cate: selectedCategories // Backend ต้องการ Int[] (Array ของ ID)
+                location: [region.latitude, region.longitude], 
+                accepted_cate: selectedCategories 
             };
             const API_URL = 'https://waste-classification-mobile-application.onrender.com/recycle-shop'; 
 
@@ -83,11 +81,10 @@ const RecyclingForm = () => {
                     { 
                         text: "ตกลง", 
                         onPress: () => {
-                            // Reset Form
                             setName('');
                             setPhone('');
                             setSelectedCategories([]);
-                            // navigation.goBack(); // ถ้ามีการใช้ Navigation ให้ uncomment บรรทัดนี้
+                            router.back(); // 🌟 ย้อนกลับอัตโนมัติเมื่อบันทึกเสร็จ (ถ้าต้องการ)
                         }
                     }
                 ]);
@@ -106,7 +103,15 @@ const RecyclingForm = () => {
             enableOnAndroid
             keyboardShouldPersistTaps="handled"
         >
-            <Text style={styles.headerText}>แบบฟอร์มกรอกข้อมูลจุดรับซื้อ</Text>
+            <Stack.Screen options={{ headerShown: false }} />
+
+            {/* 🌟 3. สร้างแถบ Header ใหม่ที่มีปุ่มย้อนกลับ */}
+            <View style={styles.headerContainer}>
+                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                    <Icon name="arrow-left" size={28} color="#108a74" />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>แบบฟอร์มกรอกข้อมูลจุดรับซื้อ</Text>
+            </View>
 
             {/* ข้อมูลส่วนตัว */}
             <View style={styles.inputGroup}>
@@ -136,7 +141,7 @@ const RecyclingForm = () => {
                     style={styles.map}
                     region={region}
                     showsUserLocation
-                    onRegionChangeComplete={(r) => setRegion(r)} // อัปเดตพิกัดเมื่อเลื่อนแมพ
+                    onRegionChangeComplete={(r) => setRegion(r)}
                 >
                     <Marker coordinate={region} />
                 </MapView>
@@ -154,7 +159,7 @@ const RecyclingForm = () => {
                         });
                     }}
                     query={{
-                        key: 'AIzaSyDOTi8DE-fCsrIPvkHXwuB0Aq_qkffvq-c', // อย่าลืมใส่ API Key จริงของคุณ
+                        key: 'AIzaSyDOTi8DE-fCsrIPvkHXwuB0Aq_qkffvq-c', 
                         language: 'th',
                         components: 'country:th',
                     }}
@@ -226,12 +231,23 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         padding: 20,
     },
-    headerText: {
+    // 🌟 4. อัปเดตสไตล์สำหรับ Header ใหม่
+    headerContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 40, // ดันลงมาไม่ให้ชน Status bar
+        marginBottom: 20,
+    },
+    backButton: {
+        marginRight: 10,
+        padding: 5, // เพิ่มพื้นที่ให้กดง่ายขึ้น
+    },
+    headerTitle: {
         fontSize: 20,
         fontWeight: 'bold',
         color: '#108a74',
-        marginBottom: 20,
     },
+    // สไตล์เดิมด้านล่าง...
     label: {
         fontSize: 16,
         marginBottom: 8,
@@ -249,8 +265,6 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         height: 45,
     },
-
-    /* Map */
     mapContainer: {
         height: 250,
         borderRadius: 15,
@@ -273,10 +287,8 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#ddd',
         fontSize: 14,
-        backgroundColor: '#fff', // เพิ่มพื้นหลังให้ชัด
+        backgroundColor: '#fff',
     },
-
-    /* Categories */
     categoryBox: {
         borderWidth: 1,
         borderColor: '#c8e6c9',
@@ -314,8 +326,6 @@ const styles = StyleSheet.create({
         color: '#1b8a74',
         fontWeight: 'bold',
     },
-
-    /* Submit */
     submitBtn: {
         backgroundColor: '#1b8a74',
         padding: 15,
