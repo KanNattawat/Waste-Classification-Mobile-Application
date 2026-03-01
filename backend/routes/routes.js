@@ -1,6 +1,5 @@
 import express from "express"
 import * as controller from "../controller/controller.js";
-import * as authController from "../controller/auth_controller.js"
 import { authMiddleware, adminCheck } from '../controller/auth_controller.js';
 
 const router = express.Router()

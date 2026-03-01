@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-import { View, Text, Image, TouchableOpacity, FlatList, ListRenderItem, Pressable } from "react-native";
+import { View, Text, Image, TouchableOpacity, FlatList, ListRenderItem, SafeAreaView, Pressable } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { readImage } from "@/lib/storage";
@@ -8,8 +8,9 @@ import { API_URL } from "@/config";
 import { useFocusEffect } from "@react-navigation/native";
 import Screen from "@/components/Screen";
 import { shadow } from "@/styles/shadow";
-import {getImage} from "@/lib/s3Service"
+import { getImage } from "@/lib/s3Service"
 import formatDate from "@/lib/formatDate"
+import ScreenScroll from "@/components/ScreenScroll";
 
 export interface HistoryItem {
   Waste_ID: number;
@@ -94,7 +95,7 @@ const Recents = () => {
       style={shadow.card}
     >
       <Image
-        source={{uri:getImage(item.Image_path)}}
+        source={{ uri: getImage(item.Image_path) }}
         className="w-[80px] h-[60px] rounded-lg"
       />
 
@@ -117,31 +118,33 @@ const Recents = () => {
   );
 
   return (
-    <Screen>
-      <View className="flex-1 bg-[#F9F8FA] px-8 pt-10 ">
-        <Text className="text-3xl font-bold text-[#1E8B79] text-center mb-3">
-          ประวัติการคัดแยกขยะ
-        </Text>
+    <SafeAreaView className="flex-1 flex-col bg-[#F9F8FA] min-h-full">
+      <ScreenScroll>
+        <View className="flex-1 bg-[#F9F8FA] px-8 pt-10 ">
+          <Text className="text-3xl font-bold text-[#1E8B79] text-center mb-3">
+            ประวัติการคัดแยกขยะ
+          </Text>
 
-        <View className='flex flex-row w-full justify-between my-4'>
-          <Pressable className={`py-1  rounded-xl items-center w-[47%] ${filter === "correct" ? 'bg-[#1E8B79]' : 'bg-white'}`} style={shadow.card} onPress={() => { setFilter('correct') }}>
-            <Text className={`text-xl ${filter === "correct" ? 'text-white' : 'text-[#1E8B79]'} text-center `}>ผลลัพธ์การแยก{'\n'} ถูกต้อง</Text>
-          </Pressable>
-          <Pressable className={`py-1 rounded-xl items-center w-[47%] ${filter === "incorrect" ? 'bg-[#1E8B79]' : 'bg-white'}`} style={shadow.card} onPress={() => { setFilter('incorrect') }}>
-            <Text className={`text-xl ${filter === "incorrect" ? 'text-white' : 'text-[#1E8B79]'} text-center `}>ผลลัพธ์การแยก{'\n'}ไม่ถูกต้อง</Text>
-          </Pressable>
+          <View className='flex flex-row w-full justify-between my-4'>
+            <Pressable className={`py-1  rounded-xl items-center w-[47%] ${filter === "correct" ? 'bg-[#1E8B79]' : 'bg-white'}`} style={shadow.card} onPress={() => { setFilter('correct') }}>
+              <Text className={`text-xl ${filter === "correct" ? 'text-white' : 'text-[#1E8B79]'} text-center `}>ผลลัพธ์การแยก{'\n'} ถูกต้อง</Text>
+            </Pressable>
+            <Pressable className={`py-1 rounded-xl items-center w-[47%] ${filter === "incorrect" ? 'bg-[#1E8B79]' : 'bg-white'}`} style={shadow.card} onPress={() => { setFilter('incorrect') }}>
+              <Text className={`text-xl ${filter === "incorrect" ? 'text-white' : 'text-[#1E8B79]'} text-center `}>ผลลัพธ์การแยก{'\n'}ไม่ถูกต้อง</Text>
+            </Pressable>
+          </View>
+
+
+
+          <FlatList
+            data={historyfilterData}
+            keyExtractor={(item) => item.Waste_ID.toString()}
+            renderItem={renderItem}
+            showsVerticalScrollIndicator={false}
+          />
         </View>
-
-
-
-        <FlatList
-          data={historyfilterData}
-          keyExtractor={(item) => item.Waste_ID.toString()}
-          renderItem={renderItem}
-          showsVerticalScrollIndicator={false}
-        />
-      </View>
-    </Screen>
+      </ScreenScroll>
+    </SafeAreaView>
   );
 };
 

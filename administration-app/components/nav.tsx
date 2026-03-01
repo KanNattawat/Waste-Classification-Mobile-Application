@@ -19,7 +19,7 @@ const Nav = () => {
                 </div>
             </Link>
 
-            <Link href={"/storemanage"}>
+            <Link href={"/storemanage?page=1"}>
                 <div className="group relative flex flex-row items-center justify-start gap-3 pl-6 h-14 hover:bg-[#2C2C2C] transition cursor-pointer">
                     <div className='absolute left-0 w-1 h-8 bg-transparent group-hover:bg-[#1E8B79] transition-all rounded-r-lg'>
 

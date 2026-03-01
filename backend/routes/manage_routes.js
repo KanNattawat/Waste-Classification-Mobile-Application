@@ -20,4 +20,6 @@ manage_router.post("/createitem", authMiddleware, upload.single('Image_path'), a
 manage_router.put("/updateitem/:id", authMiddleware, upload.single('Image_path'), adminCheck, controller.updatePointShop);
 manage_router.delete("/deleteitem/:id", authMiddleware, adminCheck, controller.deletePointShop);
 
+manage_router.get("/recycleShop", authMiddleware, adminCheck, controller.getRecycleShops);
+manage_router.put("/approveShop", authMiddleware, adminCheck, controller.approveShop);
 export default manage_router;

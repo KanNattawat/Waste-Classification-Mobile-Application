@@ -118,7 +118,7 @@ export const getHistoryData = asyncHandler(async (req, res) => {
     const [wasteData, isVote] = await Promise.all([
         prisma.waste.findFirst({
             where: { Waste_ID: Number(waste) },
-            orderBy:{Timestamp:'desc'}
+            orderBy: { Timestamp: 'desc' }
         }),
         prisma.wasteVote.findFirst({
             where: { Waste_ID: Number(waste), User_ID: Number(userid) },
@@ -612,8 +612,10 @@ export const redeemItem = asyncHandler(async (req, res) => {
         })
     ]);
 
-    res.status(200).json({ 
-        msg: "แลกของรางวัลสำเร็จ", 
-        currentPoints: transaction[0].Points 
+    res.status(200).json({
+        msg: "แลกของรางวัลสำเร็จ",
+        currentPoints: transaction[0].Points
     });
 });
+
+

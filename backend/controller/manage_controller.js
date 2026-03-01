@@ -153,7 +153,7 @@ export const getS3MultiDownloadPresigned = asyncHandler(async (req, res) => {
             ContentType: 'application/zip'
         }
     });
-    
+
 
     for (const item of queryWasteData) {
         const mostVote = Math.max(...item.Vote_wastetype);
@@ -213,10 +213,9 @@ export const getPointShopById = asyncHandler(async (req, res) => {
 });
 
 export const createPointShops = asyncHandler(async (req, res) => {
-    // 🌟 เอา Promise ดักจับออก เพราะ Route จัดการให้แล้ว
 
     const { Item_name, Usage_Limit, Point_Usage, Expire_Date } = req.body || {};
-    const file = req.file; 
+    const file = req.file;
 
     if (!Item_name || !Usage_Limit || !Point_Usage || !Expire_Date || !file) {
         return res.status(400).json({ error: "กรุณากรอกข้อมูลและอัปโหลดรูปภาพให้ครบถ้วน" });
@@ -256,10 +255,9 @@ export const createPointShops = asyncHandler(async (req, res) => {
 export const updatePointShop = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    // 🌟 เอา Promise ดักจับออก เพราะ Route จัดการให้แล้ว
 
     const { Item_name, Usage_Limit, Point_Usage, Expire_Date } = req.body || {};
-    const file = req.file; 
+    const file = req.file;
 
     const existing = await prisma.pointShop.findUnique({
         where: { Item_ID: Number(id) }
@@ -283,7 +281,7 @@ export const updatePointShop = asyncHandler(async (req, res) => {
         };
 
         await s3.send(new PutObjectCommand(uploadParams));
-        
+
         const region = process.env.AWS_REGION || 'ap-southeast-1';
         Image_path = `https://${process.env.S3_BUCKET}.s3.${region}.amazonaws.com/${fileName}`;
     }
@@ -316,3 +314,51 @@ export const deletePointShop = asyncHandler(async (req, res) => {
         msg: "ลบสำเร็จ"
     });
 });
+
+export const getRecycleShops = asyncHandler(async (req, res) => {
+    const currentPage = Number(req.query.current) || 1;
+    const limit = 11;
+    const offset = (currentPage - 1) * limit
+    const [shop, count] = await Promise.all([
+        prisma.recycleShop.findMany({
+            skip: offset,
+            take: limit,
+            where: {
+                Status: false
+            },
+            include: {
+                user: {
+                    select: {
+                        Full_name: true
+                    }
+                }
+            }
+        }),
+        prisma.recycleShop.count({
+            where: {
+                Status: false
+            }
+        })
+    ])
+    const totalPage = Math.ceil(count/limit)
+    console.log('totalPage',totalPage)
+    res.status(200).json({ shop: shop, totalPage: totalPage });
+})
+
+
+export const approveShop = asyncHandler(async (req, res) => {
+    const { shopId } = req.body
+    console.log('approve shop')
+    if (!shopId) {
+        return res.status(400).json({ ok: false, message: "Shop ID is required" });
+    }
+    const shop = await prisma.recycleShop.update({
+        where: {
+            Shop_ID: Number(shopId)
+        },
+        data: {
+            Status: true
+        }
+    })
+    res.status(200).json({ ok: true });
+})
