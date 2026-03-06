@@ -10,6 +10,7 @@ import { API_URL } from "@/config";
 const Sign_in = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState(false);
   const { setToken } = useAuth();
   const router = useRouter();
 
@@ -18,13 +19,13 @@ const Sign_in = () => {
       const response = await axios.post(`${API_URL}/auth/login`,
         { User_name: username, User_password: password }
       );
-
       const token = response.data.token;
       await SecureStore.setItem("authToken", token);
       await AsyncStorage.setItem("userId", String(response.data.userId));
       setToken(token);
       console.log(token, response.data.userId);
     } catch (error) {
+      setError(true)
       console.log(error);
     }
   };
@@ -71,10 +72,19 @@ const Sign_in = () => {
           />
         </View>
 
+
+        {/* error */}
+        <View className='h-6 mt-4 justify-center'>
+          {error && (
+            <Text className='text-lg text-red-500'>Username หรือ Password ไม่ถูกต้อง</Text>
+          )}
+        </View>
+
+
         {/* Login Button */}
         <TouchableOpacity
           activeOpacity={0.7}
-          className='mt-20 bg-[#1E8B79] rounded-xl w-60 h-16 items-center justify-center'
+          className='mt-16 bg-[#1E8B79] rounded-xl w-60 h-16 items-center justify-center'
           onPress={handleSubmit}
         >
           <Text className='text-white text-xl font-bold'>เข้าสู่ระบบ</Text>

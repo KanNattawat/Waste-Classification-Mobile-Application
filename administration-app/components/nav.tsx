@@ -35,7 +35,7 @@ const Nav = () => {
 
                     </div>
                     <img src="/images/export.png" alt="" className="h-7 w-7" />
-                    <p className="text-xl">จัดการรูปภาพ</p>
+                    <p className="text-xl">ส่งออกรูปภาพ</p>
                 </div>
             </Link>
 

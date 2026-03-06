@@ -23,17 +23,21 @@ const Sign_Up = () => {
                 setError('Password ไม่ตรงกัน');
                 return;
             }
-            await axios.post(`${API_URL}/auth/register`, {
+            const res = await axios.post(`${API_URL}/auth/register`, {
                 User_name: username,
                 User_password: password,
                 Full_name: fullname,
-                Email : email
+                Email: email
             });
 
             router.replace('/(auth)/sign_in');
         } catch (error) {
-            console.log(error);
-            setError('เกิดข้อผิดพลาด โปรดลองใหม่');
+            if (axios.isAxiosError(error)) {
+                const msg = error.response?.data?.error || "Server Error";
+                setError(msg);
+            } else {
+                setError("Error");
+            }
         }
     };
 
@@ -126,6 +130,12 @@ const Sign_Up = () => {
                             />
                         </View>
 
+                        {/* error */}
+                        <View className='h-6 mt-4 justify-center'>
+                            {error && (
+                                <Text className='text-lg text-red-500'>{error}</Text>
+                            )}
+                        </View>
 
 
                         {/* Sign Up Button */}

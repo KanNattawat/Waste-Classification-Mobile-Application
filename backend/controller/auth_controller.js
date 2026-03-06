@@ -1,4 +1,3 @@
-import { request, response } from "express";
 import { prisma } from "../prisma/prisma.js"
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -8,7 +7,7 @@ const { Role } = pkg;
 export const Register = async (req, res) => {
     try {
         const { User_name, User_password, Full_name, Email } = req.body;
-        if (!User_name || !User_password || !Full_name) {
+        if (!User_name || !User_password || !Full_name || !Email) {
             return res.status(400).json({ error: "กรุณากรอกข้อมูลให้ครบถ้วน" });
         }
         const check = await prisma.user.findUnique({
@@ -17,6 +16,16 @@ export const Register = async (req, res) => {
 
         if (check) {
             return res.status(400).json({ error: "Username นี้มีผู้ใช้เเล้ว" })
+        }
+
+        if (User_password.trim().length < 8) {
+            return res.status(400).json({ error: "Password ต้องมีความยาวอย่างน้อย 8 หลัก" })
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailRegex.test(Email)) {
+            return res.status(400).json({ error: "รูปแบบ Email ไม่ถูกต้อง" });
         }
 
         const saltRounds = 10;
@@ -33,7 +42,7 @@ export const Register = async (req, res) => {
         res.json("เพิ่มผู้ใช้สำเร็จ");
     } catch (error) {
         console.log(error)
-        res.status(500).json({ "errorจ้า": error });
+        res.status(500).json({ "error": error });
     }
 };
 
@@ -74,7 +83,6 @@ export const adminRegister = async (req, res) => {
 
 
 export const Login = async (req, res) => {
-    console.log('hi')
     try {
         const { User_name, User_password } = req.body
         if (!User_name || !User_password) {
@@ -84,11 +92,11 @@ export const Login = async (req, res) => {
             where: { User_name: User_name }
         });
         if (!user) {
-            return res.status(401).json({ error: "username หรือ password ไม่ถูกต้อง" })
+            return res.status(400).json({ error: "username หรือ password ไม่ถูกต้อง" })
         }
         const check = await bcrypt.compare(String(User_password), user.User_password);
         if (!check) {
-            return res.status(401).json({ error: "username หรือ password ไม่ถูกต้อง" })
+            return res.status(400).json({ error: "username หรือ password ไม่ถูกต้อง" })
         }
         const JWT_SECRET = process.env.JWT;
         const token = jwt.sign({ userId: user.User_ID, userRole: user.Role }, JWT_SECRET, {

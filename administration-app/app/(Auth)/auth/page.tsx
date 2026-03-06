@@ -1,6 +1,6 @@
 'use client'
 import { useForm } from "react-hook-form";
-import {loginAction} from "@/app/actions/auth"
+import { loginAction } from "@/app/actions/auth"
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 type Login = {
@@ -14,6 +14,7 @@ const page = () => {
         register,
         handleSubmit,
         formState,
+        setError
     } = useForm<Login>();
 
     const router = useRouter();
@@ -29,6 +30,11 @@ const page = () => {
                 }
             )
             const result = await res.json();
+
+            if (!res.ok) {
+                setError("root", { message: "Username หรือ Password ไม่ถูกต้อง" });
+            }
+
             const token = result.token
             await loginAction(token)
             router.push('/')
@@ -50,7 +56,7 @@ const page = () => {
                             <div className="w-full max-w-md mb-6">
                                 <div className="flex items-center h-12 bg-white border border-black rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-[#7CD4C5]">
                                     <div className="px-4 border-r border-gray-200">
-                                        <Image src="/images/User.png"  width={24} height={24} alt="" className="object-contain" />
+                                        <Image src="/images/User.png" width={24} height={24} alt="" className="object-contain" />
                                     </div>
                                     <input
                                         type="text"
@@ -66,7 +72,7 @@ const page = () => {
                             <div className="w-full max-w-md mb-10 mt-4">
                                 <div className="flex items-center h-12 bg-white border border-black rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-[#7CD4C5]">
                                     <div className="px-4 border-r border-gray-200">
-                                        <Image src="/images/Lock.png"  width={24} height={24} alt="" className="object-contain" />
+                                        <Image src="/images/Lock.png" width={24} height={24} alt="" className="object-contain" />
                                     </div>
                                     <input
                                         type="password"
@@ -77,6 +83,13 @@ const page = () => {
                                 </div>
                                 {errors.User_password && <p className="text-red-500 text-sm mt-1 absolute">{errors.User_password.message}</p>}
                             </div>
+
+                            <div className="flex flex-row h-6 mt-4 justify-center">
+                                {errors.root && (
+                                    <p className="text-red-500 text-center mb-4">{errors.root.message}</p>
+                                )}
+                            </div>
+
 
                             <div className="w-full max-w-md flex justify-center">
                                 <button
