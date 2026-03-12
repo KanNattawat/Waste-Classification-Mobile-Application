@@ -1,6 +1,10 @@
+'use client'
 import Link from 'next/link';
 import { deleteCookie } from "@/app/actions/auth"
+import { usePathname } from 'next/navigation'
+import NavItem from '@/components/navItem'
 const Nav = () => {
+    const pathname = usePathname()
     return (
         <div className="flex flex-col h-screen bg-black text-center text-white pt-4">
             <Link href={"/"}>
@@ -9,45 +13,29 @@ const Nav = () => {
                 </div>
             </Link>
 
-            <Link href={"/usermanage?page=1"}>
-                <div className="group relative flex flex-row items-center justify-start pl-6 mt-12 gap-3 h-14 hover:bg-[#2C2C2C] transition cursor-pointer">
-                    <div className='absolute left-0 w-1 h-8 bg-transparent group-hover:bg-[#1E8B79] transition-all rounded-r-lg'>
-                    </div>
 
+            <div className='mt-12'>
+                <NavItem href={'/usermanage?page=1'}>
                     <img src="/images/Users.png" alt="" className="h-7 w-7" />
                     <p className="text-xl text-white group-hover:text-white transition">จัดการผู้ใช้งาน</p>
-                </div>
-            </Link>
+                </NavItem>
+            </div>
 
-            <Link href={"/storemanage?page=1"}>
-                <div className="group relative flex flex-row items-center justify-start gap-3 pl-6 h-14 hover:bg-[#2C2C2C] transition cursor-pointer">
-                    <div className='absolute left-0 w-1 h-8 bg-transparent group-hover:bg-[#1E8B79] transition-all rounded-r-lg'>
+            <NavItem href={'/storemanage?page=1'}>
+                <img src="/images/Shopping.png" alt="" className="h-7 w-7" />
+                <p className="text-xl">จัดการร้านรับของ</p>
+            </NavItem>
 
-                    </div>
-                    <img src="/images/Shopping.png" alt="" className="h-7 w-7" />
-                    <p className="text-xl">จัดการร้านรับของ</p>
-                </div>
-            </Link>
+            <NavItem href={'/exportimage?page=1'}>
+                <img src="/images/export.png" alt="" className="h-7 w-7" />
+                <p className="text-xl">ส่งออกรูปภาพ</p>
+            </NavItem>
 
-            <Link href={"/exportimage?page=1"}>
-                <div className="group relative flex flex-row items-center justify-start gap-3 pl-6 h-14 hover:bg-[#2C2C2C] transition cursor-pointer">
-                    <div className='absolute left-0 w-1 h-8 bg-transparent group-hover:bg-[#1E8B79] transition-all rounded-r-lg'>
 
-                    </div>
-                    <img src="/images/export.png" alt="" className="h-7 w-7" />
-                    <p className="text-xl">ส่งออกรูปภาพ</p>
-                </div>
-            </Link>
-
-            <Link href={"/pointmanage?page=1"}>
-                <div className="group relative flex flex-row items-center justify-start gap-3 pl-6 h-14 hover:bg-[#2C2C2C] transition cursor-pointer">
-                    <div className='absolute left-0 w-1 h-8 bg-transparent group-hover:bg-[#1E8B79] transition-all rounded-r-lg'>
-
-                    </div>
-                    <img src="/images/product.png" alt="" className="h-7 w-7" />
-                    <p className="text-xl">จัดการสินค้า</p>
-                </div>
-            </Link>
+            <NavItem href={'/pointmanage?page=1'}>
+                <img src="/images/product.png" alt="" className="h-7 w-7" />
+                <p className="text-xl">จัดการสินค้า</p>
+            </NavItem>
 
             <Link
                 className='flex flex-row mt-auto h-14 items-center gap-3 justify-center hover:bg-[#2C2C2C] transition-colors cursor-pointer'

@@ -7,8 +7,8 @@ import axios from 'axios';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { saveImage } from "@/lib/storage";
 import { API_URL } from "@/config";
-import {getS3UploadPresinged, uploadToS3} from "@/lib/s3Service"
-
+import { getS3UploadPresinged, uploadToS3 } from "@/lib/s3Service"
+import { wasteDescriptions } from '@/constants/wasteDes';
 const ProgressBar = ({ label, percent, color }: { label: string, percent: number, color: string }) => {
   return (
     <View className="bg-white p-4 rounded-lg mb-[15px] shadow-md">
@@ -43,64 +43,64 @@ const Index = () => {
   const { photo } = useLocalSearchParams<{ photo: string }>();
   const [waste, setWaste] = useState<WasteUpload>();
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState<string | null>(null);
+  // const [userId, setUserId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [selectType, setSelectType] = useState("")
   const router = useRouter();
 
-  const wasteDescriptions: Record<string, string> = {
-    "ขยะย่อยสลาย": `ขยะอินทรีย์
+//   const wasteDescriptions: Record<string, string> = {
+//     "ขยะย่อยสลาย": `ขยะอินทรีย์
 
-ขยะประเภทนี้สามารถย่อยสลายได้เองตามธรรมชาติ ไม่เป็นอันตรายต่อสิ่งแวดล้อม
+// ขยะประเภทนี้สามารถย่อยสลายได้เองตามธรรมชาติ ไม่เป็นอันตรายต่อสิ่งแวดล้อม
 
-ระยะเวลาย่อยสลาย : 1 – 6 เดือน  
-ตัวอย่าง : เศษอาหาร เปลือกผลไม้ เศษผัก ใบไม้  
-ผลกระทบหากไม่แยก : เกิดกลิ่น น้ำเสีย และแมลงรบกวน  
+// ระยะเวลาย่อยสลาย : 1 – 6 เดือน  
+// ตัวอย่าง : เศษอาหาร เปลือกผลไม้ เศษผัก ใบไม้  
+// ผลกระทบหากไม่แยก : เกิดกลิ่น น้ำเสีย และแมลงรบกวน  
 
-วิธีจัดการ  
-- แยกออกจากขยะอื่น  
-- ทิ้งในถังขยะเปียกหรือถังหมัก  
-- สามารถนำไปทำปุ๋ยหมักได้`,
+// วิธีจัดการ  
+// - แยกออกจากขยะอื่น  
+// - ทิ้งในถังขยะเปียกหรือถังหมัก  
+// - สามารถนำไปทำปุ๋ยหมักได้`,
 
-    "ขยะอันตราย": `ขยะอันตราย
+//     "ขยะอันตราย": `ขยะอันตราย
 
-ขยะประเภทนี้มีสารเคมีหรือคุณสมบัติที่เป็นอันตรายต่อสุขภาพและสิ่งแวดล้อม
+// ขยะประเภทนี้มีสารเคมีหรือคุณสมบัติที่เป็นอันตรายต่อสุขภาพและสิ่งแวดล้อม
 
-ตัวอย่าง : ถ่านไฟฉาย หลอดไฟเก่า ยา สารเคมี สี  
-ความอันตราย : ปนเปื้อนน้ำ ดิน เป็นพิษต่อคนและสัตว์  
-ห้าม : เผา เททิ้ง หรือปะปนกับขยะทั่วไป
+// ตัวอย่าง : ถ่านไฟฉาย หลอดไฟเก่า ยา สารเคมี สี  
+// ความอันตราย : ปนเปื้อนน้ำ ดิน เป็นพิษต่อคนและสัตว์  
+// ห้าม : เผา เททิ้ง หรือปะปนกับขยะทั่วไป
 
-วิธีจัดการ  
-- แยกเก็บไว้ในภาชนะที่ปิดมิดชิด  
-- นำไปทิ้งที่จุดรับขยะอันตรายของเทศบาลหรือศูนย์กำจัดพิเศษ`,
+// วิธีจัดการ  
+// - แยกเก็บไว้ในภาชนะที่ปิดมิดชิด  
+// - นำไปทิ้งที่จุดรับขยะอันตรายของเทศบาลหรือศูนย์กำจัดพิเศษ`,
 
-    "ขยะทั่วไป": `ขยะทั่วไป
+//     "ขยะทั่วไป": `ขยะทั่วไป
 
-ขยะประเภทนี้ไม่สามารถนำกลับมาใช้ใหม่หรือรีไซเคิลได้
+// ขยะประเภทนี้ไม่สามารถนำกลับมาใช้ใหม่หรือรีไซเคิลได้
 
-ตัวอย่าง : ผ้าอนามัย กระดาษชำระ ถุงพลาสติกเปื้อนอาหาร  
-ย่อยสลายยาก ใช้เวลาหลายปีถึงหลายสิบปี  
-ผลกระทบ : เพิ่มปริมาณขยะฝังกลบ
+// ตัวอย่าง : ผ้าอนามัย กระดาษชำระ ถุงพลาสติกเปื้อนอาหาร  
+// ย่อยสลายยาก ใช้เวลาหลายปีถึงหลายสิบปี  
+// ผลกระทบ : เพิ่มปริมาณขยะฝังกลบ
 
-วิธีจัดการ  
-- ใส่ถุงให้มิดชิดเพื่อลดกลิ่น  
-- ทิ้งลงถังขยะทั่วไป  
-- ลดการใช้ของใช้สิ้นเปลือง`,
+// วิธีจัดการ  
+// - ใส่ถุงให้มิดชิดเพื่อลดกลิ่น  
+// - ทิ้งลงถังขยะทั่วไป  
+// - ลดการใช้ของใช้สิ้นเปลือง`,
 
-    "ขยะรีไซเคิล": `ขยะรีไซเคิล
+//     "ขยะรีไซเคิล": `ขยะรีไซเคิล
 
-ขยะประเภทนี้สามารถนำกลับมาใช้ใหม่หรือรีไซเคิลเป็นวัตถุดิบใหม่ได้
+// ขยะประเภทนี้สามารถนำกลับมาใช้ใหม่หรือรีไซเคิลเป็นวัตถุดิบใหม่ได้
 
-ตัวอย่าง : ขวดพลาสติก แก้ว กระดาษ กระป๋อง โลหะ กล่องนม  
-ประโยชน์ : ลดขยะ ลดการใช้ทรัพยากรใหม่  
-พลาสติกบางชนิดย่อยสลายช้ามาก (100–450 ปี)
+// ตัวอย่าง : ขวดพลาสติก แก้ว กระดาษ กระป๋อง โลหะ กล่องนม  
+// ประโยชน์ : ลดขยะ ลดการใช้ทรัพยากรใหม่  
+// พลาสติกบางชนิดย่อยสลายช้ามาก (100–450 ปี)
 
-วิธีจัดการ  
-- ล้างให้สะอาด  
-- แยกฝาและฉลากออก  
-- บีบ/พับเพื่อลดพื้นที่  
-- ทิ้งในถังรีไซเคิลหรือจุดรับซื้อของเก่า`,
-  };
+// วิธีจัดการ  
+// - ล้างให้สะอาด  
+// - แยกฝาและฉลากออก  
+// - บีบ/พับเพื่อลดพื้นที่  
+// - ทิ้งในถังรีไซเคิลหรือจุดรับซื้อของเก่า`,
+//   };
 
   const displayNames: Record<string, string> = {
     "ขยะย่อยสลาย": "ขยะอินทรีย์",
@@ -114,7 +114,7 @@ const Index = () => {
       const res = await axios.put(`${API_URL}/updateFeedback`, {
         wasteId: waste?.wasteId,
         status: true,
-        selectedType: [0,0,0,0]
+        selectedType: [0, 0, 0, 0]
       })
       router.back()
 
@@ -126,8 +126,8 @@ const Index = () => {
   const handleFeedbackInCorrect = async () => {
     try {
       console.log('1')
-      const selected = selectType === "ขยะอินทรีย์" ? [1,0,0,0] : selectType === "ขยะอันตราย" ?  [0,1,0,0] :
-      selectType === "ขยะทั่วไป" ?  [0,0,1,0] :  selectType === "ขยะรีไซเคิล" ?  [0,0,0,1] : []
+      const selected = selectType === "ขยะอินทรีย์" ? [1, 0, 0, 0] : selectType === "ขยะอันตราย" ? [0, 1, 0, 0] :
+        selectType === "ขยะทั่วไป" ? [0, 0, 1, 0] : selectType === "ขยะรีไซเคิล" ? [0, 0, 0, 1] : []
       const res = await axios.put(`${API_URL}/updateFeedback`, {
         wasteId: waste?.wasteId,
         status: false,
@@ -144,7 +144,7 @@ const Index = () => {
   const uploadToDB = async (wastetype: string, image_path: string, probs: Array<number>, userId: string | null) => {
     try {
       const contentType = 'image/jpeg'
-      const {url, key} = await getS3UploadPresinged(userId, contentType);
+      const { url, key } = await getS3UploadPresinged(userId, contentType);
       await uploadToS3(url, image_path, contentType)
 
       const res = await axios.post(`${API_URL}/wasteupload`, {
@@ -170,7 +170,6 @@ const Index = () => {
       try {
         if (!photo) throw new Error("Missing image uri");
         const userId = await AsyncStorage.getItem("userId");
-        setUserId(userId)
         const model = await ensureModelLoaded();
         const input = await preprocessImage(photo);
         const outputs = model.runSync([input.data]);
@@ -180,24 +179,24 @@ const Index = () => {
           return accu;
         }, {});
         const sortedClass = Object.entries(mappingClass).sort((a, b) => b[1] - a[1]);
-
-        console.log('class: ', sortedClass);
-        console.log('output0: ', outputs[0])
-        const wasteId = await uploadToDB(sortedClass[0][0], photo, outputs[0], userId);
-        console.log('wasteId', wasteId)
         setWaste({
           sortedResult: sortedClass.map(([label, score]) => ({
             label,
             score,
           })),
-          wasteId: wasteId,
+          wasteId: "",
         });
-
+        setLoading(false);
+        await uploadToDB(sortedClass[0][0], photo, outputs[0], userId).then(id => {
+          setWaste(prev => {
+            if (!prev) return prev;
+            return{...prev, wasteId: id}
+          });
+        });
+        setLoading(false);
 
       } catch (e) {
         Alert.alert("Predict error", String(e));
-      } finally {
-        setLoading(false);
       }
     })();
   }, [photo]);
@@ -280,19 +279,18 @@ const Index = () => {
             </View>
 
 
-
             {open &&
               <Modal transparent visible={open} animationType="fade" statusBarTranslucent={true}>
                 <View className="relative flex-1 bg-black/60 justify-center items-center px-2">
                   <View className=" bg-white w-full p-6 rounded-3xl items-center shadow-2xl">
-                    <Pressable className='absolute top-2 right-6 onHold' onPress={()=>setOpen(false)}>
+                    <Pressable className='absolute top-2 right-6 onHold' onPress={() => setOpen(false)}>
                       <Text className="text-3xl font-bold text-gray-800 text-center">
-                        x 
+                        x
                       </Text>
-                      </Pressable>
+                    </Pressable>
                     <Text className="text-2xl font-bold text-gray-800 text-center">เลือกประเภทที่ถูกต้อง</Text>
-                    
-                    
+
+
                     <View className='flex flex-row flex-wrap gap-3 items-center justify-between mt-6'>
 
                       <Pressable className={`flex flex-row bg-[#EF4545] w-[48%] px-3 py-4 rounded-lg 

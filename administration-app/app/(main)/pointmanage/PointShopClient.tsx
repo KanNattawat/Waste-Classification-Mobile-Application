@@ -4,7 +4,7 @@ import { useState } from "react";
 
 const API_BASE_URL = "https://waste-classification-mobile-application.onrender.com/manage"; 
 
-// รับ Props จาก Server Component
+
 export default function PointShopClient({ initialItems, token }: { initialItems: any[], token: string }) {
   const [items, setItems] = useState(initialItems);
   const [loading, setLoading] = useState(false);
@@ -16,12 +16,10 @@ export default function PointShopClient({ initialItems, token }: { initialItems:
     Expire_Date: "",
   });
   
-  // 🌟 1. เพิ่ม State สำหรับเก็บไฟล์รูปภาพ
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
 
-  // 🌟 2. เอา Content-Type ออกจาก Header พื้นฐาน 
-  // (เพราะเวลาส่ง FormData เบราว์เซอร์จะจัดการใส่ Content-Type: multipart/form-data ให้เองอัตโนมัติ)
+  
   const getAuthHeaders = () => {
     return {
       "Authorization": `Bearer ${token}` 
@@ -56,7 +54,6 @@ export default function PointShopClient({ initialItems, token }: { initialItems:
     setFormData({ ...formData, [name]: value });
   };
 
-  // 🌟 3. ฟังก์ชันจัดการเมื่อผู้ใช้เลือกไฟล์รูปภาพ
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setImageFile(e.target.files[0]);
@@ -71,14 +68,12 @@ export default function PointShopClient({ initialItems, token }: { initialItems:
       ? `${API_BASE_URL}/updateitem/${editingId}` 
       : `${API_BASE_URL}/createitem`;
 
-    // 🌟 4. เปลี่ยนมาใช้ FormData ในการแพ็กข้อมูลแทน JSON
     const submitData = new FormData();
     submitData.append("Item_name", formData.Item_name);
     submitData.append("Usage_Limit", formData.Usage_Limit.toString());
     submitData.append("Point_Usage", formData.Point_Usage.toString());
     submitData.append("Expire_Date", formData.Expire_Date);
     
-    // ถ้ามีการเลือกไฟล์ ให้แนบไฟล์ไปด้วย (ใช้ชื่อ Image_path ตามที่ Backend จะรับ)
     if (imageFile) {
       submitData.append("Image_path", imageFile);
     }
@@ -86,13 +81,13 @@ export default function PointShopClient({ initialItems, token }: { initialItems:
     try {
       const res = await fetch(url, {
         method,
-        headers: getAuthHeaders(), // ใช้ Header ที่ไม่มี Content-Type
-        body: submitData, // ส่ง FormData
+        headers: getAuthHeaders(), 
+        body: submitData, 
       });
 
       if (res.ok) {
         alert(editingId ? "อัปเดตสำเร็จ" : "สร้างสินค้าเรียบร้อย");
-        cancelEdit(); // เคลียร์ฟอร์มและไฟล์
+        cancelEdit(); 
         fetchItems(); 
       } else {
         const errData = await res.json();
@@ -111,7 +106,6 @@ export default function PointShopClient({ initialItems, token }: { initialItems:
       Point_Usage: item.Point_Usage,
       Expire_Date: new Date(item.Expire_Date).toISOString().split("T")[0], 
     });
-    // 🌟 5. ล้างไฟล์รูปที่อาจค้างอยู่ตอนกดแก้ไข
     setImageFile(null); 
     const fileInput = document.getElementById("imageInput") as HTMLInputElement;
     if (fileInput) fileInput.value = "";
@@ -120,7 +114,6 @@ export default function PointShopClient({ initialItems, token }: { initialItems:
   const cancelEdit = () => {
     setEditingId(null);
     setFormData({ Item_name: "", Usage_Limit: "", Point_Usage: "", Expire_Date: "" });
-    // 🌟 6. ล้างไฟล์รูปออกเมื่อกดยกเลิก
     setImageFile(null);
     const fileInput = document.getElementById("imageInput") as HTMLInputElement;
     if (fileInput) fileInput.value = "";
@@ -267,7 +260,6 @@ export default function PointShopClient({ initialItems, token }: { initialItems:
               ) : (
                 items.map((item: any) => (
                   <tr key={item.Item_ID} className="hover:bg-gray-50">
-                    {/* 🌟 8. แสดงรูปภาพในตาราง */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       {item.Item_Image_path ? (
                         <img 
