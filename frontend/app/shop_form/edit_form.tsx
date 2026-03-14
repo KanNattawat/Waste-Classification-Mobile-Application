@@ -1,298 +1,313 @@
 import React, { useState, useEffect } from 'react';
-import {
-    StyleSheet,
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    Dimensions,
-    Alert,
-    ActivityIndicator
+import { 
+    View, 
+    Text, 
+    TextInput, 
+    TouchableOpacity, 
+    StyleSheet, 
+    Alert, 
+    ActivityIndicator, 
+    ScrollView 
 } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
-import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import axios from 'axios';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import axios from 'axios';
 
-const { width } = Dimensions.get('window');
+// กำหนด Base URL ของ API
+const API_BASE_URL = 'https://waste-classification-mobile-application.onrender.com';
 
-const EditShopScreen = () => {
-    const router = useRouter(); 
-    const { shopId } = useLocalSearchParams(); // ✅ รับ shopId มาจากหน้าที่แล้ว
-    
+export default function EditShopScreen() {
+    const { shopId } = useLocalSearchParams(); // รับค่า shopId ที่ส่งมาจากหน้าก่อน
+    const router = useRouter();
+
+    // ----------------------------------------
+    // 1. States สำหรับเก็บข้อมูลฟอร์ม
+    // ----------------------------------------
+    const [shopName, setShopName] = useState('');
+    const [telNum, setTelNum] = useState('');
+    const [acceptedCate, setAcceptedCate] = useState(''); 
+    const [location, setLocation] = useState(null);
+
+    // States สำหรับจัดการสถานะ Loading ต่างๆ
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [shopStatus, setShopStatus] = useState(null); // เก็บสถานะร้าน
+    const [deleting, setDeleting] = useState(false);
 
-    const [name, setName] = useState('');
-    const [phone, setPhone] = useState('');
-    const [selectedCategories, setSelectedCategories] = useState([]);
-    const [region, setRegion] = useState({
-        latitude: 13.7367,
-        longitude: 100.5231,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-    });
-
-    const categories = [
-        { id: 1, label: 'กระดาษ', icon: 'file-document-outline' },
-        { id: 2, label: 'พลาสติก', icon: 'bottle-wine-outline' },
-        { id: 3, label: 'โลหะ', icon: 'nut' },
-        { id: 4, label: 'แก้ว', icon: 'glass-wine' },
-        { id: 5, label: 'e-waste', icon: 'battery-charging' },
-        { id: 6, label: 'อื่นๆ', icon: 'dots-horizontal' },
-    ];
-
-    // ✅ ฟังก์ชันสำหรับดึงข้อมูลร้านจาก API โดยใช้ shopId
-    const fetchShopData = async () => {
-        if (!shopId) {
-            Alert.alert("ผิดพลาด", "ไม่พบรหัสร้านที่ต้องการแก้ไข");
-            router.back();
-            return;
-        }
-
-        try {
-            // ไปดึงข้อมูลร้านมาจาก DB (สมมติว่าเป็น userId = 1 ตามหน้าเก่า)
-            // หมายเหตุ: API เส้นนี้อาจจะต้องเปลี่ยนถ้ามีเส้นดึงร้านโดยใช้ ID ตรงๆ
-            const response = await axios.get(`https://waste-classification-mobile-application.onrender.com/recycle-shop2?userId=1`);
-            
-            // หาข้อมูลร้านที่ตรงกับ shopId ที่ส่งมา
-            const currentShop = response.data.find(shop => String(shop.Shop_ID) === String(shopId));
-
-            if (currentShop) {
-                setName(currentShop.Shop_name || '');
-                setPhone(currentShop.Tel_num || '');
-                setSelectedCategories(currentShop.Accepted_cate || []);
-                setShopStatus(currentShop.Status);
-
-                if (currentShop.Location && currentShop.Location.length === 2) {
-                    setRegion({
-                        latitude: currentShop.Location[0],
-                        longitude: currentShop.Location[1],
-                        latitudeDelta: 0.005,
-                        longitudeDelta: 0.005,
-                    });
-                }
-            } else {
-                Alert.alert("ผิดพลาด", "ไม่พบข้อมูลร้านในระบบ");
-                router.back();
-            }
-        } catch (error) {
-            console.error("Error fetching shop data:", error);
-            Alert.alert("ผิดพลาด", "ไม่สามารถดึงข้อมูลร้านได้");
-            router.back();
-        } finally {
-            setLoading(false);
-        }
-    };
-
+    // ----------------------------------------
+    // 2. ฟังก์ชันโหลดข้อมูลร้านค้า (เมื่อเปิดหน้าต่าง)
+    // ----------------------------------------
     useEffect(() => {
+        const fetchShopData = async () => {
+            if (!shopId) {
+                Alert.alert("ข้อผิดพลาด", "ไม่พบรหัสร้านค้า");
+                router.back();
+                return;
+            }
+
+            try {
+                // สมมติว่า userId คือ 1 (ปรับให้ตรงกับระบบ Auth ของคุณ)
+                const response = await axios.get(`${API_BASE_URL}/recycle-shop2?userId=1`);
+                
+                if (response.status === 200 && response.data) {
+                    // ค้นหาร้านที่ตรงกับ shopId
+                    const shopData = response.data.find(shop => shop.Shop_ID === Number(shopId));
+                    
+                    if (shopData) {
+                        setShopName(shopData.shop_name);
+                        setTelNum(shopData.tel_num);
+                        setAcceptedCate(shopData.accepted_cate);
+                        setLocation(shopData.location);
+                    } else {
+                        Alert.alert("ข้อผิดพลาด", "ไม่พบข้อมูลร้านค้านี้ในระบบ");
+                        router.back();
+                    }
+                }
+            } catch (error) {
+                console.error("Fetch shop error:", error);
+                Alert.alert("เกิดข้อผิดพลาด", "ไม่สามารถโหลดข้อมูลร้านค้าได้");
+            } finally {
+                setLoading(false);
+            }
+        };
+
         fetchShopData();
     }, [shopId]);
 
-
-    const toggleCategory = (id) => {
-        setSelectedCategories((prev) =>
-            prev.includes(id)
-                ? prev.filter((item) => item !== id)
-                : [...prev, id]
-        );
-    };
-
+    // ----------------------------------------
+    // 3. ฟังก์ชันอัปเดตข้อมูล (Update)
+    // ----------------------------------------
     const onUpdate = async () => {
-        if (!name.trim() || !phone.trim()) {
-            Alert.alert("ข้อมูลไม่ครบ", "กรุณากรอกชื่อและเบอร์โทรศัพท์");
-            return;
-        }
-        if (selectedCategories.length === 0) {
-            Alert.alert("ข้อมูลไม่ครบ", "กรุณาเลือกหมวดหมู่ขยะอย่างน้อย 1 ประเภท");
+        // Validation เบื้องต้น
+        if (!shopName.trim() || !telNum.trim() || !acceptedCate) {
+            Alert.alert("ข้อมูลไม่ครบถ้วน", "กรุณากรอกชื่อร้าน เบอร์โทร และหมวดหมู่ให้ครบถ้วน");
             return;
         }
 
         setSaving(true);
-
         try {
             const payload = {
-                shop_name: name,
-                tel_num: phone,
-                location: [region.latitude, region.longitude],
-                accepted_cate: selectedCategories
+                shop_name: shopName,
+                tel_num: telNum,
+                accepted_cate: acceptedCate,
+                location: location
             };
-            
-            const API_URL = `https://waste-classification-mobile-application.onrender.com/update_recycle-shop/${shopId}`; 
 
-            const response = await axios.put(API_URL, payload);
+            const response = await axios.put(`${API_BASE_URL}/update_recycle-shop/${shopId}`, payload);
 
             if (response.status === 200) {
                 Alert.alert("สำเร็จ", "แก้ไขข้อมูลร้านเรียบร้อยแล้ว", [
-                    {
-                        text: "ตกลง",
-                        onPress: () => router.back()
-                    }
+                    { text: "ตกลง", onPress: () => router.back() }
                 ]);
             }
         } catch (error) {
-            console.log('Update error:', error);
-            const errorMessage = error.response?.data?.error || "ไม่สามารถแก้ไขข้อมูลได้ กรุณาลองใหม่อีกครั้ง";
+            console.error("Update error:", error);
+            const errorMessage = error.response?.data?.error || "ไม่สามารถอัปเดตข้อมูลได้";
             Alert.alert("เกิดข้อผิดพลาด", errorMessage);
         } finally {
             setSaving(false);
         }
     };
 
+    // ----------------------------------------
+    // 4. ฟังก์ชันลบข้อมูล (Delete)
+    // ----------------------------------------
+    const confirmDelete = () => {
+        Alert.alert(
+            "ยืนยันการลบ",
+            "คุณแน่ใจหรือไม่ว่าต้องการลบร้านรับซื้อนี้? หากลบแล้วจะไม่สามารถกู้คืนได้",
+            [
+                { text: "ยกเลิก", style: "cancel" },
+                { text: "ลบทิ้ง", style: "destructive", onPress: onDeleteShop }
+            ]
+        );
+    };
+
+    const onDeleteShop = async () => {
+        setDeleting(true);
+        try {
+            const response = await axios.delete(`${API_BASE_URL}/delete_recycle-shop/${shopId}`);
+
+            if (response.status === 200) {
+                Alert.alert("สำเร็จ", "ลบร้านรับซื้อเรียบร้อยแล้ว", [
+                    { text: "ตกลง", onPress: () => router.back() }
+                ]);
+            }
+        } catch (error) {
+            console.error("Delete error:", error);
+            const errorMessage = error.response?.data?.error || "ไม่สามารถลบข้อมูลได้";
+            Alert.alert("เกิดข้อผิดพลาด", errorMessage);
+        } finally {
+            setDeleting(false);
+        }
+    };
+
+    // ----------------------------------------
+    // 5. UI Rendering
+    // ----------------------------------------
     if (loading) {
         return (
-            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+            <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#108a74" />
+                <Text style={{ marginTop: 10 }}>กำลังโหลดข้อมูล...</Text>
             </View>
         );
     }
 
     return (
-        <KeyboardAwareScrollView
-            style={styles.container}
-            enableOnAndroid
-            keyboardShouldPersistTaps="handled"
-        >
-            <Text style={styles.headerText}>แก้ไขข้อมูลร้าน</Text>
-            
-            <View style={styles.statusContainer}>
-                 <Text style={styles.label}>สถานะร้าน: </Text>
-                 <Text style={{ color: shopStatus ? 'green' : 'orange', fontWeight: 'bold' }}>
-                     {shopStatus ? 'เปิดใช้งาน' : 'รอการตรวจสอบ/ปิดใช้งาน'}
-                 </Text>
+        <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+            <Text style={styles.headerTitle}>แก้ไขข้อมูลร้านรับซื้อ</Text>
+
+            {/* ส่วนกรอกข้อมูล */}
+            <View style={styles.inputGroup}>
+                <Text style={styles.label}>ชื่อร้าน</Text>
+                <TextInput 
+                    style={styles.input}
+                    value={shopName}
+                    onChangeText={setShopName}
+                    placeholder="ระบุชื่อร้าน"
+                />
             </View>
 
             <View style={styles.inputGroup}>
-                <Text style={styles.label}>ชื่อร้าน / ผู้ติดต่อ</Text>
-                <TextInput
+                <Text style={styles.label}>เบอร์โทรศัพท์</Text>
+                <TextInput 
                     style={styles.input}
-                    value={name}
-                    onChangeText={setName}
-                    placeholder="ชื่อร้าน"
-                />
-
-                <Text style={styles.label}>เบอร์โทร</Text>
-                <TextInput
-                    style={styles.input}
-                    value={phone}
-                    onChangeText={setPhone}
+                    value={telNum}
+                    onChangeText={setTelNum}
+                    placeholder="ระบุเบอร์โทรศัพท์"
                     keyboardType="phone-pad"
-                    placeholder="0xxxxxxxxx"
                 />
             </View>
 
-            <Text style={styles.label}>ตำแหน่งที่ตั้ง (ลากหมุดเพื่อแก้ไข)</Text>
-            <View style={styles.mapContainer}>
-                <MapView
-                    provider={PROVIDER_GOOGLE}
-                    style={styles.map}
-                    region={region}
-                >
-                    <Marker 
-                        coordinate={region} 
-                        draggable 
-                        onDragEnd={(e) => {
-                            setRegion({
-                                ...region,
-                                latitude: e.nativeEvent.coordinate.latitude,
-                                longitude: e.nativeEvent.coordinate.longitude,
-                            });
-                        }}
-                    />
-                </MapView>
-
-                {/* ⚠️ อย่าลืมใส่ API Key ของคุณตรงนี้นะครับ */}
-                <GooglePlacesAutocomplete
-                    placeholder="ค้นหาเพื่อเปลี่ยนตำแหน่ง..."
-                    fetchDetails
-                    onPress={(data, details = null) => {
-                        const location = details.geometry.location;
-                        setRegion({
-                            latitude: location.lat,
-                            longitude: location.lng,
-                            latitudeDelta: 0.005,
-                            longitudeDelta: 0.005,
-                        });
-                    }}
-                    query={{
-                        key: 'YOUR_GOOGLE_MAPS_API_KEY', 
-                        language: 'th',
-                        components: 'country:th',
-                    }}
-                    styles={{
-                        container: styles.searchContainer,
-                        textInput: styles.searchInput,
-                        listView: { borderRadius: 8 },
-                    }}
+            <View style={styles.inputGroup}>
+                <Text style={styles.label}>หมวดหมู่ที่รับซื้อ</Text>
+                <TextInput 
+                    style={styles.input}
+                    value={acceptedCate}
+                    onChangeText={setAcceptedCate}
+                    placeholder="เช่น กระดาษ, พลาสติก, โลหะ"
                 />
+                {/* หมายเหตุ: หากคุณมี Dropdown Picker ให้เอามาใส่แทน TextInput ตรงนี้นะครับ */}
             </View>
 
-            <Text style={styles.label}>หมวดหมู่ของที่รับ (เลือกที่ต้องการแก้ไข)</Text>
-            <View style={styles.categoryBox}>
-                <View style={styles.categoryGrid}>
-                    {categories.map((item) => {
-                        const isSelected = selectedCategories.includes(item.id);
-                        return (
-                            <View key={item.id} style={styles.categoryItem}>
-                                <TouchableOpacity
-                                    style={[
-                                        styles.circleIcon,
-                                        isSelected && styles.circleIconSelected,
-                                    ]}
-                                    onPress={() => toggleCategory(item.id)}
-                                    activeOpacity={0.8}
-                                >
-                                    <Icon
-                                        name={item.icon}
-                                        size={30}
-                                        color={isSelected ? '#fff' : '#108a74'}
-                                    />
-                                </TouchableOpacity>
-                                <Text style={styles.categoryText}>{item.label}</Text>
-                            </View>
-                        );
-                    })}
+            {/* ส่วนแผนที่ (จำลอง) */}
+            <View style={styles.inputGroup}>
+                <Text style={styles.label}>ตำแหน่งที่ตั้ง (Map)</Text>
+                <View style={styles.mapPlaceholder}>
+                    <Text style={{color: '#888'}}>พื้นที่สำหรับแสดงแผนที่ (Map Component)</Text>
+                    {/* นำ <MapView> ของคุณมาใส่ตรงนี้ */}
                 </View>
             </View>
 
-            <TouchableOpacity 
-                style={[styles.saveBtn, saving && { opacity: 0.7 }]} 
-                onPress={onUpdate}
-                disabled={saving}
-            >
-                {saving ? (
-                    <ActivityIndicator color="#fff" />
-                ) : (
-                    <Text style={styles.saveBtnText}>บันทึกการแก้ไข</Text>
-                )}
-            </TouchableOpacity>
+            {/* ปุ่ม Action */}
+            <View style={styles.actionButtonsContainer}>
+                <TouchableOpacity 
+                    style={[styles.saveBtn, saving && { opacity: 0.7 }]} 
+                    onPress={onUpdate}
+                    disabled={saving || deleting}
+                >
+                    {saving ? (
+                        <ActivityIndicator color="#fff" />
+                    ) : (
+                        <Text style={styles.saveBtnText}>บันทึกแก้ไข</Text>
+                    )}
+                </TouchableOpacity>
 
-        </KeyboardAwareScrollView>
+                <TouchableOpacity 
+                    style={[styles.deleteBtn, deleting && { opacity: 0.7 }]} 
+                    onPress={confirmDelete}
+                    disabled={saving || deleting}
+                >
+                    {deleting ? (
+                        <ActivityIndicator color="#fff" />
+                    ) : (
+                        <Text style={styles.deleteBtnText}>ลบร้าน</Text>
+                    )}
+                </TouchableOpacity>
+            </View>
+        </ScrollView>
     );
-};
+}
 
+// ----------------------------------------
+// 6. Styles
+// ----------------------------------------
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#fff', padding: 20 },
-    headerText: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
-    statusContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
-    label: { fontSize: 16, fontWeight: 'bold', marginBottom: 8, marginTop: 10 },
-    inputGroup: { marginBottom: 15 },
-    input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12, fontSize: 16, backgroundColor: '#fafafa' },
-    mapContainer: { height: 250, width: '100%', borderRadius: 8, overflow: 'hidden', marginBottom: 20 },
-    map: { ...StyleSheet.absoluteFillObject },
-    searchContainer: { position: 'absolute', top: 10, left: 10, right: 10, zIndex: 1 },
-    searchInput: { height: 44, borderRadius: 8, paddingHorizontal: 10, borderWidth: 1, borderColor: '#ddd', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
-    categoryBox: { marginBottom: 30 },
-    categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginTop: 10 },
-    categoryItem: { width: '30%', alignItems: 'center', marginBottom: 15 },
-    circleIcon: { width: 60, height: 60, borderRadius: 30, backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
-    circleIconSelected: { backgroundColor: '#108a74' },
-    categoryText: { fontSize: 14, color: '#333' },
-    saveBtn: { backgroundColor: '#108a74', padding: 15, borderRadius: 8, alignItems: 'center', marginBottom: 40 },
-    saveBtnText: { color: '#fff', fontSize: 18, fontWeight: 'bold' }
+    container: {
+        flex: 1,
+        backgroundColor: '#f5f5f5',
+    },
+    contentContainer: {
+        padding: 20,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#f5f5f5',
+    },
+    headerTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 20,
+        color: '#333',
+        textAlign: 'center',
+    },
+    inputGroup: {
+        marginBottom: 15,
+    },
+    label: {
+        fontSize: 16,
+        fontWeight: '600',
+        marginBottom: 8,
+        color: '#444',
+    },
+    input: {
+        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderColor: '#ddd',
+        borderRadius: 8,
+        padding: 12,
+        fontSize: 16,
+    },
+    mapPlaceholder: {
+        height: 150,
+        backgroundColor: '#e9e9e9',
+        borderRadius: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#ddd',
+    },
+    actionButtonsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 30,
+        marginBottom: 40,
+    },
+    saveBtn: {
+        flex: 1,
+        backgroundColor: '#108a74', // สีเขียวเซฟ
+        padding: 15,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginRight: 8,
+    },
+    saveBtnText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    deleteBtn: {
+        flex: 1,
+        backgroundColor: '#e74c3c', // สีแดงลบ
+        padding: 15,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginLeft: 8,
+    },
+    deleteBtnText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
 });
-
-export default EditShopScreen;
