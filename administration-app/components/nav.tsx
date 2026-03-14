@@ -34,7 +34,7 @@ const Nav = () => {
 
             <NavItem href={'/pointmanage?page=1'}>
                 <img src="/images/product.png" alt="" className="h-7 w-7" />
-                <p className="text-xl">จัดการสินค้า</p>
+                <p className="text-xl">จัดการของรางวัล</p>
             </NavItem>
 
             <Link

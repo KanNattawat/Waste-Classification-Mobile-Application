@@ -10,8 +10,9 @@ type navItem = {
 
 const NavItem = ({ href, children }: navItem) => {
     const path = usePathname()
-    const itemHref = href.split('?')[0]
-    const isActive = path === itemHref
+    const count = path.split("/").length - 1;
+    const itemHref = href.split('?')[0] 
+    const isActive = count <= 1 ? path === itemHref :  path.split('/').slice(0, 2).join('/') === itemHref
     return (
         <Link href={href}>
             <div className="group relative flex flex-row items-center justify-start pl-6  gap-3 h-14 hover:bg-[#2C2C2C] transition cursor-pointer">

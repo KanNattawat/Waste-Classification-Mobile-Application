@@ -1,6 +1,6 @@
 import {
     View, KeyboardAvoidingView, Platform, TextInput, Text, Image,
-    TouchableOpacity, ScrollView, TouchableWithoutFeedback, Keyboard, SafeAreaView
+    TouchableOpacity, ScrollView, TouchableWithoutFeedback, Keyboard, SafeAreaView, Pressable
 } from 'react-native';
 import { useState } from 'react';
 import axios from 'axios';
@@ -59,6 +59,9 @@ const Sign_Up = () => {
                         keyboardShouldPersistTaps="handled"
                         showsVerticalScrollIndicator={false}
                     >
+                        <Pressable className='absolute top-10 left-7 z-50' onPress={() => { router.back() }}>
+                            <Image source={require('@/assets/images/back1.png')} />
+                        </Pressable>
                         <Image source={require('@/assets/images/im3.png')} className='w-48 h-48 mt-8' />
                         <Text className='text-black text-2xl pt-8 font-bold text-center'>
                             แอปพลิเคชันคัดแยกขยะ

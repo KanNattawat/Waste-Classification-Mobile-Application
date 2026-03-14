@@ -84,16 +84,22 @@ const Sign_in = () => {
         {/* Login Button */}
         <TouchableOpacity
           activeOpacity={0.7}
-          className='mt-16 bg-[#1E8B79] rounded-xl w-60 h-16 items-center justify-center'
+          className='mt-4 bg-[#1E8B79] rounded-xl w-60 h-16 items-center justify-center'
           onPress={handleSubmit}
         >
           <Text className='text-white text-xl font-bold'>เข้าสู่ระบบ</Text>
         </TouchableOpacity>
 
-        {/* Sign Up */}
-        <TouchableOpacity onPress={() => router.navigate('/(auth)/sign_up')}>
-          <Text className='text-black underline text-lg mt-10'>สร้างบัญชี</Text>
-        </TouchableOpacity>
+        <View className='flex flex-row gap-x-12'>
+          {/* Sign Up */}
+          <TouchableOpacity onPress={() => router.navigate('/(auth)/sign_up')}>
+            <Text className='text-black underline text-lg mt-10'>สร้างบัญชี</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => router.navigate('/(auth)/reset')}>
+            <Text className='text-black underline text-lg mt-10'>ลืมรหัสผ่าน?</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
