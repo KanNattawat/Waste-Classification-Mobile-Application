@@ -33,7 +33,7 @@ const page = async ({ searchParams }: { searchParams: SearchParams }) => {
           <Searchbar />
           <Pagination current={Number(safePage)} total={totalPage} />
         </div>
-        <div className=" flex justify-center items-center bg-white w-[90%] h-[85%] rounded-md">
+        <div className="flex justify-center items-center bg-white w-[90%] h-[85%] rounded-md">
           <Table user={user} />
         </div>
       </div>

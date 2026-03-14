@@ -4,7 +4,6 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { s3 } from "../utils/s3.js"
-import { History_Type } from '@prisma/client'
 
 
 export const getUser = asyncHandler(async (req, res) => {
@@ -81,7 +80,7 @@ export const uploadWaste = asyncHandler(async (req, res) => {
                     User_ID: Number(user_id),
                     PointsChanged: 1,
                     History_Detail: 'uploadWaste',
-                    History_Type: History_Type.GET
+                    History_Type: "GET"
                 }
             })
         )
@@ -118,7 +117,7 @@ export const getHistoryData = asyncHandler(async (req, res) => {
     const [wasteData, isVote] = await Promise.all([
         prisma.waste.findFirst({
             where: { Waste_ID: Number(waste) },
-            orderBy:{Timestamp:'desc'}
+            orderBy: { Timestamp: 'desc' }
         }),
         prisma.wasteVote.findFirst({
             where: { Waste_ID: Number(waste), User_ID: Number(userid) },
@@ -353,7 +352,7 @@ export const vote = asyncHandler(async (req, res) => {
                 User_ID: Number(userID),
                 PointsChanged: 1,
                 History_Detail: 'voteEvent',
-                History_Type: History_Type.GET
+                History_Type: "GET"
             }
         })
     ])
@@ -612,8 +611,10 @@ export const redeemItem = asyncHandler(async (req, res) => {
         })
     ]);
 
-    res.status(200).json({ 
-        msg: "แลกของรางวัลสำเร็จ", 
-        currentPoints: transaction[0].Points 
+    res.status(200).json({
+        msg: "แลกของรางวัลสำเร็จ",
+        currentPoints: transaction[0].Points
     });
 });
+
+

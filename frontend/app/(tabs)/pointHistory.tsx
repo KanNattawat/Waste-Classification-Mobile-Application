@@ -120,7 +120,7 @@ const pointHistory = () => {
                             :
                             history.Use.map((item) =>
                                 <View className='flex flex-col w-full bg-white py-5 rounded-xl justify-center pl-4 mt-4' style={shadow.card} key={item.PointHistory_ID}>
-                                    <Text className='text-xl'>ใช้<Text className='text-[#1E8B79]'>{item.PointsChanged}</Text>เพื่อแลก (ชื่อสินค้า)  </Text>
+                                    <Text className='text-xl'>ใช้<Text className='text-[#1E8B79]'>{item.PointsChanged}</Text>เพื่อแลก {item.History_Detail}  </Text>
                                     <Text className='text-lg text-[#545454]'>{formatDate(item.Timestamp)}</Text>
                                 </View>
                             )

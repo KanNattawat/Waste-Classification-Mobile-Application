@@ -23,7 +23,7 @@ model User {
   Full_name    String
   User_name    String    @unique
   User_password String
-  Email String
+  Email String @unique
   Role Role? @default(USER)
   Points Int @default(0)
   
@@ -31,6 +31,15 @@ model User {
   pointHistory  PointHistory[]
   recycleShop  RecycleShop[]
   wasteVote  WasteVote[]
+  reset PasswordResetToken[]
+}
+
+model PasswordResetToken{
+  ResetToken String @id @default(uuid())
+  User_ID Int
+  Expires_at DateTime
+  
+  user   User   @relation(fields: [User_ID], references: [User_ID])  
 }
 
 model Waste {
