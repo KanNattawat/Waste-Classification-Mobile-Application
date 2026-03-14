@@ -1,13 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import React, { useState, useCallback } from 'react';
 import { Text, View, Image, Pressable, SafeAreaView, ActivityIndicator, Alert } from 'react-native';
 import { shadow } from "@/styles/shadow";
 import ScreenScroll from "@/components/ScreenScroll";
 import { useRouter } from "expo-router";
-import { useFocusEffect } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
-import { API_URL } from "@/config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import axios from 'axios';
