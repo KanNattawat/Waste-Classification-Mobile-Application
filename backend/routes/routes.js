@@ -21,6 +21,7 @@ router.put('/update_recycle-shop', controller.updateRecycleShop);
 router.get('/pointHistory', controller.getPointHistory)
 router.post('/redeem', authMiddleware, controller.redeemItem);
 router.post('/s3-uploadpresigned', controller.getS3UploadPresigned);
+router.delete('/delete_recycle-shop/:shopId', controller.deleteRecycleShop);
 
 
 export default router

@@ -28,7 +28,7 @@ type JunkShop = {
   address: string;
   distance: number;
   isOwner?: boolean;
-  status?: boolean; // ✅ เพิ่ม properties status
+  status?: boolean; 
 };
 
 /* ---------- API KEY ---------- */
@@ -71,18 +71,17 @@ export default function WasteMap() {
 
   const currentUserId = "1";
 
-  /* ---------- FETCH USER SHOPS FROM DB ---------- */
-  const fetchUserOwnedShops = async (
+  /* ---------- FETCH ALL SHOPS FROM DB ---------- */
+  const fetchDatabaseShops = async (
     currentLat: number,
     currentLng: number
   ): Promise<JunkShop[]> => {
     try {
-      const response = await fetch(
-        `${API_URL}/recycle-shop2?userId=${currentUserId}`
-      );
+      // ดึงข้อมูลร้านทั้งหมด (ไม่จำกัดเฉพาะ userId ปัจจุบัน)
+      const response = await fetch(`${API_URL}/recycle-shop2`);
       
       if (!response.ok) {
-        throw new Error("Failed to fetch user shops");
+        throw new Error("Failed to fetch database shops");
       }
 
       const dbShops = await response.json();
@@ -105,21 +104,24 @@ export default function WasteMap() {
           shopLng
         );
 
-        processedShops.push({
-          id: `db-${shop.Shop_ID}`, 
-          name: shop.Shop_name,
-          latitude: shopLat,
-          longitude: shopLng,
-          address: shop.Tel_num,
-          distance: distance ?? 0,
-          isOwner: true,
-          status: shop.Status, // ✅ ดึง Status จาก API มาเก็บไว้
-        });
+        // ดึงเฉพาะร้านที่คำนวณระยะทางได้ และอยู่ภายใน 3 กิโลเมตร
+        if (distance !== null && distance <= 3) {
+          processedShops.push({
+            id: `db-${shop.Shop_ID}`, 
+            name: shop.Shop_name,
+            latitude: shopLat,
+            longitude: shopLng,
+            address: shop.Tel_num,
+            distance: distance,
+            isOwner: String(shop.User_ID) === currentUserId, // เช็คว่าเป็นร้านของผู้ใช้คนนี้หรือไม่
+            status: shop.Status,
+          });
+        }
       }
 
       return processedShops;
     } catch (error) {
-      console.error("Error fetching user shops:", error);
+      console.error("Error fetching database shops:", error);
       return [];
     }
   };
@@ -160,11 +162,15 @@ export default function WasteMap() {
           isOwner: false,
         });
       }
-      googleShops.sort((a, b) => a.distance - b.distance);
     }
 
-    const myShops = await fetchUserOwnedShops(lat, lng);
-    setJunkShops([...myShops, ...googleShops]);
+    // ดึงร้านจาก Database ของเรา
+    const dbShops = await fetchDatabaseShops(lat, lng);
+    
+    // รวมร้านทั้งหมดและจัดเรียงตามระยะทางจากใกล้ไปไกล
+    const allShops = [...dbShops, ...googleShops].sort((a, b) => a.distance - b.distance);
+    
+    setJunkShops(allShops);
   };
 
   /* ---------- LOCATION & RELOAD DATA ---------- */
@@ -309,7 +315,6 @@ export default function WasteMap() {
                 >
                   <View className="flex-row justify-between items-start">
                     <View className="flex-1">
-                      {/* ✅ แก้ไขส่วนป้าย Tag ด้านบนชื่อร้าน */}
                       {item.isOwner && (
                         <View className="flex-row items-center mb-1">
                            <View className="bg-[#F59E0B] px-2 py-0.5 rounded-md mr-2">
@@ -318,7 +323,6 @@ export default function WasteMap() {
                             </Text>
                           </View>
                           
-                          {/* ✅ แสดง Tag สถานะร้าน (เปิดให้บริการ หรือ รอการตรวจสอบ) */}
                            <View className={`px-2 py-0.5 rounded-md ${item.status ? 'bg-green-100 border border-green-500' : 'bg-gray-100 border border-gray-400'}`}>
                                 <Text className={`text-xs font-bold ${item.status ? 'text-green-600' : 'text-gray-600'}`}>
                                     {item.status ? 'เปิดให้บริการ' : 'รอการตรวจสอบ'}

@@ -36,6 +36,11 @@ export default function Point() {
     })
   }
 
+  
+  // 🌟 State สำหรับเก็บข้อมูล User (อิงตามฟิลด์ที่คุณได้จาก API /home)
+  const [userData, setUserData] = useState({ userName: 'Loading...', point: 0 });
+
+  // 🌟 ฟังก์ชันดึงข้อมูลสินค้า (ปรับมาใช้ axios ให้สอดคล้องกัน)
   const fetchItems = async () => {
     try {
       setLoading(true);
@@ -53,7 +58,7 @@ export default function Point() {
       const data = await response.json();
       setItems(data);
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching items:", error);
       Alert.alert("เกิดข้อผิดพลาด", "ไม่สามารถโหลดข้อมูลรางวัลได้");
     } finally {
       setLoading(false);

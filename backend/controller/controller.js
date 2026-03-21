@@ -617,4 +617,26 @@ export const redeemItem = asyncHandler(async (req, res) => {
     });
 });
 
+export const deleteRecycleShop = asyncHandler(async (req, res) => {
+    const { shopId } = req.params;
 
+    if (!shopId) {
+        return res.status(400).json({ error: "จำเป็นต้องระบุ Shop ID เพื่อทำการลบ" });
+    }
+
+    // ตรวจสอบว่ามีร้านนี้อยู่จริงไหม
+    const existingShop = await prisma.recycleShop.findUnique({
+        where: { Shop_ID: Number(shopId) }
+    });
+
+    if (!existingShop) {
+        return res.status(404).json({ error: "ไม่พบร้านค้าที่ต้องการลบ" });
+    }
+
+    // ทำการลบข้อมูล
+    await prisma.recycleShop.delete({
+        where: { Shop_ID: Number(shopId) }
+    });
+
+    res.status(200).json({ msg: "ลบข้อมูลร้านสำเร็จเรียบร้อยแล้ว" });
+});
