@@ -28,7 +28,8 @@ type JunkShop = {
   address: string;
   distance: number;
   isOwner?: boolean;
-  status?: boolean; 
+  status?: boolean;
+  phone?: string; 
 };
 
 /* ---------- API KEY ---------- */
@@ -61,6 +62,28 @@ const getRouteDistanceKm = async (
   }
 };
 
+/* ---------- HELPER: Fetch Phone Number from Google Place Details ---------- */
+const getPlacePhoneNumber = async (placeId: string): Promise<string | undefined> => {
+  try {
+    const url =
+      `https://maps.googleapis.com/maps/api/place/details/json` +
+      `?place_id=${placeId}` +
+      `&fields=formatted_phone_number` +
+      `&key=${GOOGLE_API_KEY}`;
+
+    const res = await fetch(url);
+    const json = await res.json();
+
+    if (json.status === "OK" && json.result) {
+      return json.result.formatted_phone_number;
+    }
+    return undefined;
+  } catch (error) {
+    console.error("Error fetching place phone number:", error);
+    return undefined;
+  }
+};
+
 export default function WasteMap() {
   const mapRef = useRef<MapView | null>(null);
 
@@ -77,7 +100,6 @@ export default function WasteMap() {
     currentLng: number
   ): Promise<JunkShop[]> => {
     try {
-      // ดึงข้อมูลร้านทั้งหมด (ไม่จำกัดเฉพาะ userId ปัจจุบัน)
       const response = await fetch(`${API_URL}/recycle-shop2`);
       
       if (!response.ok) {
@@ -97,6 +119,8 @@ export default function WasteMap() {
 
         if (isNaN(shopLat) || isNaN(shopLng)) continue;
 
+        const isOwner = String(shop.User_ID) === currentUserId;
+
         const distance = await getRouteDistanceKm(
           currentLat,
           currentLng,
@@ -104,17 +128,17 @@ export default function WasteMap() {
           shopLng
         );
 
-        // ดึงเฉพาะร้านที่คำนวณระยะทางได้ และอยู่ภายใน 3 กิโลเมตร
-        if (distance !== null && distance <= 3) {
+        if (isOwner || (distance !== null && distance <= 3)) {
           processedShops.push({
-            id: `db-${shop.Shop_ID}`, 
+            id: `db-${shop.Shop_ID}`,
             name: shop.Shop_name,
             latitude: shopLat,
             longitude: shopLng,
-            address: shop.Tel_num,
-            distance: distance,
-            isOwner: String(shop.User_ID) === currentUserId, // เช็คว่าเป็นร้านของผู้ใช้คนนี้หรือไม่
+            address: shop.Address || "ไม่มีข้อมูลที่อยู่", 
+            distance: distance !== null ? distance : 0,
+            isOwner: isOwner,
             status: shop.Status,
+            phone: shop.Tel_num,
           });
         }
       }
@@ -152,6 +176,8 @@ export default function WasteMap() {
         );
         if (distance === null) continue;
 
+        const phoneNumber = await getPlacePhoneNumber(item.place_id);
+
         googleShops.push({
           id: item.place_id,
           name: item.name,
@@ -160,15 +186,18 @@ export default function WasteMap() {
           address: item.vicinity,
           distance,
           isOwner: false,
+          phone: phoneNumber, 
         });
       }
     }
 
-    // ดึงร้านจาก Database ของเรา
     const dbShops = await fetchDatabaseShops(lat, lng);
     
-    // รวมร้านทั้งหมดและจัดเรียงตามระยะทางจากใกล้ไปไกล
-    const allShops = [...dbShops, ...googleShops].sort((a, b) => a.distance - b.distance);
+    const allShops = [...dbShops, ...googleShops].sort((a, b) => {
+      if (a.isOwner && !b.isOwner) return -1;
+      if (!a.isOwner && b.isOwner) return 1;
+      return a.distance - b.distance;
+    });
     
     setJunkShops(allShops);
   };
@@ -176,7 +205,7 @@ export default function WasteMap() {
   /* ---------- LOCATION & RELOAD DATA ---------- */
   useFocusEffect(
     useCallback(() => {
-      let isActive = true; 
+      let isActive = true;
 
       const loadData = async () => {
         setLoading(true);
@@ -258,9 +287,9 @@ export default function WasteMap() {
         >
           {junkShops.map((shop) => {
             const isSelected = shop.id === selectedShopId;
-            let pinColor = "#1E8B79"; 
-            if (shop.isOwner) pinColor = "#F59E0B"; 
-            if (isSelected) pinColor = "#FF3B30"; 
+            let pinColor = "#1E8B79";
+            if (shop.isOwner) pinColor = "#F59E0B";
+            if (isSelected) pinColor = "#FF3B30";
 
             return (
               <Marker
@@ -317,17 +346,16 @@ export default function WasteMap() {
                     <View className="flex-1">
                       {item.isOwner && (
                         <View className="flex-row items-center mb-1">
-                           <View className="bg-[#F59E0B] px-2 py-0.5 rounded-md mr-2">
+                          <View className="bg-[#F59E0B] px-2 py-0.5 rounded-md mr-2">
                             <Text className="text-white text-xs font-bold">
                               ร้านของคุณ
                             </Text>
                           </View>
-                          
-                           <View className={`px-2 py-0.5 rounded-md ${item.status ? 'bg-green-100 border border-green-500' : 'bg-gray-100 border border-gray-400'}`}>
-                                <Text className={`text-xs font-bold ${item.status ? 'text-green-600' : 'text-gray-600'}`}>
-                                    {item.status ? 'เปิดให้บริการ' : 'รอการตรวจสอบ'}
-                                </Text>
-                           </View>
+                          <View className={`px-2 py-0.5 rounded-md ${item.status ? 'bg-green-100 border border-green-500' : 'bg-gray-100 border border-gray-400'}`}>
+                            <Text className={`text-xs font-bold ${item.status ? 'text-green-600' : 'text-gray-600'}`}>
+                                {item.status ? 'เปิดให้บริการ' : 'รอการตรวจสอบ'}
+                            </Text>
+                          </View>
                         </View>
                       )}
                       <Text className="text-lg font-semibold text-[#1E8B79]">
@@ -338,8 +366,11 @@ export default function WasteMap() {
                       {item.distance.toFixed(1)} กม.
                     </Text>
                   </View>
+                  
                   <Text className="text-gray-500 text-sm mt-1">
-                    {item.address}
+                    {item.isOwner 
+                      ? `เบอร์โทร: ${item.phone || "ไม่มีข้อมูล"}` 
+                      : item.address}
                   </Text>
                 </Pressable>
 
@@ -347,9 +378,9 @@ export default function WasteMap() {
                 {selected && (
                   <View className="mt-3">
                     <Pressable
-                      className={`bg-[#1E8B79] py-2 rounded-lg items-center ${item.isOwner ? 'mb-2' : ''}`}
+                      className={`bg-[#1E8B79] py-2 rounded-lg items-center mb-2`}
                       onPress={() => {
-                         const url = Platform.select({
+                        const url = Platform.select({
                           ios: `maps://app?daddr=${item.latitude},${item.longitude}`,
                           android: `google.navigation:q=${item.latitude},${item.longitude}`,
                         });
@@ -368,13 +399,25 @@ export default function WasteMap() {
                       </View>
                     </Pressable>
 
+                    {item.phone && !item.isOwner && (
+                      <Pressable
+                        className="bg-[#10B981] py-2 rounded-lg items-center flex-row justify-center mb-2"
+                        onPress={() => Linking.openURL(`tel:${item.phone}`)}
+                      >
+                        <Ionicons name="call" size={16} color="white" style={{ marginRight: 6 }} />
+                        <Text className="text-white font-semibold">
+                          โทร: {item.phone}
+                        </Text>
+                      </Pressable>
+                    )}
+
                     {item.isOwner && (
                       <Pressable
                         className="border border-[#1E8B79] bg-white py-2 rounded-lg items-center flex-row justify-center"
                         onPress={() => {
                           const realShopId = item.id.replace('db-', '');
                           router.push({
-                            pathname: "/shop_form/edit_form", 
+                            pathname: "/shop_form/edit_form",
                             params: { shopId: realShopId }
                           });
                         }}

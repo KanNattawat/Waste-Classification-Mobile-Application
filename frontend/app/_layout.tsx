@@ -5,7 +5,7 @@ import { View } from "react-native";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import "./globals.css";
 import Loading from "@/components/loading";
-
+import * as NavigationBar from 'expo-navigation-bar'; // 1. นำเข้า Library
 
 function AuthGate({ children }: { children: React.ReactNode }) {
   const { token, isLoading } = useAuth();
@@ -32,13 +32,17 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 }
 
 export default function RootLayout() {
-
   useEffect(() => {
     async function init() {
       try {
+        // --- 2. ส่วนจัดการการซ่อน Navigation Bar ---
+        await NavigationBar.setVisibilityAsync("hidden"); // ซ่อนแถบ
+        await NavigationBar.setBehaviorAsync("swipe");   // ปัดเพื่อแสดงชั่วคราว
+        
+        // --- 3. ส่วนโหลด Model TFLite เดิม ---
         await ensureModelLoaded();
       } catch (err) {
-        console.error("preload model error: ", err);
+        console.error("Initialization error: ", err);
       }
     }
 
@@ -48,15 +52,14 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <AuthGate>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="result" options={{ headerShown: false }} />
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="history_result" options={{ headerShown: false }} />
-          <Stack.Screen name="camera" options={{ presentation: "modal", headerShown: false }} />
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="result" />
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="history_result" />
+          <Stack.Screen name="camera" options={{ presentation: "modal" }} />
         </Stack>
       </AuthGate>
     </AuthProvider>
-
   );
 }
