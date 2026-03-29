@@ -79,7 +79,7 @@ const _layout = () => {
             width: 34,
           },
           tabBarLabelStyle: {
-            fontSize: 16,
+            fontSize: 14,
             marginBottom: 6,
           },
         }}
