@@ -414,7 +414,7 @@ const styles = StyleSheet.create({
     headerContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginTop: 40,
+        marginTop: 10,
         marginBottom: 20,
     },
     backButton: {

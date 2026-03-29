@@ -56,31 +56,30 @@ const _layout = () => {
           tabBarActiveTintColor: "#4C944C",
           tabBarInactiveTintColor: "#95a5a6",
           tabBarStyle: {
-            flexDirection: "row",
-            justifyContent: "space-between",
             backgroundColor: "white",
-            margin: 0,
-            borderRadius: 16,
-            height: 70,
+            height: 75, // เพิ่มความสูงอีกนิดเพื่อให้มีพื้นที่หายใจ
             position: "absolute",
             borderTopWidth: 0,
-            paddingBottom: 11,
-            paddingTop: 1,
-            paddingHorizontal: 22
+            paddingBottom: 12,
+            paddingTop: 8,
+            // เอา paddingHorizontal: 22 ออก หรือลดเหลือสัก 5-10 
+            // เพื่อให้ Tab ขยายตัวได้เต็มหน้าจอมากขึ้น
+            paddingHorizontal: 5,
+            elevation: 5, // เพิ่มเงาให้ดูมีมิติ
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: -2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
           },
           tabBarItemStyle: {
-            width: "auto",
+            // เอา width: "auto" ออกเพื่อให้ระบบเฉลี่ยพื้นที่ให้เท่าๆ กัน
             justifyContent: "center",
             alignItems: "center",
-            height: "100%",
-          },
-          tabBarIconStyle: {
-            height: 34,
-            width: 34,
           },
           tabBarLabelStyle: {
-            fontSize: 14,
-            marginBottom: 6,
+            fontSize: 11, // ลดขนาดฟอนต์ลงเล็กน้อยจาก 14 เป็น 11 หรือ 12
+            fontWeight: "500",
+            marginTop: 2, // ปรับระยะห่างระหว่างไอคอนกับตัวหนังสือ
           },
         }}
       >

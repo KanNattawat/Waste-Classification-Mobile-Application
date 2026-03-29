@@ -118,7 +118,7 @@ export default function Index() {
       <ScreenScroll>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
           {/* tab ด้านบน */}
-          <View className="flex flex-col text-center bg-white px-4 pb-4 pt-16 shadow">
+          <View className="flex flex-col text-center bg-white px-4 pb-4 pt-8 shadow">
             <View className='px-4'>
               <Text className='text-[#7F7B7B] text-lg'>สวัสดี</Text>
               <View className="flex  flex-row justify-between items-center">

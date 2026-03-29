@@ -257,7 +257,7 @@ export default function WasteMap() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+    <View className="flex-1 bg-white" edges={["top"]}>
       <StatusBar style="dark" />
 
       {/* Header */}
@@ -435,6 +435,6 @@ export default function WasteMap() {
           }}
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 }

@@ -5,7 +5,8 @@ import { View } from "react-native";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import "./globals.css";
 import Loading from "@/components/loading";
-import * as NavigationBar from 'expo-navigation-bar'; // 1. นำเข้า Library
+// --- เพิ่ม Import สองตัวนี้ ---
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 function AuthGate({ children }: { children: React.ReactNode }) {
   const { token, isLoading } = useAuth();
@@ -13,7 +14,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center">
+      <View className="flex-1 items-center justify-center bg-[#F9F8FA]">
         <Loading />
       </View>
     );
@@ -35,31 +36,34 @@ export default function RootLayout() {
   useEffect(() => {
     async function init() {
       try {
-        // --- 2. ส่วนจัดการการซ่อน Navigation Bar ---
-        await NavigationBar.setVisibilityAsync("hidden"); // ซ่อนแถบ
-        await NavigationBar.setBehaviorAsync("swipe");   // ปัดเพื่อแสดงชั่วคราว
-        
-        // --- 3. ส่วนโหลด Model TFLite เดิม ---
         await ensureModelLoaded();
       } catch (err) {
-        console.error("Initialization error: ", err);
+        console.error("preload model error: ", err);
       }
     }
-
     init();
   }, []);
 
   return (
-    <AuthProvider>
-      <AuthGate>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="result" />
-          <Stack.Screen name="(auth)" />
-          <Stack.Screen name="history_result" />
-          <Stack.Screen name="camera" options={{ presentation: "modal" }} />
-        </Stack>
-      </AuthGate>
-    </AuthProvider>
+    // 1. ครอบด้วย SafeAreaProvider เพื่อจัดการพื้นที่ปลอดภัยของระบบ
+    <SafeAreaProvider>
+      <AuthProvider>
+        <AuthGate>
+          {/* 2. ใช้ SafeAreaView หุ้ม Stack ทั้งหมด 
+             - flex-1: ให้กินพื้นที่เต็มจอ
+             - bg-[#F9F8FA]: กำหนดสีพื้นหลังให้เนียนไปกับหน้า Index
+          */}
+          <SafeAreaView style={{ flex: 1, backgroundColor: '#F9F8FA' }}>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="result" />
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="history_result" />
+              <Stack.Screen name="camera" options={{ presentation: "modal" }} />
+            </Stack>
+          </SafeAreaView>
+        </AuthGate>
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }
