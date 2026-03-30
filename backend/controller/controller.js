@@ -605,6 +605,7 @@ export const redeemItem = asyncHandler(async (req, res) => {
         prisma.pointHistory.create({
             data: {
                 User_ID: Number(userId),
+                PointsChanged: item.Point_Usage,
                 History_Detail: item.Item_name, // ใส่ชื่อสินค้า
                 History_Type: 'USE' // กำหนดประเภทเป็น USE
             }
