@@ -442,11 +442,11 @@ export const updateRecycleShop = asyncHandler(async (req, res) => {
     });
 });
 
-
 export const getUniqueWaste = asyncHandler(async (req, res) => {
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
-    const { userId } = req.query
+    const { userId } = req.query;
+
     const vote = await prisma.wasteVote.findMany({
         select: { Waste_ID: true },
         where: {
@@ -455,8 +455,9 @@ export const getUniqueWaste = asyncHandler(async (req, res) => {
                 lt: startOfToday
             }
         }
-    })
-    const excludedId = vote.map(x => x.Waste_ID)
+    });
+    const excludedId = vote.map(x => x.Waste_ID);
+
     const wasteId = await prisma.waste.findMany({
         select: { Waste_ID: true },
         where: {
@@ -472,19 +473,40 @@ export const getUniqueWaste = asyncHandler(async (req, res) => {
         orderBy: {
             Waste_ID: "asc"
         }
-    })
+    });
+
     const dateSeed = new Date().toISOString().split('T')[0];
-    const rng = seedrandom(`${userId}-${dateSeed}`); //สุ่มเลข 0-1
+    const rng = seedrandom(`${userId}-${dateSeed}`);
     const shuffled = wasteId.sort(() => 0.5 - rng());
     const selectedIds = shuffled.slice(0, 5).map(item => item.Waste_ID);
+
     const waste = await prisma.waste.findMany({
         where: { Waste_ID: { in: selectedIds } },
         orderBy: {
             Waste_ID: "asc"
         }
     });
-    res.status(200).json({ item: waste })
-})
+
+    const userVotesForSelected = await prisma.wasteVote.findMany({
+        select: { Waste_ID: true },
+        where: {
+            User_ID: Number(userId),
+            Waste_ID: { in: selectedIds }
+        }
+    });
+    
+   
+    const votedIds = userVotesForSelected.map(v => v.Waste_ID);
+
+    
+    const finalWasteItems = waste.map(item => ({
+        ...item,
+        isVoted: votedIds.includes(item.Waste_ID) 
+    }));
+
+   
+    res.status(200).json({ item: finalWasteItems });
+});
 
 export const updateFeedback = asyncHandler(async (req, res) => {
 
