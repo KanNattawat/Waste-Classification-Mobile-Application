@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     StyleSheet,
     View,
@@ -15,6 +15,8 @@ import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplet
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import axios from 'axios';
 import { Stack, useRouter } from 'expo-router';
+// 1. เพิ่ม Import AsyncStorage
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
 
@@ -22,7 +24,9 @@ const RecyclingForm = () => {
     const mapRef = useRef(null);
     const isProgrammatic = useRef(false);
     const router = useRouter();
-    const currentUserId = 1;
+
+    // 2. เปลี่ยนจาก const currentUserId = 1; เป็น State
+    const [currentUserId, setCurrentUserId] = useState(null);
 
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
@@ -36,6 +40,22 @@ const RecyclingForm = () => {
     });
 
     const [selectedCategories, setSelectedCategories] = useState([]);
+
+    // 3. ใช้ useEffect เพื่อดึง userId จาก AsyncStorage เมื่อเปิดหน้านี้
+    useEffect(() => {
+        const fetchUserId = async () => {
+            try {
+                const storedId = await AsyncStorage.getItem('userId'); // ตรวจสอบชื่อ Key ให้ตรงกับตอนที่เซฟ Login นะครับ
+                if (storedId !== null) {
+                    setCurrentUserId(Number(storedId));
+                }
+            } catch (error) {
+                console.error('Error fetching userId:', error);
+            }
+        };
+
+        fetchUserId();
+    }, []);
 
     const toggleCategory = (id) => {
         setSelectedCategories((prev) =>
@@ -55,6 +75,12 @@ const RecyclingForm = () => {
     ];
 
     const onSubmit = async () => {
+        // 4. เพิ่มการตรวจสอบว่าพบ userId หรือไม่ก่อนกดส่งข้อมูล
+        if (!currentUserId) {
+            Alert.alert("เกิดข้อผิดพลาด", "ไม่พบข้อมูลผู้ใช้งาน กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
+            return;
+        }
+
         if (!name.trim() || !phone.trim()) {
             Alert.alert("ข้อมูลไม่ครบ", "กรุณากรอกชื่อและเบอร์โทรศัพท์");
             return;
@@ -261,7 +287,7 @@ const styles = StyleSheet.create({
     headerContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginTop: 40,
+        marginTop: 10,
         marginBottom: 20,
     },
     backButton: {
@@ -290,8 +316,6 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         height: 45,
     },
-
-    // 🔥 สำคัญ
     searchContainerWrapper: {
         zIndex: 20,
         marginBottom: 15,
@@ -308,7 +332,6 @@ const styles = StyleSheet.create({
         fontSize: 14,
         backgroundColor: '#fff',
     },
-
     mapContainer: {
         height: 250,
         borderRadius: 15,
@@ -319,7 +342,6 @@ const styles = StyleSheet.create({
     map: {
         ...StyleSheet.absoluteFillObject,
     },
-
     categoryBox: {
         borderWidth: 1,
         borderColor: '#c8e6c9',

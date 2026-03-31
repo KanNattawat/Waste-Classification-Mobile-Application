@@ -6,11 +6,9 @@ import { readImage } from "@/lib/storage";
 import { useRouter } from "expo-router";
 import { API_URL } from "@/config";
 import { useFocusEffect } from "@react-navigation/native";
-import Screen from "@/components/Screen";
 import { shadow } from "@/styles/shadow";
-import { getImage } from "@/lib/s3Service"
-import formatDate from "@/lib/formatDate"
-import ScreenScroll from "@/components/ScreenScroll";
+import { getImage } from "@/lib/s3Service";
+import formatDate from "@/lib/formatDate";
 
 export interface HistoryItem {
   Waste_ID: number;
@@ -31,14 +29,10 @@ const WASTE_LABEL: Record<number, string> = {
 
 const wasteLabel = (id: number) => WASTE_LABEL[id] ?? "unknown";
 
-
-
-
 const Recents = () => {
   const router = useRouter();
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [filter, setFilter] = useState('correct')
-
 
   const getHistory = async () => {
     try {
@@ -84,14 +78,7 @@ const Recents = () => {
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={() => router.push(`/history_result/${item.Waste_ID}`)}
-      className="
-        flex-row items-center
-        bg-white
-        p-3
-        rounded-xl
-        mb-3
-        overflow-hidden
-      "
+      className="flex-row items-center bg-white p-3 rounded-xl mb-3 overflow-hidden"
       style={shadow.card}
     >
       <Image
@@ -118,32 +105,32 @@ const Recents = () => {
   );
 
   return (
-    <SafeAreaView className="flex-1 flex-col bg-[#F9F8FA] min-h-full">
-      <ScreenScroll>
-        <View className="flex-1 bg-[#F9F8FA] px-8 pt-10 ">
-          <Text className="text-3xl font-bold text-[#1E8B79] text-center mb-3">
-            ประวัติการคัดแยกขยะ
-          </Text>
+    <SafeAreaView className="flex-1 bg-[#F9F8FA]">
+      <FlatList
+        className="flex-1 bg-[#F9F8FA] px-8"
+        data={historyfilterData}
+        keyExtractor={(item) => item.Waste_ID.toString()}
+        renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingTop: 40, paddingBottom: 40 }}
+        // ใส่ส่วนหัว (ปุ่ม Filter และ ข้อความ) ไว้ใน ListHeaderComponent
+        ListHeaderComponent={
+          <View className="mb-4">
+            <Text className="text-3xl font-bold text-[#1E8B79] text-center mb-3">
+              ประวัติการคัดแยกขยะ
+            </Text>
 
-          <View className='flex flex-row w-full justify-between my-4'>
-            <Pressable className={`py-1  rounded-xl items-center w-[47%] ${filter === "correct" ? 'bg-[#1E8B79]' : 'bg-white'}`} style={shadow.card} onPress={() => { setFilter('correct') }}>
-              <Text className={`text-xl ${filter === "correct" ? 'text-white' : 'text-[#1E8B79]'} text-center `}>ผลลัพธ์การแยก{'\n'} ถูกต้อง</Text>
-            </Pressable>
-            <Pressable className={`py-1 rounded-xl items-center w-[47%] ${filter === "incorrect" ? 'bg-[#1E8B79]' : 'bg-white'}`} style={shadow.card} onPress={() => { setFilter('incorrect') }}>
-              <Text className={`text-xl ${filter === "incorrect" ? 'text-white' : 'text-[#1E8B79]'} text-center `}>ผลลัพธ์การแยก{'\n'}ไม่ถูกต้อง</Text>
-            </Pressable>
+            <View className='flex flex-row w-full justify-between my-4'>
+              <Pressable className={`py-1 rounded-xl items-center w-[47%] ${filter === "correct" ? 'bg-[#1E8B79]' : 'bg-white'}`} style={shadow.card} onPress={() => { setFilter('correct') }}>
+                <Text className={`text-xl ${filter === "correct" ? 'text-white' : 'text-[#1E8B79]'} text-center `}>ผลลัพธ์การแยก{'\n'} ถูกต้อง</Text>
+              </Pressable>
+              <Pressable className={`py-1 rounded-xl items-center w-[47%] ${filter === "incorrect" ? 'bg-[#1E8B79]' : 'bg-white'}`} style={shadow.card} onPress={() => { setFilter('incorrect') }}>
+                <Text className={`text-xl ${filter === "incorrect" ? 'text-white' : 'text-[#1E8B79]'} text-center `}>ผลลัพธ์การแยก{'\n'}ไม่ถูกต้อง</Text>
+              </Pressable>
+            </View>
           </View>
-
-
-
-          <FlatList
-            data={historyfilterData}
-            keyExtractor={(item) => item.Waste_ID.toString()}
-            renderItem={renderItem}
-            showsVerticalScrollIndicator={false}
-          />
-        </View>
-      </ScreenScroll>
+        }
+      />
     </SafeAreaView>
   );
 };

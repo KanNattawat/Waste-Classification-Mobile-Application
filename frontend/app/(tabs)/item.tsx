@@ -3,10 +3,12 @@ import { Text, View, Image, Pressable, Modal, ActivityIndicator, Alert, ScrollVi
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useSafeAreaInsets } from 'react-native-safe-area-context'; // 🌟 เพิ่ม Import
 
 const Item = () => {
   const router = useRouter();
   const { id } = useLocalSearchParams();
+  const insets = useSafeAreaInsets(); // 🌟 เรียกใช้ Hook เพื่อดึงค่าขอบจอ
 
   const [open, setOpen] = useState(false);
   const [itemData, setItemData] = useState(null);
@@ -73,7 +75,7 @@ const Item = () => {
       if (res.ok) {
         setOpen(false);
         Alert.alert("สำเร็จ", `แลก ${itemData.Item_name} เรียบร้อยแล้ว!`, [
-          { text: "ตกลง", onPress: () => router.back() } 
+          { text: "ตกลง", onPress: () => router.replace('/(tabs)/point') } 
         ]);
       } else {
         setOpen(false);
@@ -109,21 +111,25 @@ const Item = () => {
   const isEnoughPoints = userPoints >= itemData.Point_Usage;
 
   return (
-    // 🌟 เพิ่ม pt-12 (Padding Top) เข้าไป เพื่อดันทุกอย่างลงมาให้พ้น Status Bar และกล้องหน้า
-    <View className='flex-1 bg-[#F9F8FA] pt-12'>
+    // 🌟 เอา pt-12 ออก แล้วใช้ paddingTop ตามระยะของ insets.top ของเครื่องนั้นๆ แทน
+    <View className='flex-1 bg-[#F9F8FA]' style={{ paddingTop: insets.top }}>
       
-      {/* 🌟 ปรับ top เป็น 14 เพื่อให้อยู่ในระดับเดียวกับขอบบนของรูปภาพพอดี */}
-      <Pressable className='absolute left-5 top-14 z-50 bg-white/80 rounded-full p-2 shadow-sm' onPress={() => { router.back() }}>
+      {/* 🌟 ปรับระยะปุ่มย้อนกลับให้ลอยลงมาจากขอบบนของจออย่างสมมาตร */}
+      <Pressable 
+        className='absolute left-5 z-50 bg-white/80 rounded-full p-2 shadow-sm' 
+        style={{ top: insets.top + 10 }}
+        onPress={() => { router.back() }}
+      >
         <Image className='w-8 h-8' source={require(`@/assets/images/back1.png`)} />
       </Pressable>
 
       <ScrollView 
         className='flex-1' 
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: 50 }} 
+        // 🌟 เผื่อระยะด้านล่างของ ScrollView โดยใช้ insets.bottom + 100 เพื่อให้ดันปุ่มแลกคะแนนพ้นขอบจอล่างแบบสวยๆ
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 100 }} 
         showsVerticalScrollIndicator={false}
       >
         
-        {/* รูปภาพสินค้า: เพิ่ม rounded-t-3xl เผื่ออยากให้ขอบบนของรูปดูโค้งมนเข้ากับระยะที่เว้นไว้ (ถ้าไม่ชอบลบ rounded-t-3xl ออกได้ครับ) */}
         <View className='w-full h-[320px] bg-white items-center justify-center pt-8 rounded-t-3xl overflow-hidden'>
           <Image className='w-full h-full' resizeMode="contain" source={{ uri: itemData.Item_Image_path }} />
         </View>
@@ -166,7 +172,7 @@ const Item = () => {
 
       </ScrollView>
 
-      {/* Modal ยืนยัน (โค้ดเดิม) */}
+      {/* Modal ยืนยัน */}
       {open && (
         <Modal transparent visible={open} animationType="fade" statusBarTranslucent={true}>
           <View className="flex-1 bg-black/60 justify-center items-center px-6">

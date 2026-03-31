@@ -15,6 +15,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /* ---------- CONFIG ---------- */
 const API_URL = "https://waste-classification-mobile-application.onrender.com";
@@ -29,7 +30,18 @@ type JunkShop = {
   distance: number;
   isOwner?: boolean;
   status?: boolean;
-  phone?: string; 
+  phone?: string;
+  materials?: string[]; // ฟิลด์สำหรับเก็บข้อมูลวัสดุ
+};
+
+/* ---------- CATEGORY MAP (อ้างอิงจากฟอร์มบันทึก) ---------- */
+const CATEGORY_MAP: Record<number, string> = {
+  1: 'กระดาษ',
+  2: 'พลาสติก',
+  3: 'โลหะ',
+  4: 'แก้ว',
+  5: 'e-waste',
+  6: 'อื่นๆ',
 };
 
 /* ---------- API KEY ---------- */
@@ -91,17 +103,17 @@ export default function WasteMap() {
   const [loading, setLoading] = useState(true);
   const [junkShops, setJunkShops] = useState<JunkShop[]>([]);
   const [selectedShopId, setSelectedShopId] = useState<string | null>(null);
-
-  const currentUserId = "1";
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   /* ---------- FETCH ALL SHOPS FROM DB ---------- */
   const fetchDatabaseShops = async (
     currentLat: number,
-    currentLng: number
+    currentLng: number,
+    userId: string | null
   ): Promise<JunkShop[]> => {
     try {
       const response = await fetch(`${API_URL}/recycle-shop2`);
-      
+
       if (!response.ok) {
         throw new Error("Failed to fetch database shops");
       }
@@ -109,36 +121,48 @@ export default function WasteMap() {
       const dbShops = await response.json();
       const processedShops: JunkShop[] = [];
 
+      const getSimpleDistanceKm = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+        const R = 6371; // รัศมีโลก (กิโลเมตร)
+        const dLat = (lat2 - lat1) * (Math.PI / 180);
+        const dLon = (lon2 - lon1) * (Math.PI / 180);
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+      };
+
       for (const shop of dbShops) {
         if (!Array.isArray(shop.Location) || shop.Location.length < 2) {
-            continue;
+          continue;
         }
 
-        const shopLat = shop.Location[0];
-        const shopLng = shop.Location[1];
+        const shopLat = Number(shop.Location[0]);
+        const shopLng = Number(shop.Location[1]);
 
         if (isNaN(shopLat) || isNaN(shopLng)) continue;
 
-        const isOwner = String(shop.User_ID) === currentUserId;
+        const isOwner = userId ? String(shop.User_ID) === String(userId) : false;
+        const isApproved = shop.Status === true || shop.Status === 1 || String(shop.Status).toLowerCase() === "true";
+        const distance = getSimpleDistanceKm(currentLat, currentLng, shopLat, shopLng);
 
-        const distance = await getRouteDistanceKm(
-          currentLat,
-          currentLng,
-          shopLat,
-          shopLng
-        );
+        if (isOwner || (!isOwner && isApproved && distance <= 3)) {
+          
+          // ดึงข้อมูลหมวดหมู่มาแปลงเป็น String 
+          // (รองรับทั้ง key accepted_cate, Accepted_cate หรือแบบอื่นๆ ที่ API อาจะส่งมา)
+          const rawMaterials = shop.accepted_cate || shop.Accepted_cate || shop.Accepted_materials || shop.Materials || [];
+          const mappedMaterials = Array.isArray(rawMaterials) 
+            ? rawMaterials.map((m: any) => CATEGORY_MAP[Number(m)] || String(m)) 
+            : [];
 
-        if (isOwner || (distance !== null && distance <= 3)) {
           processedShops.push({
             id: `db-${shop.Shop_ID}`,
             name: shop.Shop_name,
             latitude: shopLat,
             longitude: shopLng,
-            address: shop.Address || "ไม่มีข้อมูลที่อยู่", 
-            distance: distance !== null ? distance : 0,
+            address: shop.Address || "ไม่มีข้อมูลที่อยู่",
+            distance: distance,
             isOwner: isOwner,
-            status: shop.Status,
-            phone: shop.Tel_num,
+            status: isApproved,
+            phone: shop.Tel_num || shop.tel_num, // รองรับ key ทั้งพิมพ์ใหญ่/เล็ก
+            materials: mappedMaterials, // กำหนดค่า Array ที่แปลงแล้ว
           });
         }
       }
@@ -151,7 +175,7 @@ export default function WasteMap() {
   };
 
   /* ---------- FETCH PLACES (GOOGLE + DB) ---------- */
-  const fetchNearbyJunkShops = async (lat: number, lng: number) => {
+  const fetchNearbyJunkShops = async (lat: number, lng: number, userId: string | null) => {
     console.log("Fetching places...");
 
     const url =
@@ -186,19 +210,20 @@ export default function WasteMap() {
           address: item.vicinity,
           distance,
           isOwner: false,
-          phone: phoneNumber, 
+          phone: phoneNumber,
+          materials: [], // ร้านจาก Google Maps ไม่มีข้อมูลหมวดหมู่ ปล่อยว่างไว้
         });
       }
     }
 
-    const dbShops = await fetchDatabaseShops(lat, lng);
-    
+    const dbShops = await fetchDatabaseShops(lat, lng, userId);
+
     const allShops = [...dbShops, ...googleShops].sort((a, b) => {
       if (a.isOwner && !b.isOwner) return -1;
       if (!a.isOwner && b.isOwner) return 1;
       return a.distance - b.distance;
     });
-    
+
     setJunkShops(allShops);
   };
 
@@ -210,6 +235,11 @@ export default function WasteMap() {
       const loadData = async () => {
         setLoading(true);
         try {
+          const storedUserId = await AsyncStorage.getItem('userId');
+          const loggedInUserId = storedUserId;
+
+          if (isActive) setCurrentUserId(loggedInUserId);
+
           const { status } = await Location.requestForegroundPermissionsAsync();
           if (status !== "granted") {
             Alert.alert("แจ้งเตือน", "กรุณาอนุญาตการเข้าถึงตำแหน่ง");
@@ -223,7 +253,7 @@ export default function WasteMap() {
 
           if (isActive) {
             setLocation(loc);
-            await fetchNearbyJunkShops(loc.coords.latitude, loc.coords.longitude);
+            await fetchNearbyJunkShops(loc.coords.latitude, loc.coords.longitude, loggedInUserId);
           }
         } catch (e) {
           console.log("LOCATION ERROR:", e);
@@ -316,15 +346,16 @@ export default function WasteMap() {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => {
             const selected = item.id === selectedShopId;
+            const isDbShop = item.id.startsWith("db-"); // เช็คว่าเป็นร้านที่มาจาก DB หรือไม่
+
             return (
               <View
-                className={`rounded-xl mb-3 p-4 border ${
-                  selected
-                    ? "bg-[#E6F6F3] border-[#1E8B79]"
-                    : item.isOwner
+                className={`rounded-xl mb-3 p-4 border ${selected
+                  ? "bg-[#E6F6F3] border-[#1E8B79]"
+                  : item.isOwner
                     ? "bg-[#FFFBF0] border-[#F59E0B]"
                     : "bg-white border-gray-100"
-                }`}
+                  }`}
               >
                 <Pressable
                   onPress={() => {
@@ -353,7 +384,7 @@ export default function WasteMap() {
                           </View>
                           <View className={`px-2 py-0.5 rounded-md ${item.status ? 'bg-green-100 border border-green-500' : 'bg-gray-100 border border-gray-400'}`}>
                             <Text className={`text-xs font-bold ${item.status ? 'text-green-600' : 'text-gray-600'}`}>
-                                {item.status ? 'เปิดให้บริการ' : 'รอการตรวจสอบ'}
+                              {item.status ? 'เปิดให้บริการ' : 'รอการตรวจสอบ'}
                             </Text>
                           </View>
                         </View>
@@ -366,12 +397,24 @@ export default function WasteMap() {
                       {item.distance.toFixed(1)} กม.
                     </Text>
                   </View>
-                  
+
+                  {/* แสดงที่อยู่ หรือ เบอร์โทร */}
                   <Text className="text-gray-500 text-sm mt-1">
-                    {item.isOwner 
-                      ? `เบอร์โทร: ${item.phone || "ไม่มีข้อมูล"}` 
+                    {isDbShop
+                      ? `เบอร์โทร: ${item.phone || "ไม่มีข้อมูล"}`
                       : item.address}
                   </Text>
+
+                  {/* ส่วนแสดงรายการวัสดุ (Tags) จะแสดงเฉพาะร้านที่มี materials (ร้านจาก DB) */}
+                  {item.materials && item.materials.length > 0 && (
+                    <View className="flex-row flex-wrap mt-2">
+                      {item.materials.map((mat, index) => (
+                        <View key={index} className="bg-gray-100 px-2 py-1 rounded-md mr-2 mb-1 border border-gray-200">
+                          <Text className="text-xs text-gray-600">{mat}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
                 </Pressable>
 
                 {/* ส่วนปุ่มด้านล่างเมื่อโดนเลือก (Expanded Menu) */}
