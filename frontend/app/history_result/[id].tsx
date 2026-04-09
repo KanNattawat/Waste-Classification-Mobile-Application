@@ -90,12 +90,10 @@ export default function HistoryDetail() {
 
   return (
     <SafeAreaView className="flex-1 bg-[#F9F8FA]">
-      {/* ปุ่มกดกลับ แยกไว้ด้านบนสุดเพื่อให้ไม่ไหลตาม ScrollView */}
       <Pressable className='absolute top-10 left-7 z-50' onPress={() => { router.back() }}>
         <Image source={require('@/assets/images/back1.png')} />
       </Pressable>
 
-      {/* เปลี่ยนจาก View เป็น ScrollView ตรงนี้ครับ */}
       <ScrollView 
         className="flex-1 w-full"
         contentContainerStyle={{ alignItems: 'center', paddingBottom: 60, paddingTop: 80 }}
@@ -135,7 +133,6 @@ export default function HistoryDetail() {
           </View>
         )
           : (
-            // ลบ h-full ออกจาก View นี้เพื่อให้เนื้อหาขยายตามจริงได้
             <View className='flex p-8 w-full'>
               <View className='w-full bg-white rounded-lg p-4' style={shadow.card}>
                 <View className='flex flex-row justify-center w-full'>

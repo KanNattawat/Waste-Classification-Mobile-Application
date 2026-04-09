@@ -57,29 +57,26 @@ const _layout = () => {
           tabBarInactiveTintColor: "#95a5a6",
           tabBarStyle: {
             backgroundColor: "white",
-            height: 75, // เพิ่มความสูงอีกนิดเพื่อให้มีพื้นที่หายใจ
+            height: 75,
             position: "absolute",
             borderTopWidth: 0,
             paddingBottom: 12,
             paddingTop: 8,
-            // เอา paddingHorizontal: 22 ออก หรือลดเหลือสัก 5-10 
-            // เพื่อให้ Tab ขยายตัวได้เต็มหน้าจอมากขึ้น
             paddingHorizontal: 5,
-            elevation: 5, // เพิ่มเงาให้ดูมีมิติ
+            elevation: 5,
             shadowColor: '#000',
             shadowOffset: { width: 0, height: -2 },
             shadowOpacity: 0.1,
             shadowRadius: 4,
           },
           tabBarItemStyle: {
-            // เอา width: "auto" ออกเพื่อให้ระบบเฉลี่ยพื้นที่ให้เท่าๆ กัน
             justifyContent: "center",
             alignItems: "center",
           },
           tabBarLabelStyle: {
-            fontSize: 11, // ลดขนาดฟอนต์ลงเล็กน้อยจาก 14 เป็น 11 หรือ 12
+            fontSize: 11,
             fontWeight: "500",
-            marginTop: 2, // ปรับระยะห่างระหว่างไอคอนกับตัวหนังสือ
+            marginTop: 2,
           },
         }}
       >

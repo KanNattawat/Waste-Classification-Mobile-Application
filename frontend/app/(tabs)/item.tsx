@@ -3,12 +3,13 @@ import { Text, View, Image, Pressable, Modal, ActivityIndicator, Alert, ScrollVi
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useSafeAreaInsets } from 'react-native-safe-area-context'; // 🌟 เพิ่ม Import
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { API_URL } from "@/config";
 
 const Item = () => {
   const router = useRouter();
   const { id } = useLocalSearchParams();
-  const insets = useSafeAreaInsets(); // 🌟 เรียกใช้ Hook เพื่อดึงค่าขอบจอ
+  const insets = useSafeAreaInsets();
 
   const [open, setOpen] = useState(false);
   const [itemData, setItemData] = useState(null);
@@ -27,7 +28,7 @@ const Item = () => {
 
       if (!id) return;
 
-      const itemRes = await fetch(`https://waste-classification-mobile-application.onrender.com/manage/getallitem/${id}`, {
+      const itemRes = await fetch(`${API_URL}/manage/getallitem/${id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
@@ -39,7 +40,7 @@ const Item = () => {
       const userId = await AsyncStorage.getItem("userId"); 
       
       if (userId) {
-        const userRes = await fetch(`https://waste-classification-mobile-application.onrender.com/home?userId=${userId}`, { 
+        const userRes = await fetch(`${API_URL}/home?userId=${userId}`, { 
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -61,7 +62,7 @@ const Item = () => {
       setRedeeming(true);
       const token = await SecureStore.getItemAsync('authToken');
 
-      const res = await fetch(`https://waste-classification-mobile-application.onrender.com/redeem`, {
+      const res = await fetch(`${API_URL}/redeem`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -111,10 +112,8 @@ const Item = () => {
   const isEnoughPoints = userPoints >= itemData.Point_Usage;
 
   return (
-    // 🌟 เอา pt-12 ออก แล้วใช้ paddingTop ตามระยะของ insets.top ของเครื่องนั้นๆ แทน
     <View className='flex-1 bg-[#F9F8FA]' style={{ paddingTop: insets.top }}>
       
-      {/* 🌟 ปรับระยะปุ่มย้อนกลับให้ลอยลงมาจากขอบบนของจออย่างสมมาตร */}
       <Pressable 
         className='absolute left-5 z-50 bg-white/80 rounded-full p-2 shadow-sm' 
         style={{ top: insets.top + 10 }}
@@ -125,7 +124,6 @@ const Item = () => {
 
       <ScrollView 
         className='flex-1' 
-        // 🌟 เผื่อระยะด้านล่างของ ScrollView โดยใช้ insets.bottom + 100 เพื่อให้ดันปุ่มแลกคะแนนพ้นขอบจอล่างแบบสวยๆ
         contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 100 }} 
         showsVerticalScrollIndicator={false}
       >
@@ -172,7 +170,6 @@ const Item = () => {
 
       </ScrollView>
 
-      {/* Modal ยืนยัน */}
       {open && (
         <Modal transparent visible={open} animationType="fade" statusBarTranslucent={true}>
           <View className="flex-1 bg-black/60 justify-center items-center px-6">

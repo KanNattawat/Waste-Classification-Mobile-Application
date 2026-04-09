@@ -15,37 +15,31 @@ import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { API_URL } from "@/config";
 
 const { width } = Dimensions.get('window');
-const API_BASE_URL = 'https://waste-classification-mobile-application.onrender.com';
 
 export default function EditShopScreen() {
     const { shopId } = useLocalSearchParams();
     const router = useRouter();
 
-    // ----------------------------------------
-    // 1. States สำหรับเก็บข้อมูลฟอร์ม
-    // ----------------------------------------
     const [shopName, setShopName] = useState('');
     const [telNum, setTelNum] = useState('');
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [region, setRegion] = useState({
-        latitude: 13.7367, // ค่าเริ่มต้น (กรุงเทพฯ)
+        latitude: 13.7367,
         longitude: 100.5231,
         latitudeDelta: 0.01,
         longitudeDelta: 0.01,
     });
 
-    // States สำหรับ Loading
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState(false);
 
-    // Ref สำหรับแก้ปัญหาแผนที่กระพริบ
     const mapRef = useRef(null);
     const isProgrammatic = useRef(false);
 
-    // รายการหมวดหมู่ขยะอ้างอิง
     const categories = [
         { id: 1, label: 'กระดาษ', icon: 'file-document-outline' },
         { id: 2, label: 'พลาสติก', icon: 'bottle-wine-outline' },
@@ -63,9 +57,6 @@ export default function EditShopScreen() {
         );
     };
 
-    // ----------------------------------------
-    // 2. โหลดข้อมูลร้านค้าเดิม
-    // ----------------------------------------
     useEffect(() => {
         const fetchShopData = async () => {
             if (!shopId) {
@@ -75,7 +66,7 @@ export default function EditShopScreen() {
             }
 
             try {
-                const response = await axios.get(`${API_BASE_URL}/recycle-shop2?userId=1`);
+                const response = await axios.get(`${API_URL}/recycle-shop2?userId=1`);
 
                 if (response.status === 200 && response.data) {
                     const shopData = response.data.find(shop => String(shop.Shop_ID) === String(shopId));
@@ -84,7 +75,6 @@ export default function EditShopScreen() {
                         setShopName(shopData.Shop_name || shopData.shop_name || '');
                         setTelNum(shopData.Tel_num || shopData.tel_num || '');
 
-                        // จัดการข้อมูลแผนที่ (ดึงค่า lat, lng เดิมมาเซ็ต)
                         const loc = shopData.Location || shopData.location;
                         if (loc && Array.isArray(loc) && loc.length >= 2) {
                             setRegion({
@@ -95,7 +85,6 @@ export default function EditShopScreen() {
                             });
                         }
 
-                        // จัดการข้อมูลหมวดหมู่
                         const ac = shopData.Accepted_cate || shopData.accepted_cate;
                         if (Array.isArray(ac)) {
                             let parsedCats = [];
@@ -134,9 +123,6 @@ export default function EditShopScreen() {
         fetchShopData();
     }, [shopId]);
 
-    // ----------------------------------------
-    // 3. ฟังก์ชันอัปเดตข้อมูล (Update)
-    // ----------------------------------------
     const onUpdate = async () => {
         if (!shopName.trim() || !telNum.trim()) {
             Alert.alert("ข้อมูลไม่ครบถ้วน", "กรุณากรอกชื่อร้านและเบอร์โทรศัพท์ให้ครบถ้วน");
@@ -152,11 +138,11 @@ export default function EditShopScreen() {
             const payload = {
                 shop_name: shopName,
                 tel_num: telNum,
-                location: [region.latitude, region.longitude], // ส่งเป็น Array [lat, lng]
-                accepted_cate: selectedCategories // ส่งเป็น Array ของ ID
+                location: [region.latitude, region.longitude],
+                accepted_cate: selectedCategories
             };
 
-            const response = await axios.put(`${API_BASE_URL}/update_recycle-shop/${shopId}`, payload);
+            const response = await axios.put(`${API_URL}/update_recycle-shop/${shopId}`, payload);
 
             if (response.status === 200) {
                 Alert.alert("สำเร็จ", "แก้ไขข้อมูลร้านเรียบร้อยแล้ว", [
@@ -171,9 +157,6 @@ export default function EditShopScreen() {
         }
     };
 
-    // ----------------------------------------
-    // 4. ฟังก์ชันลบข้อมูล (Delete)
-    // ----------------------------------------
     const confirmDelete = () => {
         Alert.alert(
             "ยืนยันการลบ",
@@ -188,7 +171,7 @@ export default function EditShopScreen() {
     const onDeleteShop = async () => {
         setDeleting(true);
         try {
-            const response = await axios.delete(`${API_BASE_URL}/delete_recycle-shop/${shopId}`);
+            const response = await axios.delete(`${API_URL}/delete_recycle-shop/${shopId}`);
 
             if (response.status === 200) {
                 Alert.alert("สำเร็จ", "ลบร้านรับซื้อเรียบร้อยแล้ว", [
@@ -203,9 +186,6 @@ export default function EditShopScreen() {
         }
     };
 
-    // ----------------------------------------
-    // 5. UI Rendering
-    // ----------------------------------------
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
@@ -225,7 +205,6 @@ export default function EditShopScreen() {
             <Stack.Screen options={{ headerShown: false }} />
 
             <View>
-                {/* Header */}
                 <View style={styles.headerContainer}>
                     <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                         <Icon name="arrow-left" size={28} color="#108a74" />
@@ -233,7 +212,6 @@ export default function EditShopScreen() {
                     <Text style={styles.headerTitle}>แก้ไขข้อมูลร้านรับซื้อ</Text>
                 </View>
 
-                {/* ข้อมูลร้าน */}
                 <View style={styles.inputGroup}>
                     <Text style={styles.label}>ชื่อร้าน / ชื่อผู้ติดต่อ</Text>
                     <TextInput
@@ -253,7 +231,6 @@ export default function EditShopScreen() {
                     />
                 </View>
 
-                {/* ค้นหาแผนที่ */}
                 <Text style={styles.label}>ค้นหาตำแหน่งใหม่ (ถ้าต้องการเปลี่ยน)</Text>
                 <View style={styles.searchContainerWrapper}>
                     <GooglePlacesAutocomplete
@@ -283,7 +260,7 @@ export default function EditShopScreen() {
                         }}
 
                         query={{
-                            key: 'AIzaSyDOTi8DE-fCsrIPvkHXwuB0Aq_qkffvq-c',
+                            key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
                             language: 'th',
                             components: 'country:th',
                         }}
@@ -295,7 +272,7 @@ export default function EditShopScreen() {
                                 borderRadius: 10,
                                 backgroundColor: '#fff',
                                 elevation: 5,
-                                zIndex: 999, // 🔥 สำคัญ
+                                zIndex: 999,
                             },
                         }}
                     />
@@ -311,12 +288,10 @@ export default function EditShopScreen() {
                         region={region}
                         showsUserLocation
                         onRegionChangeComplete={(r) => {
-                            // ถ้าเป็นการเปลี่ยนตำแหน่งจาก Google Places → ข้ามเพื่อป้องกัน loop
                             if (isProgrammatic.current) {
                                 isProgrammatic.current = false;
                                 return;
                             }
-                            // ถ้าเป็นผู้ใช้ลากแผนที่เอง → อัปเดต state ตามปกติ
                             setRegion(r);
                         }}
                     >
@@ -324,7 +299,7 @@ export default function EditShopScreen() {
                     </MapView>
                 </View>
 
-                {/* หมวดหมู่ (แบบไอคอน) */}
+                {/* หมวดหมู่ */}
                 <Text style={styles.label}>หมวดหมู่ของที่รับซื้อ</Text>
                 <View style={styles.categoryBox}>
                     <View style={styles.categoryGrid}>
@@ -361,7 +336,7 @@ export default function EditShopScreen() {
                     </View>
                 </View>
 
-                {/* ปุ่ม Action (บันทึก / ลบ) */}
+
                 <View style={styles.actionButtonsContainer}>
                     <TouchableOpacity
                         style={[styles.saveBtn, saving && { opacity: 0.7 }]}
@@ -393,9 +368,6 @@ export default function EditShopScreen() {
     );
 }
 
-// ----------------------------------------
-// 6. Styles (ไม่มีการเปลี่ยนแปลง)
-// ----------------------------------------
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -517,7 +489,7 @@ const styles = StyleSheet.create({
     },
     saveBtn: {
         flex: 1,
-        backgroundColor: '#108a74', // สีเขียวเซฟ
+        backgroundColor: '#108a74',
         padding: 15,
         borderRadius: 10,
         alignItems: 'center',
@@ -525,7 +497,7 @@ const styles = StyleSheet.create({
     },
     deleteBtn: {
         flex: 1,
-        backgroundColor: '#e74c3c', // สีแดงลบ
+        backgroundColor: '#e74c3c',
         padding: 15,
         borderRadius: 10,
         alignItems: 'center',

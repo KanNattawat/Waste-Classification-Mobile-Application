@@ -113,7 +113,6 @@ const Recents = () => {
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingTop: 40, paddingBottom: 40 }}
-        // ใส่ส่วนหัว (ปุ่ม Filter และ ข้อความ) ไว้ใน ListHeaderComponent
         ListHeaderComponent={
           <View className="mb-4">
             <Text className="text-3xl font-bold text-[#1E8B79] text-center mb-3">

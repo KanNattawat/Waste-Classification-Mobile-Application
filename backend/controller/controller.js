@@ -410,8 +410,8 @@ export const getRecycleShops = async (req, res) => {
 };
 
 export const updateRecycleShop = asyncHandler(async (req, res) => {
-    const { shopId } = req.params; // รับ shopId จาก URL params
-    const { shop_name, tel_num, location, accepted_cate, status } = req.body; // รับข้อมูลที่จะแก้ไขจาก body
+    const { shopId } = req.params;
+    const { shop_name, tel_num, location, accepted_cate, status } = req.body;
 
     if (!shopId) {
         return res.status(400).json({ error: "จำเป็นต้องระบุ Shop ID" });
@@ -598,27 +598,22 @@ export const getPointHistory = asyncHandler(async (req, res) => {
 })
 
 export const redeemItem = asyncHandler(async (req, res) => {
-    const userId = req.user.userId; // ได้จาก Token (authMiddleware)
-    const { itemId } = req.body; // รับ ID สินค้ามาจากแอป
+    const userId = req.user.userId;
+    const { itemId } = req.body;
 
     if (!itemId) return res.status(400).json({ error: "กรุณาระบุรหัสสินค้า" });
 
-    // 1. ดึงข้อมูลสินค้า
     const item = await prisma.pointShop.findUnique({ where: { Item_ID: Number(itemId) } });
     if (!item) return res.status(404).json({ error: "ไม่พบข้อมูลสินค้า" });
 
-    // 2. ดึงข้อมูลผู้ใช้เพื่อเช็คแต้ม
     const user = await prisma.user.findUnique({ where: { User_ID: Number(userId) } });
     if (!user) return res.status(404).json({ error: "ไม่พบข้อมูลผู้ใช้" });
 
-    // 3. เช็คว่าแต้มพอไหม
     if (user.Points < item.Point_Usage) {
         return res.status(400).json({ error: "คะแนนของคุณไม่เพียงพอ" });
     }
 
-    // 4. หักแต้ม + บันทึกประวัติ PointHistory (ทำพร้อมกันด้วย Transaction)
     const transaction = await prisma.$transaction([
-        // หักแต้ม
         prisma.user.update({
             where: { User_ID: Number(userId) },
             data: { Points: { decrement: item.Point_Usage } }
@@ -628,8 +623,8 @@ export const redeemItem = asyncHandler(async (req, res) => {
             data: {
                 User_ID: Number(userId),
                 PointsChanged: item.Point_Usage,
-                History_Detail: item.Item_name, // ใส่ชื่อสินค้า
-                History_Type: 'USE' // กำหนดประเภทเป็น USE
+                History_Detail: item.Item_name,
+                History_Type: 'USE'
             }
         })
     ]);
@@ -647,7 +642,6 @@ export const deleteRecycleShop = asyncHandler(async (req, res) => {
         return res.status(400).json({ error: "จำเป็นต้องระบุ Shop ID เพื่อทำการลบ" });
     }
 
-    // ตรวจสอบว่ามีร้านนี้อยู่จริงไหม
     const existingShop = await prisma.recycleShop.findUnique({
         where: { Shop_ID: Number(shopId) }
     });
@@ -656,7 +650,6 @@ export const deleteRecycleShop = asyncHandler(async (req, res) => {
         return res.status(404).json({ error: "ไม่พบร้านค้าที่ต้องการลบ" });
     }
 
-    // ทำการลบข้อมูล
     await prisma.recycleShop.delete({
         where: { Shop_ID: Number(shopId) }
     });

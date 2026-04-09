@@ -185,7 +185,7 @@ const RecyclingForm = () => {
                         }}
 
                         query={{
-                            key: 'AIzaSyDOTi8DE-fCsrIPvkHXwuB0Aq_qkffvq-c',
+                            key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
                             language: 'th',
                             components: 'country:th',
                         }}

@@ -16,11 +16,9 @@ import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL } from "@/config";
 
-/* ---------- CONFIG ---------- */
-const API_URL = "https://waste-classification-mobile-application.onrender.com";
 
-/* ---------- TYPES ---------- */
 type JunkShop = {
   id: string;
   name: string;
@@ -31,10 +29,9 @@ type JunkShop = {
   isOwner?: boolean;
   status?: boolean;
   phone?: string;
-  materials?: string[]; // ฟิลด์สำหรับเก็บข้อมูลวัสดุ
+  materials?: string[];
 };
 
-/* ---------- CATEGORY MAP (อ้างอิงจากฟอร์มบันทึก) ---------- */
 const CATEGORY_MAP: Record<number, string> = {
   1: 'กระดาษ',
   2: 'พลาสติก',
@@ -44,10 +41,9 @@ const CATEGORY_MAP: Record<number, string> = {
   6: 'อื่นๆ',
 };
 
-/* ---------- API KEY ---------- */
-const GOOGLE_API_KEY = "AIzaSyDOTi8DE-fCsrIPvkHXwuB0Aq_qkffvq-c"; // แนะนำให้ซ่อน API Key ไว้ใน .env
 
-/* ---------- HELPER: Calculate Distance ---------- */
+const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
+
 const getRouteDistanceKm = async (
   originLat: number,
   originLng: number,
@@ -74,7 +70,6 @@ const getRouteDistanceKm = async (
   }
 };
 
-/* ---------- HELPER: Fetch Phone Number from Google Place Details ---------- */
 const getPlacePhoneNumber = async (placeId: string): Promise<string | undefined> => {
   try {
     const url =
@@ -105,7 +100,6 @@ export default function WasteMap() {
   const [selectedShopId, setSelectedShopId] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  /* ---------- FETCH ALL SHOPS FROM DB ---------- */
   const fetchDatabaseShops = async (
     currentLat: number,
     currentLng: number,
@@ -122,7 +116,7 @@ export default function WasteMap() {
       const processedShops: JunkShop[] = [];
 
       const getSimpleDistanceKm = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-        const R = 6371; // รัศมีโลก (กิโลเมตร)
+        const R = 6371;
         const dLat = (lat2 - lat1) * (Math.PI / 180);
         const dLon = (lon2 - lon1) * (Math.PI / 180);
         const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
@@ -145,8 +139,6 @@ export default function WasteMap() {
 
         if (isOwner || (!isOwner && isApproved && distance <= 3)) {
           
-          // ดึงข้อมูลหมวดหมู่มาแปลงเป็น String 
-          // (รองรับทั้ง key accepted_cate, Accepted_cate หรือแบบอื่นๆ ที่ API อาจะส่งมา)
           const rawMaterials = shop.accepted_cate || shop.Accepted_cate || shop.Accepted_materials || shop.Materials || [];
           const mappedMaterials = Array.isArray(rawMaterials) 
             ? rawMaterials.map((m: any) => CATEGORY_MAP[Number(m)] || String(m)) 
@@ -161,8 +153,8 @@ export default function WasteMap() {
             distance: distance,
             isOwner: isOwner,
             status: isApproved,
-            phone: shop.Tel_num || shop.tel_num, // รองรับ key ทั้งพิมพ์ใหญ่/เล็ก
-            materials: mappedMaterials, // กำหนดค่า Array ที่แปลงแล้ว
+            phone: shop.Tel_num || shop.tel_num,
+            materials: mappedMaterials,
           });
         }
       }
@@ -174,7 +166,6 @@ export default function WasteMap() {
     }
   };
 
-  /* ---------- FETCH PLACES (GOOGLE + DB) ---------- */
   const fetchNearbyJunkShops = async (lat: number, lng: number, userId: string | null) => {
     console.log("Fetching places...");
 
@@ -211,7 +202,7 @@ export default function WasteMap() {
           distance,
           isOwner: false,
           phone: phoneNumber,
-          materials: [], // ร้านจาก Google Maps ไม่มีข้อมูลหมวดหมู่ ปล่อยว่างไว้
+          materials: [],
         });
       }
     }
@@ -227,7 +218,6 @@ export default function WasteMap() {
     setJunkShops(allShops);
   };
 
-  /* ---------- LOCATION & RELOAD DATA ---------- */
   useFocusEffect(
     useCallback(() => {
       let isActive = true;
@@ -346,7 +336,7 @@ export default function WasteMap() {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => {
             const selected = item.id === selectedShopId;
-            const isDbShop = item.id.startsWith("db-"); // เช็คว่าเป็นร้านที่มาจาก DB หรือไม่
+            const isDbShop = item.id.startsWith("db-");
 
             return (
               <View
@@ -398,14 +388,12 @@ export default function WasteMap() {
                     </Text>
                   </View>
 
-                  {/* แสดงที่อยู่ หรือ เบอร์โทร */}
                   <Text className="text-gray-500 text-sm mt-1">
                     {isDbShop
                       ? `เบอร์โทร: ${item.phone || "ไม่มีข้อมูล"}`
                       : item.address}
                   </Text>
 
-                  {/* ส่วนแสดงรายการวัสดุ (Tags) จะแสดงเฉพาะร้านที่มี materials (ร้านจาก DB) */}
                   {item.materials && item.materials.length > 0 && (
                     <View className="flex-row flex-wrap mt-2">
                       {item.materials.map((mat, index) => (
@@ -417,7 +405,6 @@ export default function WasteMap() {
                   )}
                 </Pressable>
 
-                {/* ส่วนปุ่มด้านล่างเมื่อโดนเลือก (Expanded Menu) */}
                 {selected && (
                   <View className="mt-3">
                     <Pressable

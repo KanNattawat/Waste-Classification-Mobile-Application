@@ -37,14 +37,12 @@ export default function Point() {
   }
 
   
-  // 🌟 State สำหรับเก็บข้อมูล User (อิงตามฟิลด์ที่คุณได้จาก API /home)
   const [userData, setUserData] = useState({ userName: 'Loading...', point: 0 });
 
-  // 🌟 ฟังก์ชันดึงข้อมูลสินค้า (ปรับมาใช้ axios ให้สอดคล้องกัน)
   const fetchItems = async () => {
     try {
       setLoading(true);
-      const response = await fetch('https://waste-classification-mobile-application.onrender.com/manage/getallitem', {
+      const response = await fetch(`${API_URL}/manage/getallitem`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -79,7 +77,6 @@ export default function Point() {
           <Text className='text-3xl font-bold text-[#1E8B79] text-center mb-3'>แลกรางวัล</Text>
           <View className='flex flex-col w-screen px-8'>
 
-            {/* ส่วนโปรไฟล์ผู้ใช้ และคะแนน */}
             <View className='flex-row items-center bg-white shadow-xl px-8 py-4 rounded-xl' style={shadow.card}>
               <View className='flex-1'>
                 <Text className='text-xl'>{user?.UserName}</Text>
@@ -95,7 +92,6 @@ export default function Point() {
               </Pressable>
             </View>
 
-            {/* แบนเนอร์กิจกรรม */}
             <Pressable className='h-24 w-full mt-4 rounded-xl overflow-hidden' style={shadow.card} onPress={() => router.push(`/event`)}>
               <Image
                 className='w-full h-full'
