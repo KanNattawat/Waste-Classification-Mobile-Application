@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-const API_BASE_URL = "https://waste-classification-mobile-application.onrender.com/manage"; 
+const API_BASE_URL = process.env.API_BASE_URL;
 
 
 export default function PointShopClient({ initialItems, token }: { initialItems: any[], token: string }) {

@@ -5,7 +5,7 @@ export default async function PointShopPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value || '';
 
-  const API_BASE_URL = "https://waste-classification-mobile-application.onrender.com/manage";
+  const API_BASE_URL = process.env.API_BASE_URL;
   let initialItems = [];
   
   try {
