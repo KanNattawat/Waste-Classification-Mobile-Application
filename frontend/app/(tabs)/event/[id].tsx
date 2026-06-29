@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useLocalSearchParams } from 'expo-router';
-// 1. เพิ่ม Alert เข้ามาใน import
+
 import { View, Text, Image, Pressable, ScrollView, Modal, Alert } from 'react-native';
 import { shadow } from "@/styles/shadow";
 import axios from 'axios';
@@ -95,11 +95,11 @@ const EventDetail = () => {
       console.log("POST done:", res.status);
       
       Alert.alert(
-        "ส่งผลโหวตสำเร็จ",
-        "คุณได้รับ 1 แต้ม ขอบคุณที่ร่วมกันคัดแยกขยะนะครับ",
+        "Vote Submitted",
+        "You earned 1 point! Thank you for helping.",
         [
           { 
-            text: "ตกลง", 
+            text: "OK", 
             onPress: () => router.push("/(tabs)/event") 
           }
         ]
@@ -107,7 +107,7 @@ const EventDetail = () => {
       
     } catch (error) {
       console.log(error);
-      Alert.alert("เกิดข้อผิดพลาด", "ไม่สามารถส่งผลโหวตได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง");
+      Alert.alert("Error", "Unable to submit your vote right now. Please try again later.");
     } finally {
       isSubmitting.current = false;
     }
@@ -115,6 +115,13 @@ const EventDetail = () => {
 
   if (loading) {
     return <Loading />;
+  }
+
+  const displayLabel: {[key:string]:string} = {
+    "ขยะอันตราย" : "Hazardous Waste",
+    "ขยะอินทรีย์": "Compostable Waste",
+    "ขยะทั่วไป": "General Waste",
+    "ขยะรีไซเคิล": "Recyclable Waste"
   }
 
   const colorMap: { [key: string]: string } = {
@@ -170,20 +177,20 @@ const EventDetail = () => {
         <View className='flex px-8 pt-6 w-full'>
           <View className='w-full bg-white rounded-lg p-4' style={shadow.card}>
             <View className='flex flex-row justify-center w-full'>
-              <View className='flex'><Text className='text-xl'>ผลลัพธ์ปัจจุบัน</Text></View>
+              <View className='flex'><Text className='text-xl'>Result from voters</Text></View>
               <View className='flex-1 items-end'>
                 {stat.vote.length > 0 ? (
                   <Text className='text-xl font-bold'>
-                    {Number(stat.vote[0][1]) > 0 ? `${stat.vote[0][0]} ${stat.vote[0][2]}%` : "-"}
+                    {Number(stat.vote[0][1]) > 0 ? `${displayLabel[stat.vote[0][0]]} ${stat.vote[0][2]}%` : "-"}
                   </Text>
                 ) : <Text>error</Text>}
               </View>
             </View>
             <View className='flex flex-row justify-center w-full mt-2'>
-              <View className='flex-1'><Text className='text-xl'>ผลลัพธ์จากระบบ</Text></View>
+              <View className='flex-1'><Text className='text-xl'>Result from application</Text></View>
               <View className='flex-1 items-end'>
-                <Text className='text-xl font-bold'>{item?.WasteType_ID === 1 ? "ขยะอินทรีย์" : item?.WasteType_ID === 2
-                  ? "ขยะอันตราย" : item?.WasteType_ID === 4 ? "ขยะรีไซเคิล" : "ขยะทั่วไป"}</Text>
+                <Text className='text-xl font-bold'>{item?.WasteType_ID === 1 ? "Compostable Waste" : item?.WasteType_ID === 2
+                  ? "Hazardous Waste" : item?.WasteType_ID === 4 ? "Recyclable Waste" : "General Waste"}</Text>
               </View>
             </View>
           </View>
@@ -192,12 +199,12 @@ const EventDetail = () => {
             <View className='flex-row justify-between items-center mb-4'>
               {item?.isVoted ? (
                 <View className="bg-green-100 px-3 py-1 rounded-full border border-blue-400">
-                  <Text className="text-green-700 font-bold">คุณโหวตไปแล้ว</Text>
+                  <Text className="text-green-700 font-bold">You already voted</Text>
                 </View>
               ) : (
                 <View />
               )}
-              <Text className='text-lg'>คนโหวตจำนวน {item?.total} คน</Text>
+              <Text className='text-lg'>Total Votes: {item?.total} voter(s)</Text>
             </View>
 
             <View className='flex w-full mt-4 gap-y-4'>
@@ -225,7 +232,7 @@ const EventDetail = () => {
               onPress={voteHandler}
             >
               <Text className={`text-xl font-bold ${selectedVote ? 'text-white' : 'text-gray-500'}`}>
-                ยืนยันการโหวต
+                Confirm Vote
               </Text>
             </Pressable>
           )}

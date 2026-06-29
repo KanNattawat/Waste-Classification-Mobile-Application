@@ -41,12 +41,12 @@ export default function EditShopScreen() {
     const isProgrammatic = useRef(false);
 
     const categories = [
-        { id: 1, label: 'กระดาษ', icon: 'file-document-outline' },
-        { id: 2, label: 'พลาสติก', icon: 'bottle-wine-outline' },
-        { id: 3, label: 'โลหะ', icon: 'nut' },
-        { id: 4, label: 'แก้ว', icon: 'glass-wine' },
-        { id: 5, label: 'e-waste', icon: 'battery-charging' },
-        { id: 6, label: 'อื่นๆ', icon: 'dots-horizontal' },
+        { id: 1, label: 'Paper', icon: 'file-document-outline' },
+        { id: 2, label: 'Plastic', icon: 'bottle-wine-outline' },
+        { id: 3, label: 'Metal', icon: 'nut' },
+        { id: 4, label: 'Glass', icon: 'glass-wine' },
+        { id: 5, label: 'E-Waste', icon: 'battery-charging' },
+        { id: 6, label: 'Others', icon: 'dots-horizontal' },
     ];
 
     const toggleCategory = (id) => {
@@ -60,7 +60,7 @@ export default function EditShopScreen() {
     useEffect(() => {
         const fetchShopData = async () => {
             if (!shopId) {
-                Alert.alert("ข้อผิดพลาด", "ไม่พบรหัสร้านค้า");
+                Alert.alert("Error", "Shop ID not found.");
                 router.back();
                 return;
             }
@@ -108,13 +108,13 @@ export default function EditShopScreen() {
                         }
 
                     } else {
-                        Alert.alert("ข้อผิดพลาด", "ไม่พบข้อมูลร้านค้านี้ในระบบ");
+                        Alert.alert("Error", "This shop data was not found");
                         router.back();
                     }
                 }
             } catch (error) {
                 console.error("Fetch shop error:", error);
-                Alert.alert("เกิดข้อผิดพลาด", "ไม่สามารถโหลดข้อมูลร้านค้าได้");
+                Alert.alert("Error", "Failed to load shop data.");
             } finally {
                 setLoading(false);
             }
@@ -125,11 +125,11 @@ export default function EditShopScreen() {
 
     const onUpdate = async () => {
         if (!shopName.trim() || !telNum.trim()) {
-            Alert.alert("ข้อมูลไม่ครบถ้วน", "กรุณากรอกชื่อร้านและเบอร์โทรศัพท์ให้ครบถ้วน");
+            Alert.alert("Incomplete Information", "Please enter the shop name and phone number.");
             return;
         }
         if (selectedCategories.length === 0) {
-            Alert.alert("ข้อมูลไม่ครบ", "กรุณาเลือกหมวดหมู่ขยะอย่างน้อย 1 ประเภท");
+            Alert.alert("Incomplete Information", "Please select at least one accepted category.");
             return;
         }
 
@@ -145,13 +145,13 @@ export default function EditShopScreen() {
             const response = await axios.put(`${API_URL}/update_recycle-shop/${shopId}`, payload);
 
             if (response.status === 200) {
-                Alert.alert("สำเร็จ", "แก้ไขข้อมูลร้านเรียบร้อยแล้ว", [
-                    { text: "ตกลง", onPress: () => router.back() }
+                Alert.alert("Success", "Shop information updated successfully", [
+                    { text: "OK", onPress: () => router.back() }
                 ]);
             }
         } catch (error) {
             console.error("Update error:", error);
-            Alert.alert("เกิดข้อผิดพลาด", "ไม่สามารถอัปเดตข้อมูลได้");
+            Alert.alert("Error", "Failed to update information.");
         } finally {
             setSaving(false);
         }
@@ -159,11 +159,11 @@ export default function EditShopScreen() {
 
     const confirmDelete = () => {
         Alert.alert(
-            "ยืนยันการลบ",
-            "คุณแน่ใจหรือไม่ว่าต้องการลบร้านรับซื้อนี้? หากลบแล้วจะไม่สามารถกู้คืนได้",
+            "Confirm Deletion",
+            "Are you sure you want to delete this recycling shop? This action cannot be undone.",
             [
-                { text: "ยกเลิก", style: "cancel" },
-                { text: "ลบทิ้ง", style: "destructive", onPress: onDeleteShop }
+                { text: "Cancel", style: "cancel" },
+                { text: "Delete", style: "destructive", onPress: onDeleteShop }
             ]
         );
     };
@@ -174,13 +174,13 @@ export default function EditShopScreen() {
             const response = await axios.delete(`${API_URL}/delete_recycle-shop/${shopId}`);
 
             if (response.status === 200) {
-                Alert.alert("สำเร็จ", "ลบร้านรับซื้อเรียบร้อยแล้ว", [
-                    { text: "ตกลง", onPress: () => router.back() }
+                Alert.alert("Success", "Shop has been successfully deleted.", [
+                    { text: "OK", onPress: () => router.back() }
                 ]);
             }
         } catch (error) {
             console.error("Delete error:", error);
-            Alert.alert("เกิดข้อผิดพลาด", "ไม่สามารถลบข้อมูลได้");
+            Alert.alert("Error", "Failed to delete the shop.");
         } finally {
             setDeleting(false);
         }
@@ -190,7 +190,7 @@ export default function EditShopScreen() {
         return (
             <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#108a74" />
-                <Text style={{ marginTop: 10 }}>กำลังโหลดข้อมูล...</Text>
+                <Text style={{ marginTop: 10 }}>Loading...</Text>
             </View>
         );
     }
@@ -209,19 +209,19 @@ export default function EditShopScreen() {
                     <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                         <Icon name="arrow-left" size={28} color="#108a74" />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>แก้ไขข้อมูลร้านรับซื้อ</Text>
+                    <Text style={styles.headerTitle}>Edit Shop Info</Text>
                 </View>
 
                 <View style={styles.inputGroup}>
-                    <Text style={styles.label}>ชื่อร้าน / ชื่อผู้ติดต่อ</Text>
+                    <Text style={styles.label}>Shop Name</Text>
                     <TextInput
                         style={styles.input}
                         value={shopName}
                         onChangeText={setShopName}
-                        placeholder="ระบุชื่อร้าน"
+                        placeholder="Shop name / Contact person"
                     />
 
-                    <Text style={styles.label}>เบอร์โทร</Text>
+                    <Text style={styles.label}>Phone Number</Text>
                     <TextInput
                         style={styles.input}
                         value={telNum}
@@ -231,12 +231,11 @@ export default function EditShopScreen() {
                     />
                 </View>
 
-                <Text style={styles.label}>ค้นหาตำแหน่งใหม่ (ถ้าต้องการเปลี่ยน)</Text>
+                <Text style={styles.label}>Search New Location</Text>
                 <View style={styles.searchContainerWrapper}>
                     <GooglePlacesAutocomplete
-                        placeholder="ค้นหาตำแหน่ง"
+                        placeholder="Search location"
                         fetchDetails
-
                         keyboardShouldPersistTaps="handled"
                         enablePoweredByContainer={false}
                         disableScroll={true}
@@ -279,7 +278,7 @@ export default function EditShopScreen() {
                 </View>
 
                 {/* แผนที่ */}
-                <Text style={styles.label}>ตำแหน่งที่ตั้งบนแผนที่</Text>
+                <Text style={styles.label}>Location on Map</Text>
                 <View style={styles.mapContainer}>
                     <MapView
                         ref={mapRef}
@@ -300,7 +299,7 @@ export default function EditShopScreen() {
                 </View>
 
                 {/* หมวดหมู่ */}
-                <Text style={styles.label}>หมวดหมู่ของที่รับซื้อ</Text>
+                <Text style={styles.label}>Accepted Materials</Text>
                 <View style={styles.categoryBox}>
                     <View style={styles.categoryGrid}>
                         {categories.map((item) => {
@@ -346,7 +345,7 @@ export default function EditShopScreen() {
                         {saving ? (
                             <ActivityIndicator color="#fff" />
                         ) : (
-                            <Text style={styles.btnText}>บันทึกแก้ไข</Text>
+                            <Text style={styles.btnText}>Save Changes</Text>
                         )}
                     </TouchableOpacity>
 
@@ -358,7 +357,7 @@ export default function EditShopScreen() {
                         {deleting ? (
                             <ActivityIndicator color="#fff" />
                         ) : (
-                            <Text style={styles.btnText}>ลบร้าน</Text>
+                            <Text style={styles.btnText}>Delete Shop</Text>
                         )}
                     </TouchableOpacity>
                 </View>

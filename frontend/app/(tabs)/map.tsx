@@ -33,12 +33,12 @@ type JunkShop = {
 };
 
 const CATEGORY_MAP: Record<number, string> = {
-  1: 'กระดาษ',
-  2: 'พลาสติก',
-  3: 'โลหะ',
-  4: 'แก้ว',
-  5: 'e-waste',
-  6: 'อื่นๆ',
+  1: 'Paper',
+  2: 'Plastic',
+  3: 'Metal',
+  4: 'Glass',
+  5: 'E-Waste',
+  6: 'Others',
 };
 
 
@@ -149,7 +149,7 @@ export default function WasteMap() {
             name: shop.Shop_name,
             latitude: shopLat,
             longitude: shopLng,
-            address: shop.Address || "ไม่มีข้อมูลที่อยู่",
+            address: shop.Address || "No address data available",
             distance: distance,
             isOwner: isOwner,
             status: isApproved,
@@ -232,7 +232,7 @@ export default function WasteMap() {
 
           const { status } = await Location.requestForegroundPermissionsAsync();
           if (status !== "granted") {
-            Alert.alert("แจ้งเตือน", "กรุณาอนุญาตการเข้าถึงตำแหน่ง");
+            Alert.alert("Permission Denied", "Please allow location access to discover nearby recycling shops.");
             if (isActive) setLoading(false);
             return;
           }
@@ -264,7 +264,7 @@ export default function WasteMap() {
     return (
       <SafeAreaView className="flex-1 justify-center items-center">
         <ActivityIndicator size="large" color="#1E8B79" />
-        <Text className="mt-4 text-gray-500">กำลังโหลด...</Text>
+        <Text className="mt-4 text-gray-500">Loading...</Text>
       </SafeAreaView>
     );
   }
@@ -283,7 +283,7 @@ export default function WasteMap() {
       {/* Header */}
       <View className="px-6 py-4 flex-row items-center">
         <Text className="text-xl font-bold text-[#1E8B79] flex-1">
-          ร้านรับซื้อของเก่าใกล้คุณ
+          Recycling Shops Near You
         </Text>
         <Pressable
           onPress={() => router.push("/shop_form/form")}
@@ -291,7 +291,7 @@ export default function WasteMap() {
         >
           <Ionicons name="add" size={16} color="#1E8B79" />
           <Text className="ml-1 text-[#1E8B79] text-sm font-medium">
-            เพิ่มร้าน
+            Add Shop
           </Text>
         </Pressable>
       </View>
@@ -322,7 +322,7 @@ export default function WasteMap() {
                 onPress={() => setSelectedShopId(shop.id)}
                 zIndex={isSelected ? 999 : shop.isOwner ? 998 : 1}
                 title={shop.name}
-                description={shop.isOwner ? "ร้านของคุณ" : `${shop.distance.toFixed(1)} กม.`}
+                description={shop.isOwner ? "Your Shop" : `${shop.distance.toFixed(1)} km`}
               />
             );
           })}
@@ -369,12 +369,12 @@ export default function WasteMap() {
                         <View className="flex-row items-center mb-1">
                           <View className="bg-[#F59E0B] px-2 py-0.5 rounded-md mr-2">
                             <Text className="text-white text-xs font-bold">
-                              ร้านของคุณ
+                              Your Shop
                             </Text>
                           </View>
                           <View className={`px-2 py-0.5 rounded-md ${item.status ? 'bg-green-100 border border-green-500' : 'bg-gray-100 border border-gray-400'}`}>
                             <Text className={`text-xs font-bold ${item.status ? 'text-green-600' : 'text-gray-600'}`}>
-                              {item.status ? 'เปิดให้บริการ' : 'รอการตรวจสอบ'}
+                              {item.status ? 'Open' : 'Pending Approval'}
                             </Text>
                           </View>
                         </View>
@@ -390,7 +390,7 @@ export default function WasteMap() {
 
                   <Text className="text-gray-500 text-sm mt-1">
                     {isDbShop
-                      ? `เบอร์โทร: ${item.phone || "ไม่มีข้อมูล"}`
+                      ? `Phone: ${item.phone || "N/A"}`
                       : item.address}
                   </Text>
 
@@ -424,7 +424,7 @@ export default function WasteMap() {
                       <View className="flex-row items-center">
                         <Ionicons name="navigate" size={16} color="white" style={{ marginRight: 6 }} />
                         <Text className="text-white font-semibold">
-                          นำทางด้วย Google Maps
+                          Navigate with Google Maps
                         </Text>
                       </View>
                     </Pressable>
@@ -436,7 +436,7 @@ export default function WasteMap() {
                       >
                         <Ionicons name="call" size={16} color="white" style={{ marginRight: 6 }} />
                         <Text className="text-white font-semibold">
-                          โทร: {item.phone}
+                          Call: {item.phone}
                         </Text>
                       </Pressable>
                     )}
@@ -454,7 +454,7 @@ export default function WasteMap() {
                       >
                         <Ionicons name="create-outline" size={18} color="#1E8B79" style={{ marginRight: 6 }} />
                         <Text className="text-[#1E8B79] font-semibold">
-                          แก้ไขข้อมูลร้าน
+                          Edit Shop Info
                         </Text>
                       </Pressable>
                     )}

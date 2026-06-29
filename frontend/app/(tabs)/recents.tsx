@@ -116,15 +116,15 @@ const Recents = () => {
         ListHeaderComponent={
           <View className="mb-4">
             <Text className="text-3xl font-bold text-[#1E8B79] text-center mb-3">
-              ประวัติการคัดแยกขยะ
+              Waste Sorting History
             </Text>
 
             <View className='flex flex-row w-full justify-between my-4'>
               <Pressable className={`py-1 rounded-xl items-center w-[47%] ${filter === "correct" ? 'bg-[#1E8B79]' : 'bg-white'}`} style={shadow.card} onPress={() => { setFilter('correct') }}>
-                <Text className={`text-xl ${filter === "correct" ? 'text-white' : 'text-[#1E8B79]'} text-center `}>ผลลัพธ์การแยก{'\n'} ถูกต้อง</Text>
+                <Text className={`text-xl ${filter === "correct" ? 'text-white' : 'text-[#1E8B79]'} text-center `}>Correct Results</Text>
               </Pressable>
               <Pressable className={`py-1 rounded-xl items-center w-[47%] ${filter === "incorrect" ? 'bg-[#1E8B79]' : 'bg-white'}`} style={shadow.card} onPress={() => { setFilter('incorrect') }}>
-                <Text className={`text-xl ${filter === "incorrect" ? 'text-white' : 'text-[#1E8B79]'} text-center `}>ผลลัพธ์การแยก{'\n'}ไม่ถูกต้อง</Text>
+                <Text className={`text-xl ${filter === "incorrect" ? 'text-white' : 'text-[#1E8B79]'} text-center `}>Incorrect Results</Text>
               </Pressable>
             </View>
           </View>

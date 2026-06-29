@@ -48,65 +48,12 @@ const Index = () => {
   const [selectType, setSelectType] = useState("")
   const router = useRouter();
 
-//   const wasteDescriptions: Record<string, string> = {
-//     "ขยะย่อยสลาย": `ขยะอินทรีย์
-
-// ขยะประเภทนี้สามารถย่อยสลายได้เองตามธรรมชาติ ไม่เป็นอันตรายต่อสิ่งแวดล้อม
-
-// ระยะเวลาย่อยสลาย : 1 – 6 เดือน  
-// ตัวอย่าง : เศษอาหาร เปลือกผลไม้ เศษผัก ใบไม้  
-// ผลกระทบหากไม่แยก : เกิดกลิ่น น้ำเสีย และแมลงรบกวน  
-
-// วิธีจัดการ  
-// - แยกออกจากขยะอื่น  
-// - ทิ้งในถังขยะเปียกหรือถังหมัก  
-// - สามารถนำไปทำปุ๋ยหมักได้`,
-
-//     "ขยะอันตราย": `ขยะอันตราย
-
-// ขยะประเภทนี้มีสารเคมีหรือคุณสมบัติที่เป็นอันตรายต่อสุขภาพและสิ่งแวดล้อม
-
-// ตัวอย่าง : ถ่านไฟฉาย หลอดไฟเก่า ยา สารเคมี สี  
-// ความอันตราย : ปนเปื้อนน้ำ ดิน เป็นพิษต่อคนและสัตว์  
-// ห้าม : เผา เททิ้ง หรือปะปนกับขยะทั่วไป
-
-// วิธีจัดการ  
-// - แยกเก็บไว้ในภาชนะที่ปิดมิดชิด  
-// - นำไปทิ้งที่จุดรับขยะอันตรายของเทศบาลหรือศูนย์กำจัดพิเศษ`,
-
-//     "ขยะทั่วไป": `ขยะทั่วไป
-
-// ขยะประเภทนี้ไม่สามารถนำกลับมาใช้ใหม่หรือรีไซเคิลได้
-
-// ตัวอย่าง : ผ้าอนามัย กระดาษชำระ ถุงพลาสติกเปื้อนอาหาร  
-// ย่อยสลายยาก ใช้เวลาหลายปีถึงหลายสิบปี  
-// ผลกระทบ : เพิ่มปริมาณขยะฝังกลบ
-
-// วิธีจัดการ  
-// - ใส่ถุงให้มิดชิดเพื่อลดกลิ่น  
-// - ทิ้งลงถังขยะทั่วไป  
-// - ลดการใช้ของใช้สิ้นเปลือง`,
-
-//     "ขยะรีไซเคิล": `ขยะรีไซเคิล
-
-// ขยะประเภทนี้สามารถนำกลับมาใช้ใหม่หรือรีไซเคิลเป็นวัตถุดิบใหม่ได้
-
-// ตัวอย่าง : ขวดพลาสติก แก้ว กระดาษ กระป๋อง โลหะ กล่องนม  
-// ประโยชน์ : ลดขยะ ลดการใช้ทรัพยากรใหม่  
-// พลาสติกบางชนิดย่อยสลายช้ามาก (100–450 ปี)
-
-// วิธีจัดการ  
-// - ล้างให้สะอาด  
-// - แยกฝาและฉลากออก  
-// - บีบ/พับเพื่อลดพื้นที่  
-// - ทิ้งในถังรีไซเคิลหรือจุดรับซื้อของเก่า`,
-//   };
 
   const displayNames: Record<string, string> = {
-    "ขยะย่อยสลาย": "ขยะอินทรีย์",
-    "ขยะอันตราย": "ขยะอันตราย",
-    "ขยะทั่วไป": "ขยะทั่วไป",
-    "ขยะรีไซเคิล": "ขยะรีไซเคิล",
+    "ขยะย่อยสลาย": "Compostable Waste",
+    "ขยะอันตราย": "Hazardous Waste",
+    "ขยะทั่วไป": "General Waste",
+    "ขยะรีไซเคิล": "Recyclable Waste",
   };
 
   const handleFeedbackCorrect = async () => {
@@ -209,7 +156,7 @@ const Index = () => {
         ) : (
           <>
             <Text className="text-3xl font-bold text-[#1E8B79] mb-4 text-center">
-              ผลลัพธ์การคัดแยกขยะ
+              Waste Classification Result
             </Text>
 
 
@@ -251,7 +198,7 @@ const Index = () => {
 
                 ))}
               </View>
-              <Text className='text-black text-xl mt-8 text-center font-bold'>ผลลัพธ์ถูกต้องหรือไม่</Text>
+              <Text className='text-black text-xl mt-8 text-center font-bold'>Is this result correct?</Text>
               <View className='flex flex-row justify-center'>
 
                 <View style={btnstyles2.container} className='mx-4'>
@@ -260,7 +207,7 @@ const Index = () => {
                     activeOpacity={0.7}
                     onPress={() => handleFeedbackCorrect()}
                   >
-                    <Text style={btnstyles2.buttonText}>ถูกต้อง</Text>
+                    <Text style={btnstyles2.buttonText}>Correct</Text>
                   </TouchableOpacity>
                 </View>
 
@@ -270,7 +217,7 @@ const Index = () => {
                     activeOpacity={0.7}
                     onPress={() => setOpen(true)}
                   >
-                    <Text style={btnstyles2.buttonText}>ไม่ถูกต้อง</Text>
+                    <Text style={btnstyles2.buttonText}>Incorrect</Text>
                   </TouchableOpacity>
                 </View>
 
@@ -288,7 +235,7 @@ const Index = () => {
                         x
                       </Text>
                     </Pressable>
-                    <Text className="text-2xl font-bold text-gray-800 text-center">เลือกประเภทที่ถูกต้อง</Text>
+                    <Text className="text-2xl font-bold text-gray-800 text-center">Select the Correct Type</Text>
 
 
                     <View className='flex flex-row flex-wrap gap-3 items-center justify-between mt-6'>
@@ -303,7 +250,7 @@ const Index = () => {
                             <Text className="text-black font-bold text-xl">✓</Text>
                           )}
                         </View>
-                        <Text className='text-xl font-bold'>ขยะอันตราย</Text>
+                        <Text className='text-xl font-bold'>Hazardous</Text>
                       </Pressable>
 
                       <Pressable className={`flex flex-row bg-[#28C45C] w-[48%] px-3 py-4 rounded-lg 
@@ -314,7 +261,7 @@ const Index = () => {
                         <View className='flex flex-row bg-white border-2 border-[#CCCCCC] rounded-lg w-8 h-8 items-center justify-center'>
                           {selectType === "ขยะอินทรีย์" && (<Text className="text-black font-bold text-xl">✓</Text>)}
                         </View>
-                        <Text className='text-xl font-bold'>ขยะอินทรีย์</Text>
+                        <Text className='text-xl font-bold'>Compostable</Text>
                       </Pressable>
 
                       <Pressable className={`flex flex-row bg-[#2F98DD] w-[48%] px-3 py-4 rounded-lg 
@@ -325,7 +272,7 @@ const Index = () => {
                           {selectType === "ขยะทั่วไป" && (<Text className="text-black font-bold text-xl">✓</Text>)}
 
                         </View>
-                        <Text className='text-xl font-bold'>ขยะทั่วไป</Text>
+                        <Text className='text-xl font-bold'>General</Text>
                       </Pressable>
 
                       <Pressable className={`flex flex-row bg-[#FCD92C] w-[48%] px-3 py-4 rounded-lg items-center
@@ -336,7 +283,7 @@ const Index = () => {
                           {selectType === "ขยะรีไซเคิล" && (<Text className="text-black font-bold text-xl">✓</Text>)}
 
                         </View>
-                        <Text className='text-xl font-bold'>ขยะรีไซเคิล</Text>
+                        <Text className='text-xl font-bold'>Recyclable</Text>
                       </Pressable>
 
 
@@ -346,7 +293,7 @@ const Index = () => {
                       className="mt-8 bg-[#1E8B79] w-[47%] py-4 rounded-xl items-center"
                       onPress={() => handleFeedbackInCorrect()}
                     >
-                      <Text className="text-white text-lg font-bold">ยืนยัน</Text>
+                      <Text className="text-white text-lg font-bold">Confirm</Text>
                     </Pressable>
 
 

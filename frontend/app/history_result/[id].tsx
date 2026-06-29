@@ -25,10 +25,10 @@ interface HistoryItem {
 }
 
 const WASTE_LABEL: Record<number, string> = {
-  1: "ขยะอินทรีย์",
-  2: "ขยะอันตราย",
-  3: "ขยะทั่วไป",
-  4: "ขยะรีไซเคิล",
+  1: "Compostable Waste",
+  2: "Hazardous Waste",
+  4: "Recyclable Waste",
+  3: "General Waste",
 };
 
 const ProgressBar = ({ label, percent, color }: { label: string, percent: number, color: string }) => {
@@ -136,7 +136,7 @@ export default function HistoryDetail() {
             <View className='flex p-8 w-full'>
               <View className='w-full bg-white rounded-lg p-4' style={shadow.card}>
                 <View className='flex flex-row justify-center w-full'>
-                  <View className='flex'><Text className='text-xl'>ผลลัพธ์ปัจจุบัน</Text></View>
+                  <View className='flex'><Text className='text-xl'>Result from voters</Text></View>
                   <View className='flex-1 items-end'>
                     {waste.Vote_wastetype.length > 0 ? (
                       <Text className='text-xl font-bold'>
@@ -146,17 +146,17 @@ export default function HistoryDetail() {
                   </View>
                 </View>
                 <View className='flex flex-row justify-center w-full mt-2'>
-                  <View className='flex-1'><Text className='text-xl'>ผลลัพธ์จากระบบ</Text></View>
+                  <View className='flex-1'><Text className='text-xl'>Result from application</Text></View>
                   <View className='flex-1 items-end'>
-                    <Text className='text-xl font-bold'>{waste?.WasteType_ID === 1 ? "ขยะอินทรีย์" : waste?.WasteType_ID === 2
-                      ? "ขยะอันตราย" : waste?.WasteType_ID === 4 ? "ขยะรีไซเคิล" : "ขยะทั่วไป"}</Text>
+                    <Text className='text-xl font-bold'>{waste?.WasteType_ID === 1 ? "Compostable Waste" : waste?.WasteType_ID === 2
+                      ? "Hazardous Waste" : waste?.WasteType_ID === 4 ? "Recyclable Waste" : "General Waste"}</Text>
                   </View>
                 </View>
               </View>
 
               <View className="w-full bg-white rounded-lg p-4 mt-8" style={shadow.card}>
                 <View className='flex items-end mb-2'>
-                  <Text className='text-lg text-end'>คนโหวตจำนวน {waste.Total} คน</Text>
+                  <Text className='text-lg text-end'>Total Votes: {waste.Total} voter(s)</Text>
                 </View>
 
                 <View className="flex w-full mt-4 gap-y-4">

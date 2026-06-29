@@ -66,27 +66,27 @@ const RecyclingForm = () => {
     };
 
     const categories = [
-        { id: 1, label: 'กระดาษ', icon: 'file-document-outline' },
-        { id: 2, label: 'พลาสติก', icon: 'bottle-wine-outline' },
-        { id: 3, label: 'โลหะ', icon: 'nut' },
-        { id: 4, label: 'แก้ว', icon: 'glass-wine' },
-        { id: 5, label: 'e-waste', icon: 'battery-charging' },
-        { id: 6, label: 'อื่นๆ', icon: 'dots-horizontal' },
+        { id: 1, label: 'Paper', icon: 'file-document-outline' },
+        { id: 2, label: 'Plastic', icon: 'bottle-wine-outline' },
+        { id: 3, label: 'Metal', icon: 'nut' },
+        { id: 4, label: 'Glass', icon: 'glass-wine' },
+        { id: 5, label: 'E-Waste', icon: 'battery-charging' },
+        { id: 6, label: 'Others', icon: 'dots-horizontal' },
     ];
 
     const onSubmit = async () => {
         // 4. เพิ่มการตรวจสอบว่าพบ userId หรือไม่ก่อนกดส่งข้อมูล
         if (!currentUserId) {
-            Alert.alert("เกิดข้อผิดพลาด", "ไม่พบข้อมูลผู้ใช้งาน กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
+            Alert.alert("Error", "User profile data not found. Please log in again.");
             return;
         }
 
         if (!name.trim() || !phone.trim()) {
-            Alert.alert("ข้อมูลไม่ครบ", "กรุณากรอกชื่อและเบอร์โทรศัพท์");
+            Alert.alert("Incomplete Information", "Please enter the shop name and phone number.");
             return;
         }
         if (selectedCategories.length === 0) {
-            Alert.alert("ข้อมูลไม่ครบ", "กรุณาเลือกหมวดหมู่ขยะ");
+            Alert.alert("Incomplete Information", "Please select at least one accepted waste category.");
             return;
         }
 
@@ -107,13 +107,13 @@ const RecyclingForm = () => {
             );
 
             if (response.status === 200 || response.status === 201) {
-                Alert.alert("สำเร็จ", "เพิ่มข้อมูลเรียบร้อย", [
-                    { text: "ตกลง", onPress: () => router.back() }
+                Alert.alert("Success", "Shop information added successfully.", [
+                    { text: "OK", onPress: () => router.back() }
                 ]);
             }
         } catch (error) {
             console.log(error);
-            Alert.alert("ผิดพลาด", "บันทึกไม่สำเร็จ");
+            Alert.alert("Error", "Failed to save data. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -133,20 +133,20 @@ const RecyclingForm = () => {
                     <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                         <Icon name="arrow-left" size={28} color="#108a74" />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>แบบฟอร์มกรอกข้อมูลจุดรับซื้อ</Text>
+                    <Text style={styles.headerTitle}>Add Recycling Shop</Text>
                 </View>
 
                 {/* Input */}
                 <View style={styles.inputGroup}>
-                    <Text style={styles.label}>ชื่อ</Text>
+                    <Text style={styles.label}>Shop Name</Text>
                     <TextInput
                         style={styles.input}
                         value={name}
                         onChangeText={setName}
-                        placeholder="ชื่อร้าน / ชื่อผู้ติดต่อ"
+                        placeholder="Shop name / Contact person"
                     />
 
-                    <Text style={styles.label}>เบอร์โทร</Text>
+                    <Text style={styles.label}>Phone Number</Text>
                     <TextInput
                         style={styles.input}
                         value={phone}
@@ -157,10 +157,10 @@ const RecyclingForm = () => {
                 </View>
 
                 {/* 🔍 Search */}
-                <Text style={styles.label}>ค้นหาตำแหน่ง</Text>
+                <Text style={styles.label}>Search Location</Text>
                 <View style={styles.searchContainerWrapper}>
                     <GooglePlacesAutocomplete
-                        placeholder="ค้นหาตำแหน่ง"
+                        placeholder="Search for a Location"
                         fetchDetails
                         keyboardShouldPersistTaps="handled"
                         enablePoweredByContainer={false}
@@ -204,7 +204,7 @@ const RecyclingForm = () => {
                 </View>
 
                 {/* 🗺 Map */}
-                <Text style={styles.label}>เลือกตำแหน่งที่ตั้ง</Text>
+                <Text style={styles.label}>Select Location on Map</Text>
                 <View style={styles.mapContainer}>
                     <MapView
                         ref={mapRef}
@@ -225,7 +225,7 @@ const RecyclingForm = () => {
                 </View>
 
                 {/* Category */}
-                <Text style={styles.label}>หมวดหมู่ของที่รับ</Text>
+                <Text style={styles.label}>Accepted Materials</Text>
                 <View style={styles.categoryBox}>
                     <View style={styles.categoryGrid}>
                         {categories.map((item) => {
@@ -270,7 +270,7 @@ const RecyclingForm = () => {
                     {loading ? (
                         <ActivityIndicator color="#fff" />
                     ) : (
-                        <Text style={styles.submitBtnText}>ยืนยัน</Text>
+                        <Text style={styles.submitBtnText}>Confirm</Text>
                     )}
                 </TouchableOpacity>
             </View>

@@ -37,7 +37,7 @@ const Sign_in = () => {
     >
       <ScrollView contentContainerStyle={{ flexGrow: 1, alignItems: 'center', padding: 24 }}>
         <Image source={require('@/assets/images/im3.png')} className='w-32 h-32 mt-8' />
-        <Text className='text-[#000000] text-2xl pt-8 font-bold text-center'>แอปพลิเคชันคัดแยกขยะ</Text>
+        <Text className='text-[#000000] text-2xl pt-8 font-bold text-center'>Waste Classification Application</Text>
 
         {/* Username Input */}
         <View className="flex-row items-center mt-16 bg-white border-2 border-black rounded-xl w-[80%] h-16 px-4">
@@ -76,7 +76,7 @@ const Sign_in = () => {
         {/* error */}
         <View className='h-6 mt-4 justify-center'>
           {error && (
-            <Text className='text-lg text-red-500'>Username หรือ Password ไม่ถูกต้อง</Text>
+            <Text className='text-lg text-red-500'>Username or Password is incorrect</Text>
           )}
         </View>
 
@@ -87,17 +87,17 @@ const Sign_in = () => {
           className='mt-4 bg-[#1E8B79] rounded-xl w-60 h-16 items-center justify-center'
           onPress={handleSubmit}
         >
-          <Text className='text-white text-xl font-bold'>เข้าสู่ระบบ</Text>
+          <Text className='text-white text-xl font-bold'>Log In</Text>
         </TouchableOpacity>
 
         <View className='flex flex-row gap-x-12'>
           {/* Sign Up */}
           <TouchableOpacity onPress={() => router.navigate('/(auth)/sign_up')}>
-            <Text className='text-black underline text-lg mt-10'>สร้างบัญชี</Text>
+            <Text className='text-black underline text-lg mt-10'>Create an account</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => router.navigate('/(auth)/reset')}>
-            <Text className='text-black underline text-lg mt-10'>ลืมรหัสผ่าน?</Text>
+            <Text className='text-black underline text-lg mt-10'>Forgot your password?</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

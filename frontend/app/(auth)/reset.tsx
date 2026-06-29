@@ -29,10 +29,10 @@ const Reset = () => {
                 </Pressable>
 
                 <Image source={require('@/assets/images/im3.png')} className='w-32 h-32 mt-8' />
-                <Text className='text-[#000000] text-2xl pt-8 font-bold text-center'>แอปพลิเคชันคัดแยกขยะ</Text>
+                <Text className='text-[#000000] text-2xl pt-8 font-bold text-center'>Waste Classification Application</Text>
 
                 <View className='w-[90%] mt-16'>
-                    <Text className='text-lg font-bold text-black text-start'>ค้นหาบัญชีของคุณด้วยการกรอก Email</Text>
+                    <Text className='text-lg font-bold text-black text-start'>Search your account by using Email</Text>
                 </View>
 
                 {/* Email Input */}
@@ -53,14 +53,14 @@ const Reset = () => {
                     className='mt-4 bg-[#1E8B79] rounded-xl w-60 h-16 items-center justify-center'
                     onPress={handleSubmit}
                 >
-                    <Text className='text-white text-xl font-bold'>ยืนยัน</Text>
+                    <Text className='text-white text-xl font-bold'>Confirm</Text>
                 </TouchableOpacity>
                 {open &&
                     <Modal transparent visible={open} animationType="fade" statusBarTranslucent={true}>
                         <View className="flex-1 bg-black/60 justify-center items-center px-6">
                             <View className="bg-white w-full p-8 rounded-3xl items-center shadow-2xl">
                                 <Text className="text-2xl font-bold text-gray-800 text-center leading-10">
-                                    คำร้องการรีเซ็ทรหัสผ่านของคุณถูกส่งไปที่อีเมลของคุณแล้ว
+                                    Your password reset request has been sent to your email.
                                 </Text>
 
                                 <View className='flex flex-row w-full justify-center mt-8'>
@@ -68,7 +68,7 @@ const Reset = () => {
                                         className="bg-[#1E8B79] w-[45%] py-4 rounded-xl items-center"
                                         onPress={() => { router.back() }}
                                     >
-                                        <Text className="text-white text-lg font-bold">ยืนยัน</Text>
+                                        <Text className="text-white text-lg font-bold">Confirm</Text>
                                     </Pressable>
                                 </View>
                             </View>

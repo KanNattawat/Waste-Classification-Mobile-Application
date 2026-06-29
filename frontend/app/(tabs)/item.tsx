@@ -75,16 +75,16 @@ const Item = () => {
 
       if (res.ok) {
         setOpen(false);
-        Alert.alert("สำเร็จ", `แลก ${itemData.Item_name} เรียบร้อยแล้ว!`, [
-          { text: "ตกลง", onPress: () => router.replace('/(tabs)/point') } 
+        Alert.alert("Success", `Successfully redeemed ${itemData.Item_name}!`, [
+          { text: "OK", onPress: () => router.replace('/(tabs)/point') } 
         ]);
       } else {
         setOpen(false);
-        Alert.alert("ไม่สำเร็จ", result.error || "ไม่สามารถแลกของรางวัลได้");
+        Alert.alert("Error", result.error || "Unable to redeem reward.");
       }
     } catch (error) {
       console.error(error);
-      Alert.alert("เกิดข้อผิดพลาด", "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้");
+      Alert.alert("Error", "Unable to connect to the server.");
     } finally {
       setRedeeming(false);
     }
@@ -101,9 +101,9 @@ const Item = () => {
   if (!itemData) {
     return (
       <View className="flex-1 justify-center items-center bg-[#F9F8FA]">
-        <Text className="text-xl">ไม่พบข้อมูลสินค้า</Text>
+        <Text className="text-xl">Item information not found</Text>
         <Pressable className="mt-4 p-3 bg-gray-300 rounded-xl" onPress={() => router.back()}>
-          <Text>กลับ</Text>
+          <Text>Back</Text>
         </Pressable>
       </View>
     );
@@ -135,36 +135,36 @@ const Item = () => {
         <View className='px-5 mt-6'>
           <View className='flex flex-row justify-between items-center'>
             <Text className='text-lg font-bold text-[#1E8B79]'>
-              ใช้ {itemData.Point_Usage} คะแนน
+              Use {itemData.Point_Usage} Points
             </Text>
             <Text className={`text-base font-bold ${isEnoughPoints ? 'text-[#1E8B79]' : 'text-red-500'}`}>
-              คะแนนของคุณ: {userPoints}
+              Your Points: {userPoints}
             </Text>
           </View>
 
           <Text className='text-3xl font-bold mt-3 text-gray-800'>{itemData.Item_name}</Text>
           
-          <Text className='text-xl font-bold mt-6 text-gray-800'>รายละเอียด</Text>
+          <Text className='text-xl font-bold mt-6 text-gray-800'>Details</Text>
           <Text className='text-base mt-2 text-gray-600 leading-6'>
-            จำกัดสิทธิ์การแลก: {itemData.Usage_Limit} สิทธิ์ {'\n'}
-            หมดเขต: {new Date(itemData.Expire_Date).toLocaleDateString("th-TH")}
+            Redemption Limit: {itemData.Usage_Limit} time(s) {'\n'}
+            Expiry Date: {new Date(itemData.Expire_Date).toLocaleDateString("th-TH")}
           </Text>
 
-          <Text className='text-xl font-bold mt-6 text-gray-800'>เงื่อนไขและข้อตกลง</Text>
+          <Text className='text-xl font-bold mt-6 text-gray-800'>Terms & Conditions</Text>
           <Text className='text-base mt-2 text-gray-600 leading-6'>
-            วิธีการได้รับคะแนน {"\n"}
-            คุณจะได้คะแนนเมื่อทำกิจกรรมดังต่อไปนี้ {"\n"}
-            1. ถ่ายรูปเพื่อคัดแยกขยะ รับ 1 คะแนน <Text className='text-[#FF0000]'>(จำกัดวันละ 5 ครั้ง)</Text>  {"\n"}
-            2. เข้าร่วมกิจกรรมร่วมด้วยช่วยกันแยก รับ 1 คะแนน  <Text className='text-[#FF0000]'>(จำกัดวันละ 5 ครั้ง)</Text>
+            How to Earn Points {"\n"}
+            You can earn points by completing the following activities: {"\n"}
+            1. Take a photo to classify waste: Earn 1 point <Text className='text-[#FF0000]'>(Limit: 5 times/day)</Text>  {"\n"}
+            2. Join community waste sorting activities: Earn 1 point <Text className='text-[#FF0000]'>(Limit: 5 times/day)</Text>
           </Text>
         </View>
 
         <View className='px-5 mt-10'>
           <Pressable 
             className={`py-4 w-full items-center rounded-2xl shadow-sm ${isEnoughPoints ? 'bg-[#1E8B79]' : 'bg-gray-400'}`} 
-            onPress={() => isEnoughPoints ? setOpen(true) : Alert.alert("คะแนนไม่พอ", "คุณมีคะแนนไม่เพียงพอที่จะแลกรางวัลนี้")}
+            onPress={() => isEnoughPoints ? setOpen(true) : Alert.alert("Insufficient Points", "You do not have enough points to redeem this reward.")}
           >
-            <Text className='text-xl font-bold text-white'>{isEnoughPoints ? 'ยืนยันการแลกคะแนน' : 'คะแนนไม่เพียงพอ'}</Text>
+            <Text className='text-xl font-bold text-white'>{isEnoughPoints ? 'Confirm Redemption' : 'Insufficient Points'}</Text>
           </Pressable>
         </View>
 
@@ -175,7 +175,7 @@ const Item = () => {
           <View className="flex-1 bg-black/60 justify-center items-center px-6">
             <View className="bg-white w-full p-8 rounded-3xl items-center shadow-2xl">
               <Text className="text-2xl font-bold text-gray-800 text-center leading-10">
-                ยืนยันการแลกคะแนน {'\n'} <Text className="text-[#1E8B79] text-3xl">{itemData.Point_Usage}</Text> คะแนน
+                Confirm redemption of {'\n'} <Text className="text-[#1E8B79] text-3xl">{itemData.Point_Usage}</Text> points?
               </Text>
 
               <View className='flex flex-row w-full justify-between mt-8'>
@@ -184,7 +184,7 @@ const Item = () => {
                   onPress={() => setOpen(false)}
                   disabled={redeeming}
                 >
-                  <Text className="text-white text-lg font-bold">ยกเลิก</Text>
+                  <Text className="text-white text-lg font-bold">Cancel</Text>
                 </Pressable>
 
                 <Pressable
@@ -195,7 +195,7 @@ const Item = () => {
                   {redeeming ? (
                     <ActivityIndicator color="white" />
                   ) : (
-                    <Text className="text-white text-lg font-bold">ยืนยัน</Text>
+                    <Text className="text-white text-lg font-bold">Confirm</Text>
                   )}
                 </Pressable>
               </View>

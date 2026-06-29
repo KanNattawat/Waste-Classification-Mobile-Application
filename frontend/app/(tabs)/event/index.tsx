@@ -52,7 +52,7 @@ const Index = () => {
                     }
                 });
 
-                const labels = ["ขยะอินทรีย์", "ขยะอันตราย", "ขยะทั่วไป", "ขยะรีไซเคิล"];
+                const labels = ["Compostable", "Hazardous", "General", "Recyclable"];
 
                 const wasteData = res.data.item.map((i: any) => {
                     let voteArray = i.Vote_wastetype;
@@ -105,38 +105,36 @@ const Index = () => {
     };
 
     const voteColorMap: { [key: string]: string } = {
-        "ขยะอินทรีย์-text": "text-[#1A863E]",
-        "ขยะอันตราย-text": "text-[#842A2A]",
-        "ขยะทั่วไป-text": "text-[#276F9F]",
-        "ขยะรีไซเคิล-text": "text-[#A99323]",
-        "ขยะอินทรีย์-bg": "bg-[#E5FFED]",
-        "ขยะอันตราย-bg": "bg-[#FFC8C8]",
-        "ขยะทั่วไป-bg": "bg-[#EDF8FF]",
-        "ขยะรีไซเคิล-bg": "bg-[#FFFCEB]"
+        "Compostable-text": "text-[#1A863E]",
+        "Hazardous-text": "text-[#842A2A]",
+        "General-text": "text-[#276F9F]",
+        "Recyclable-text": "text-[#A99323]",
+        "Compostable-bg": "bg-[#E5FFED]",
+        "Hazardous-bg": "bg-[#FFC8C8]",
+        "General-bg": "bg-[#EDF8FF]",
+        "Recyclable-bg": "bg-[#FFFCEB]"
     };
 
     return (
         <SafeAreaView className='flex-1 bg-[#F9F8FA] pt-10'>
-            <Text className='text-center text-2xl font-bold text-[#1E8B79] mb-3'>ร่วมด้วยช่วยกันแยก</Text>
+            <Text className='text-center text-2xl font-bold text-[#1E8B79] mb-3'>Sort Together</Text>
 
             <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }} className='w-full'>
                 <View className='flex-row items-center bg-white shadow-xl px-4 py-4 rounded-xl mb-4' style={shadow.card}>
                     <Text className='text-base text-gray-700 leading-6'>
-                        กิจกรรม "ร่วมด้วยช่วยกันแยก" คือกิจกรรมที่เปิดให้ผู้ใช้งานช่วยกันแก้ไขการคัดแยกขยะที่ผิดพลาดจากระบบ เพื่อเพิ่มความแม่นยำและประสิทธิภาพในการจัดการขยะร่วมกัน
+                        The "Sort Together" activity empowers users to collectively review and correct AI misclassifications, improving system accuracy and driving efficient local waste management together.
                     </Text>
                 </View>
 
                 {(!waste || waste.length === 0) && (
-                    <Text className='text-center mt-10 text-base text-gray-500'>ยังไม่มีรายการขยะให้ตรวจสอบ</Text>
+                    <Text className='text-center mt-10 text-base text-gray-500'>No waste items available to vote.</Text>
                 )}
 
                 {waste?.map((item, index) =>
                     <Pressable
                         key={index}
-                        // ปรับ opacity-50 เป็น opacity-75 เพื่อให้ดูจางลงนิดหน่อยแต่ยังน่ากดอยู่
                         className={`flex flex-row items-center bg-white p-3 my-2 rounded-xl w-full relative ${item.isVoted ? 'opacity-75' : 'opacity-100'}`}
                         style={shadow.card}
-                        // เอา disabled={item.isVoted} ออกไปแล้ว เพื่อให้กดได้เสมอ
                         onPress={() => router.push(`/event/${item.Waste_ID}`)}
                     >
                         <Image source={{ uri: getImage(item.Image_path) }} className='w-[75px] h-[75px] rounded-lg' />
@@ -145,26 +143,26 @@ const Index = () => {
 
                             {/* แถวที่ 1 */}
                             <View className='flex flex-row items-center justify-between'>
-                                <Text className='text-sm font-medium text-gray-700 flex-shrink'>ผลลัพธ์จากระบบ</Text>
+                                <Text className='text-sm font-medium text-gray-700 flex-shrink'>Result from application</Text>
                                 <View className={`ml-2 ${currentColorMap[item.WasteType_ID + "-bg"]} rounded-md px-2 py-1 max-w-[55%]`}>
                                     <Text
                                         className={`text-sm ${currentColorMap[item.WasteType_ID + "-text"]} font-bold text-center`}
                                         numberOfLines={1}
                                     >
-                                        {item.WasteType_ID == "1" ? "ขยะอินทรีย์" : item.WasteType_ID == "2" ? "ขยะอันตราย" : item.WasteType_ID == "3" ? "ขยะทั่วไป" : "ขยะรีไซเคิล"}
+                                        {item.WasteType_ID == "1" ? "Compostable Waste" : item.WasteType_ID == "2" ? "Hazardous Waste" : item.WasteType_ID == "3" ? "General Waste" : "Recyclable Waste"}
                                     </Text>
                                 </View>
                             </View>
 
                             {/* แถวที่ 2 */}
                             <View className='flex flex-row items-center justify-between'>
-                                <Text className='text-sm font-medium text-gray-700 flex-shrink'>ผลลัพธ์ปัจจุบัน</Text>
+                                <Text className='text-sm font-medium text-gray-700 flex-shrink'>Result from voters</Text>
                                 <View className={`ml-2 ${Number(item.Vote_wastetype[0][1]) !== 0 ? `${voteColorMap[item.Vote_wastetype[0][0] + "-bg"]}` : "bg-[#CCCCCC]"} rounded-md px-2 py-1 max-w-[55%]`}>
                                     <Text
                                         className={`text-sm ${Number(item.Vote_wastetype[0][1]) !== 0 ? `${voteColorMap[item.Vote_wastetype[0][0] + "-text"]}` : "text-black"} font-bold text-center`}
                                         numberOfLines={1}
                                     >
-                                        {Number(item.Vote_wastetype[0][1]) !== 0 ? `${item.Vote_wastetype[0][0]}` : "ไม่มีผลโหวต"}
+                                        {Number(item.Vote_wastetype[0][1]) !== 0 ? `${item.Vote_wastetype[0][0]}` : "No vote yet"}
                                     </Text>
                                 </View>
                             </View>
@@ -173,7 +171,7 @@ const Index = () => {
 
                         {item.isVoted && (
                             <View className="absolute right-0 top-0 bg-[#2F98DD] rounded-bl-lg rounded-tr-xl px-2 py-0.5">
-                                <Text className="text-white text-[10px] font-bold">โหวตแล้ว</Text>
+                                <Text className="text-white text-[10px] font-bold">Voted</Text>
                             </View>
                         )}
 

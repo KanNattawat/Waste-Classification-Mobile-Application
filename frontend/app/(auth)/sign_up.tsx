@@ -20,7 +20,7 @@ const Sign_Up = () => {
         try {
             console.log(API_URL)
             if (password !== confirmPassword) {
-                setError('Password ไม่ตรงกัน');
+                setError('Passwords mismatch');
                 return;
             }
             const res = await axios.post(`${API_URL}/auth/register`, {
@@ -64,7 +64,7 @@ const Sign_Up = () => {
                         </Pressable>
                         <Image source={require('@/assets/images/im3.png')} className='w-48 h-48 mt-8' />
                         <Text className='text-black text-2xl pt-8 font-bold text-center'>
-                            แอปพลิเคชันคัดแยกขยะ
+                            Waste Classification Application
                         </Text>
 
                         {/* Fullname */}
@@ -147,7 +147,7 @@ const Sign_Up = () => {
                             className='mt-14 bg-[#1E8B79] rounded-xl w-60 h-16 items-center justify-center'
                             onPress={handleSubmit}
                         >
-                            <Text className='text-[#FFFFFF] text-2xl font-bold'>สมัครสมาชิก</Text>
+                            <Text className='text-[#FFFFFF] text-2xl font-bold'>Sign Up</Text>
                         </TouchableOpacity>
                         {error ? <Text className='text-red-500 mt-14 text-lg underline text-center'>{error}</Text> : null}
                     </ScrollView>

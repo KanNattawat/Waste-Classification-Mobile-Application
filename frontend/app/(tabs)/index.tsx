@@ -50,10 +50,10 @@ export default function Index() {
       }
 
       return [
-        { key: "recycle", label: "ขยะรีไซเคิล", value: getId("4"), color: "#FCD92C" },
-        { key: "danger", label: "ขยะอันตราย", value: getId("2"), color: "#EF4545" },
-        { key: "general", label: "ขยะทั่วไป", value: getId("3"), color: "#38AFFF" },
-        { key: "compost", label: "ขยะอินทรีย์", value: getId("1"), color: "#28C45C" },
+        { key: "recycle", label: "Recyclable Waste", value: getId("4"), color: "#FCD92C" },
+        { key: "danger", label: "Hazardous Waste", value: getId("2"), color: "#EF4545" },
+        { key: "general", label: "General Waste", value: getId("3"), color: "#38AFFF" },
+        { key: "compost", label: "Compostable Waste", value: getId("1"), color: "#28C45C" },
         { key: "none", label: "-", value: 0, color: "#CCCCCC" }
       ];
     },
@@ -120,7 +120,7 @@ export default function Index() {
           {/* tab ด้านบน */}
           <View className="flex flex-col text-center bg-white px-4 pb-4 pt-8 shadow">
             <View className='px-4'>
-              <Text className='text-[#7F7B7B] text-lg'>สวัสดี</Text>
+              <Text className='text-[#7F7B7B] text-lg'>Hello</Text>
               <View className="flex  flex-row justify-between items-center">
                 <Pressable className='relative gap-x-2 flex flex-row justify-center items-center'
                   onPress={() => { open ? setIsopen(false) : setIsopen(true) }}>
@@ -133,7 +133,7 @@ export default function Index() {
                     <Pressable 
                     onPress={handleLogout}
                     className='w-full top-full p-2 items-center justify-center absolute rounded-xl border-2 border-[#D9D9D9] bg-white'>
-                      <Text className='text-l'>Logout</Text>
+                      <Text className='text-l'>Log Out</Text>
                     </Pressable>
                   )}
                 </Pressable>
@@ -149,7 +149,7 @@ export default function Index() {
           </View>
           {/* tab graph */}
           <View className='flex flex-col bg-white items-center px-4 py-8 mt-8 mx-10 rounded-xl shadow'>
-            <Text className='text-[#1E8B79] text-2xl font-bold'>สถิติการคักแยกขยะ</Text>
+            <Text className='text-[#1E8B79] text-2xl font-bold'>Waste Sorting Stats</Text>
             <View className='mt-8 justify-center items-center'>
               <PieChart
                 data={data}
@@ -168,7 +168,7 @@ export default function Index() {
                     </Text>
 
                     <Text className="text-xl opacity-60 text-gray-600">
-                      ชิ้นถูกแยก
+                      Items Sorted
                     </Text>
                   </View>
                 )}
@@ -177,28 +177,28 @@ export default function Index() {
                 <View className="flex-row flex-wrap">
                   <WasteType
                     k="recycle"
-                    label="ขยะรีไซเคิล"
+                    label="Recyclable Waste"
                     color="#FCD92C"
                     selectedKey={selectedKey}
                     setSelectedKey={setSelectedKey}
                   />
                   <WasteType
                     k="danger"
-                    label="ขยะอันตราย"
+                    label="Hazardous Waste"
                     color="#EF4545"
                     selectedKey={selectedKey}
                     setSelectedKey={setSelectedKey}
                   />
                   <WasteType
                     k="general"
-                    label="ขยะทั่วไป   "
+                    label="General Waste"
                     color="#38AFFF"
                     selectedKey={selectedKey}
                     setSelectedKey={setSelectedKey}
                   />
                   <WasteType
                     k="compost"
-                    label="ขยะอินทรีย์ "
+                    label="Compostable Waste"
                     color="#28C45C"
                     selectedKey={selectedKey}
                     setSelectedKey={setSelectedKey}
@@ -215,8 +215,8 @@ export default function Index() {
                 source={require("@/assets/images/streak.png")}
                 className="w-16 h-16"
               />
-              <Text className='text-gray-600 text-xl mt-4'>แยกขยะติดต่อกัน</Text>
-              <Text className='text-2xl mt-4 font-bold'>{homeData?.streak} วัน</Text>
+              <Text className='text-gray-600 text-xl mt-4'>Sorting Streak</Text>
+              <Text className='text-2xl mt-4 font-bold'>{homeData?.streak} days</Text>
             </View>
 
             <View className="bg-white items-center px-4 py-4 mt-8 rounded-xl shadow flex-1 ">
@@ -224,8 +224,8 @@ export default function Index() {
                 source={require("@/assets/images/Total.png")}
                 className="w-16 h-16"
               />
-              <Text className='text-gray-600 text-xl mt-4'>สัปดาห์นี้แยกไป</Text>
-              <Text className='text-2xl mt-4 font-bold'>{homeData?.weekData} ชิ้น</Text>
+              <Text className='text-gray-600 text-xl mt-4'>This Week</Text>
+              <Text className='text-2xl mt-4 font-bold'>{homeData?.weekData} items</Text>
             </View>
           </View>
 

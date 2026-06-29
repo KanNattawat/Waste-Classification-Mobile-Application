@@ -50,14 +50,14 @@ export default function Point() {
       });
 
       if (!response.ok) {
-        throw new Error('ไม่สามารถดึงข้อมูลสินค้าได้');
+        throw new Error('Unable to fetch rewards data');
       }
 
       const data = await response.json();
       setItems(data);
     } catch (error) {
       console.error("Error fetching items:", error);
-      Alert.alert("เกิดข้อผิดพลาด", "ไม่สามารถโหลดข้อมูลรางวัลได้");
+      Alert.alert("Error", "Failed to load rewards data.");
     } finally {
       setLoading(false);
     }
@@ -74,7 +74,7 @@ export default function Point() {
     <SafeAreaView className="flex-1 flex-col bg-[#F9F8FA] min-h-full">
       <ScreenScroll>
         <View className='flex items-center mt-10'>
-          <Text className='text-3xl font-bold text-[#1E8B79] text-center mb-3'>แลกรางวัล</Text>
+          <Text className='text-3xl font-bold text-[#1E8B79] text-center mb-3'>Redeem Rewards</Text>
           <View className='flex flex-col w-screen px-8'>
 
             <View className='flex-row items-center bg-white shadow-xl px-8 py-4 rounded-xl' style={shadow.card}>
@@ -82,7 +82,7 @@ export default function Point() {
                 <Text className='text-xl'>{user?.UserName}</Text>
                 <View className='flex flex-row items-center'>
                   <Image className='w-8 h-8 mr-2' source={require("@/assets/images/coin.png")} />
-                  <Text className='text-xl' ><Text className='text-[#1E8B79]'>{user?.Point}</Text> คะแนน</Text>
+                  <Text className='text-xl' ><Text className='text-[#1E8B79]'>{user?.Point}</Text> Points</Text>
                 </View>
               </View>
               <Pressable onPress={() => { router.push('/pointHistory') }}>
@@ -96,11 +96,11 @@ export default function Point() {
               <Image
                 className='w-full h-full'
                 resizeMode="cover"
-                source={require("@/assets/images/event.png")}
+                source={require("@/assets/images/event_eng.png")}
               />
             </Pressable>
 
-            <Text className='text-xl my-2'>รางวัล</Text>
+            <Text className='text-xl my-2'>Rewards</Text>
 
             <View className='flex flex-row flex-wrap gap-3 items-center justify-between pb-10'>
 
@@ -109,7 +109,7 @@ export default function Point() {
                   <ActivityIndicator size="large" color="#1E8B79" />
                 </View>
               ) : items.length === 0 ? (
-                <Text className="text-center w-full mt-5 text-gray-500 text-lg">ยังไม่มีรายการของรางวัล</Text>
+                <Text className="text-center w-full mt-5 text-gray-500 text-lg">No rewards available</Text>
               ) : (
                 items.map((item) => (
                   <Pressable
@@ -126,7 +126,7 @@ export default function Point() {
                     <Text className='text-xl text-center' numberOfLines={1}>{item.Item_name}</Text>
                     <View className='flex flex-row items-center'>
                       <Image className='w-4 h-4 mr-2' source={require("@/assets/images/coin.png")} />
-                      <Text className='text-lg'><Text className='text-[#1E8B79]'>{item.Point_Usage}</Text> คะแนน</Text>
+                      <Text className='text-lg'><Text className='text-[#1E8B79]'>{item.Point_Usage}</Text> Points</Text>
                     </View>
                   </Pressable>
                 ))

@@ -12,7 +12,7 @@ const _layout = () => {
   const takeaPhoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
-      alert("กรุณาอนุญาตการเข้าถึงกล้องเพื่อใช้งาน");
+      alert("Please allow camera access to use this feature.");
       return;
     }
 
@@ -32,7 +32,7 @@ const _layout = () => {
     const { status } =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      alert("กรุณาอนุญาตการเข้าถึงแกลเลอรีเพื่อใช้งาน");
+      alert("Please allow photos access to use this feature.");
       return;
     }
 
@@ -83,7 +83,7 @@ const _layout = () => {
         <Tabs.Screen
           name="index"
           options={{
-            title: "โฮม",
+            title: "Home",
             tabBarIcon: ({ color }) => (
               <Ionicons name="home" size={28} color={color} />
             ),
@@ -93,7 +93,7 @@ const _layout = () => {
         <Tabs.Screen
           name="recents"
           options={{
-            title: "ประวัติ",
+            title: "History",
             tabBarIcon: ({ color }) => (
               <Ionicons name="time" size={28} color={color} />
             ),
@@ -103,7 +103,7 @@ const _layout = () => {
         <Tabs.Screen
           name="scan"
           options={{
-            title: "สแกน",
+            title: "Scan",
             tabBarLabel: () => null,
             tabBarIcon: () => null,
             tabBarButton: (props) => {
@@ -144,7 +144,7 @@ const _layout = () => {
                           color: "#4C944C",
                         }}
                       >
-                        ถ่ายรูป
+                        Take a photo
                       </Text>
                     </View>
                   </Pressable>
@@ -157,7 +157,7 @@ const _layout = () => {
         <Tabs.Screen
           name="point"
           options={{
-            title: "แลกรางวัล",
+            title: "Redeem",
             headerShown: false,
             tabBarIcon: ({ color }) => (
               <Ionicons name="gift" size={28} color={color} />
@@ -204,7 +204,7 @@ const _layout = () => {
         <Tabs.Screen
           name="map"
           options={{
-            title: "ร้านรับของ",
+            title: "Recycling Shops",
             headerShown: false,
             tabBarIcon: ({ color }) => (
               <Ionicons name="map" size={28} color={color} />
