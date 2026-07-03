@@ -31,11 +31,21 @@ const WASTE_LABEL: Record<number, string> = {
   3: "General Waste",
 };
 
+// 🛠️ ดิกชันนารีสำหรับแปลงผลลัพธ์จากภาษาไทยเป็นภาษาอังกฤษสำหรับ UI
+const DISPLAY_NAMES: Record<string, string> = {
+  "ขยะรีไซเคิล": "Recyclable Waste",
+  "ขยะอันตราย": "Hazardous Waste",
+  "ขยะอินทรีย์": "Compostable Waste",
+  "ขยะย่อยสลาย": "Compostable Waste",
+  "ขยะทั่วไป": "General Waste",
+};
+
 const ProgressBar = ({ label, percent, color }: { label: string, percent: number, color: string }) => {
   return (
     <View className="bg-white p-4 rounded-lg mb-[15px] shadow-md">
       <View className="flex-row justify-between mb-1.5">
-        <Text className="text-xl text-gray-800">{label}</Text>
+        {/* 🛠️ แปลง Label ตรงนี้ */}
+        <Text className="text-xl text-gray-800">{DISPLAY_NAMES[label] || label}</Text>
         <Text className="text-xl font-medium text-gray-800">{percent.toFixed(1)}%</Text>
       </View>
 
@@ -131,48 +141,49 @@ export default function HistoryDetail() {
               ))}
             </View>
           </View>
-        )
-          : (
-            <View className='flex p-8 w-full'>
-              <View className='w-full bg-white rounded-lg p-4' style={shadow.card}>
-                <View className='flex flex-row justify-center w-full'>
-                  <View className='flex'><Text className='text-xl'>Result from voters</Text></View>
-                  <View className='flex-1 items-end'>
-                    {waste.Vote_wastetype.length > 0 ? (
-                      <Text className='text-xl font-bold'>
-                        {Number(waste.Vote_wastetype[0][1]) > 0 ? `${waste.Vote_wastetype[0][0]} ${waste.Vote_wastetype[0][2]}%` : "-"}
-                      </Text>
-                    ) : <Text>error</Text>}
-                  </View>
-                </View>
-                <View className='flex flex-row justify-center w-full mt-2'>
-                  <View className='flex-1'><Text className='text-xl'>Result from application</Text></View>
-                  <View className='flex-1 items-end'>
-                    <Text className='text-xl font-bold'>{waste?.WasteType_ID === 1 ? "Compostable Waste" : waste?.WasteType_ID === 2
-                      ? "Hazardous Waste" : waste?.WasteType_ID === 4 ? "Recyclable Waste" : "General Waste"}</Text>
-                  </View>
+        ) : (
+          <View className='flex p-8 w-full'>
+            <View className='w-full bg-white rounded-lg p-4' style={shadow.card}>
+              <View className='flex flex-row justify-center w-full'>
+                <View className='flex'><Text className='text-xl'>Result from voters</Text></View>
+                <View className='flex-1 items-end'>
+                  {waste.Vote_wastetype.length > 0 ? (
+                    <Text className='text-xl font-bold'>
+                      {/* 🛠️ แปลงชื่อผลลัพธ์โหวตภาษาไทยตรงนี้ให้เป็นภาษาอังกฤษ */}
+                      {Number(waste.Vote_wastetype[0][1]) > 0 ? `${DISPLAY_NAMES[waste.Vote_wastetype[0][0]] || waste.Vote_wastetype[0][0]} ${waste.Vote_wastetype[0][2]}%` : "-"}
+                    </Text>
+                  ) : <Text>error</Text>}
                 </View>
               </View>
-
-              <View className="w-full bg-white rounded-lg p-4 mt-8" style={shadow.card}>
-                <View className='flex items-end mb-2'>
-                  <Text className='text-lg text-end'>Total Votes: {waste.Total} voter(s)</Text>
-                </View>
-
-                <View className="flex w-full mt-4 gap-y-4">
-                  {waste.Vote_wastetype.map(([label, total, percent], index) => (
-                    <PercentCard
-                      key={index}
-                      bg={colorMap[label]}
-                      wasteType={label}
-                      votePercent={percent}
-                      voteNumber={total as number}
-                    />
-                  ))}
+              <View className='flex flex-row justify-center w-full mt-2'>
+                <View className='flex-1'><Text className='text-xl'>Result from application</Text></View>
+                <View className='flex-1 items-end'>
+                  <Text className='text-xl font-bold'>{waste?.WasteType_ID === 1 ? "Compostable Waste" : waste?.WasteType_ID === 2
+                    ? "Hazardous Waste" : waste?.WasteType_ID === 4 ? "Recyclable Waste" : "General Waste"}</Text>
                 </View>
               </View>
             </View>
-          )}
+
+            <View className="w-full bg-white rounded-lg p-4 mt-8" style={shadow.card}>
+              <View className='flex items-end mb-2'>
+                <Text className='text-lg text-end'>Total Votes: {waste.Total} voter(s)</Text>
+              </View>
+
+              <View className="flex w-full mt-4 gap-y-4">
+                {waste.Vote_wastetype.map(([label, total, percent], index) => (
+                  <PercentCard
+                    key={index}
+                    bg={colorMap[label]}
+                    /* 🛠️ เปลี่ยนการส่งค่า label เข้าไปใน PercentCard เป็นแบบภาษาอังกฤษ */
+                    wasteType={DISPLAY_NAMES[label] || label}
+                    votePercent={percent}
+                    voteNumber={total as number}
+                  />
+                ))}
+              </View>
+            </View>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

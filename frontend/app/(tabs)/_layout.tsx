@@ -144,7 +144,7 @@ const _layout = () => {
                           color: "#4C944C",
                         }}
                       >
-                        Take a photo
+                        Camera
                       </Text>
                     </View>
                   </Pressable>
@@ -204,7 +204,7 @@ const _layout = () => {
         <Tabs.Screen
           name="map"
           options={{
-            title: "Recycling Shops",
+            title: "Nearby Shop",
             headerShown: false,
             tabBarIcon: ({ color }) => (
               <Ionicons name="map" size={28} color={color} />

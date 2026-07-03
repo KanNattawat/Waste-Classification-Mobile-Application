@@ -1,53 +1,53 @@
 export const wasteDescriptions: Record<string, string> = {
-    "ขยะย่อยสลาย": `ขยะอินทรีย์
+    "ขยะย่อยสลาย": `Organic Waste
 
-ขยะประเภทนี้สามารถย่อยสลายได้เองตามธรรมชาติ ไม่เป็นอันตรายต่อสิ่งแวดล้อม
+This type of waste can decompose naturally and is not harmful to the environment.
 
-ระยะเวลาย่อยสลาย : 1 – 6 เดือน  
-ตัวอย่าง : เศษอาหาร เปลือกผลไม้ เศษผัก ใบไม้  
-ผลกระทบหากไม่แยก : เกิดกลิ่น น้ำเสีย และแมลงรบกวน  
+Decomposition Period: 1 – 6 months  
+Examples: Food scraps, fruit peels, vegetable waste, leaves  
+Impact of Not Separating: Causes foul odors, wastewater, and pest infestations  
 
-วิธีจัดการ  
-- แยกออกจากขยะอื่น  
-- ทิ้งในถังขยะเปียกหรือถังหมัก  
-- สามารถนำไปทำปุ๋ยหมักได้`,
+How to Manage  
+- Separate from other types of waste  
+- Dispose of in organic/wet waste bins or compost bins  
+- Can be repurposed into organic fertilizer`,
 
-    "ขยะอันตราย": `ขยะอันตราย
+    "ขยะอันตราย": `Hazardous Waste
 
-ขยะประเภทนี้มีสารเคมีหรือคุณสมบัติที่เป็นอันตรายต่อสุขภาพและสิ่งแวดล้อม
+This type of waste contains chemicals or properties that are harmful to health and the environment.
 
-ตัวอย่าง : ถ่านไฟฉาย หลอดไฟเก่า ยา สารเคมี สี  
-ความอันตราย : ปนเปื้อนน้ำ ดิน เป็นพิษต่อคนและสัตว์  
-ห้าม : เผา เททิ้ง หรือปะปนกับขยะทั่วไป
+Examples: Batteries, old light bulbs, expired medicines, chemicals, paint cans  
+Dangers: Contaminates water and soil, highly toxic to humans and animals  
+Prohibited: Strictly do not burn, pour away, or mix with general waste
 
-วิธีจัดการ  
-- แยกเก็บไว้ในภาชนะที่ปิดมิดชิด  
-- นำไปทิ้งที่จุดรับขยะอันตรายของเทศบาลหรือศูนย์กำจัดพิเศษ`,
+How to Manage  
+- Separate and store in a tightly sealed container  
+- Dispose of at municipal hazardous waste drop-off points or specialized disposal centers`,
 
-    "ขยะทั่วไป": `ขยะทั่วไป
+    "ขยะทั่วไป": `General Waste
 
-ขยะประเภทนี้ไม่สามารถนำกลับมาใช้ใหม่หรือรีไซเคิลได้
+This type of waste cannot be reused or recycled.
 
-ตัวอย่าง : ผ้าอนามัย กระดาษชำระ ถุงพลาสติกเปื้อนอาหาร  
-ย่อยสลายยาก ใช้เวลาหลายปีถึงหลายสิบปี  
-ผลกระทบ : เพิ่มปริมาณขยะฝังกลบ
+Examples: Sanitary napkins, toilet paper, food-stained plastic bags  
+Decomposition: Hard to decompose, takes several years to decades  
+Impact: Increases the volume of waste sent to landfills
 
-วิธีจัดการ  
-- ใส่ถุงให้มิดชิดเพื่อลดกลิ่น  
-- ทิ้งลงถังขยะทั่วไป  
-- ลดการใช้ของใช้สิ้นเปลือง`,
+How to Manage  
+- Seal tightly in a trash bag to minimize odors  
+- Dispose of in general waste bins  
+- Reduce the consumption of single-use items`,
 
-    "ขยะรีไซเคิล": `ขยะรีไซเคิล
+    "ขยะรีไซเคิล": `Recyclable Waste
 
-ขยะประเภทนี้สามารถนำกลับมาใช้ใหม่หรือรีไซเคิลเป็นวัตถุดิบใหม่ได้
+This type of waste can be reused or processed into new raw materials.
 
-ตัวอย่าง : ขวดพลาสติก แก้ว กระดาษ กระป๋อง โลหะ กล่องนม  
-ประโยชน์ : ลดขยะ ลดการใช้ทรัพยากรใหม่  
-พลาสติกบางชนิดย่อยสลายช้ามาก (100–450 ปี)
+Examples: Plastic bottles, glass, paper, aluminum cans, metal, milk cartons  
+Benefits: Reduces overall waste and the consumption of new resources  
+Note: Some plastics decompose extremely slowly (100–450 years)
 
-วิธีจัดการ  
-- ล้างให้สะอาด  
-- แยกฝาและฉลากออก  
-- บีบ/พับเพื่อลดพื้นที่  
-- ทิ้งในถังรีไซเคิลหรือจุดรับซื้อของเก่า`,
+How to Manage  
+- Rinse and clean thoroughly  
+- Separate caps and remove labels  
+- Crush or fold to save space  
+- Dispose of in recycling bins or sell to scrap dealers`,
 };
