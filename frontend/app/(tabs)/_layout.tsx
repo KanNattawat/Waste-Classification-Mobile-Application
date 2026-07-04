@@ -144,7 +144,7 @@ const _layout = () => {
                           color: "#4C944C",
                         }}
                       >
-                        Take a photo
+                        Camera
                       </Text>
                     </View>
                   </Pressable>

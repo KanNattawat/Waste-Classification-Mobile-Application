@@ -133,12 +133,6 @@ const Sign_Up = () => {
                             />
                         </View>
 
-                        {/* error */}
-                        <View className='h-6 mt-4 justify-center'>
-                            {error && (
-                                <Text className='text-lg text-red-500'>{error}</Text>
-                            )}
-                        </View>
 
 
                         {/* Sign Up Button */}

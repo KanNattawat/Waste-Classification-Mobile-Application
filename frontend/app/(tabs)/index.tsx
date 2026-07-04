@@ -50,10 +50,10 @@ export default function Index() {
       }
 
       return [
-        { key: "recycle", label: "Recyclable Waste", value: getId("4"), color: "#FCD92C" },
-        { key: "danger", label: "Hazardous Waste", value: getId("2"), color: "#EF4545" },
-        { key: "general", label: "General Waste", value: getId("3"), color: "#38AFFF" },
-        { key: "compost", label: "Compostable Waste", value: getId("1"), color: "#28C45C" },
+        { key: "recycle", label: "Recyclable", value: getId("4"), color: "#FCD92C" },
+        { key: "danger", label: "Hazardous", value: getId("2"), color: "#EF4545" },
+        { key: "general", label: "General", value: getId("3"), color: "#38AFFF" },
+        { key: "compost", label: "Compostable", value: getId("1"), color: "#28C45C" },
         { key: "none", label: "-", value: 0, color: "#CCCCCC" }
       ];
     },

@@ -1,10 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
-  provider = "postgresql" 
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
+model User {
+  User_ID       Int            @id @default(autoincrement())
+  Full_name     String
+  User_name     String         @unique
+  User_password String
+  Email         String
+  Role          Role?          @default(USER)
+  Points        Int            @default(0)
+  pointHistory  PointHistory[]
+  recycleShop   RecycleShop[]
+  waste         Waste[]
+  wasteVote     WasteVote[]
+}
+
+model Waste {
+  Waste_ID       Int         @id @default(autoincrement())
+  User_ID        Int
+  WasteType_ID   Int
+  Image_path     String
+  Timestamp      DateTime    @default(now())
+  Probs          Float[]
+  Is_correct     Boolean     @default(false)
+  Vote_wastetype Int[]       @default([0, 0, 0, 0])
+  user           User        @relation(fields: [User_ID], references: [User_ID])
+  wasteType      WasteType   @relation(fields: [WasteType_ID], references: [WasteType_ID])
+  wasteVote      WasteVote[]
+}
+
+model WasteType {
+  WasteType_ID Int     @id @default(autoincrement())
+  Waste_name   String
+  waste        Waste[]
+}
+
+model PointHistory {
+  PointHistory_ID Int          @id @default(autoincrement())
+  User_ID         Int
+  PointsChanged   Int
+  History_Detail  String
+  History_Type    History_Type
+  Timestamp       DateTime     @default(now())
+  user            User         @relation(fields: [User_ID], references: [User_ID])
+}
+
+model RecycleShop {
+  Shop_ID       Int     @id @default(autoincrement())
+  User_ID       Int
+  Shop_name     String
+  Tel_num       String
+  Location      Float[]
+  Accepted_cate Int[]
+  Status        Boolean @default(false)
+  user          User    @relation(fields: [User_ID], references: [User_ID])
+}
+
+model WasteVote {
+  Vote_ID     Int      @id @default(autoincrement())
+  Waste_ID    Int
+  User_ID     Int
+  Vote_Detail String
+  Timestamp   DateTime @default(now())
+  user        User     @relation(fields: [User_ID], references: [User_ID])
+  waste       Waste    @relation(fields: [Waste_ID], references: [Waste_ID])
+}
+
+model PointShop {
+  Item_ID         Int      @id @default(autoincrement())
+  Item_name       String
+  Usage_Limit     Int
+  Point_Usage     Int
+  Item_Image_path String
+  Expire_Date     DateTime
 }
 
 enum Role {
@@ -16,96 +90,3 @@ enum History_Type {
   GET
   USE
 }
-
-
-model User {
-  User_ID      Int       @id @default(autoincrement())
-  Full_name    String
-  User_name    String    @unique
-  User_password String
-  Email String @unique
-  Role Role? @default(USER)
-  Points Int @default(0)
-  
-  waste   Waste[]
-  pointHistory  PointHistory[]
-  recycleShop  RecycleShop[]
-  wasteVote  WasteVote[]
-  reset PasswordResetToken[]
-}
-
-model PasswordResetToken{
-  ResetToken String @id @default(uuid())
-  User_ID Int
-  Expires_at DateTime
-  
-  user   User   @relation(fields: [User_ID], references: [User_ID])  
-}
-
-model Waste {
-  Waste_ID   Int      @id @default(autoincrement())
-  User_ID    Int
-  WasteType_ID   Int
-  Image_path String
-  Timestamp  DateTime @default(now())
-  Probs   Float[]
-  Is_correct Boolean @default(false)
-  Vote_wastetype Int[] @default([0, 0, 0, 0]) //[อินทรีย์, อันตราย, ทั่วไป, รีไซเคิล]
-
-  user   User   @relation(fields: [User_ID], references: [User_ID])
-  wasteType  WasteType  @relation(fields: [WasteType_ID], references: [WasteType_ID])
-  wasteVote  WasteVote[]
-}
-
-model WasteType {
-  WasteType_ID   Int     @id @default(autoincrement())
-  Waste_name String
-
-  waste Waste[]
-}
-
-
-model PointHistory {
-  PointHistory_ID Int      @id @default(autoincrement())
-  User_ID    Int
-  PointsChanged Int
-  History_Detail   String
-  History_Type  History_Type
-  Timestamp  DateTime @default(now())
-
-  user  User  @relation(fields: [User_ID], references: [User_ID])
-}
-
-model RecycleShop {
-   Shop_ID   Int     @id @default(autoincrement())
-   User_ID    Int
-   Shop_name String
-   Tel_num String
-   Location Float[] //[Lat, Long]
-   Accepted_cate Int[]
-   Status Boolean @default(false)
-
-   user  User  @relation(fields: [User_ID], references: [User_ID])
-}
-
-model WasteVote{
-  Vote_ID Int @id @default(autoincrement())
-  Waste_ID   Int 
-  User_ID    Int
-  Vote_Detail String
-  Timestamp  DateTime @default(now())
-
-  user  User  @relation(fields: [User_ID], references: [User_ID])
-  waste  Waste  @relation(fields: [Waste_ID], references: [Waste_ID])
-}
-
-model PointShop {
-  Item_ID Int @id @default(autoincrement())
-  Item_name String
-  Usage_Limit Int
-  Point_Usage Int
-  Item_Image_path String
-  Expire_Date DateTime
-}
-
-//npx prisma migrate dev --name init
