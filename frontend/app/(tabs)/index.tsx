@@ -109,8 +109,8 @@ export default function Index() {
       .slice(1)}`;
   }
 
-  if(loading){
-    return <Loading/>
+  if (loading) {
+    return <Loading />
   }
 
   return (
@@ -130,9 +130,9 @@ export default function Index() {
                     className="w-5 h-5"
                   />
                   {open && (
-                    <Pressable 
-                    onPress={handleLogout}
-                    className='w-full top-full p-2 items-center justify-center absolute rounded-xl border-2 border-[#D9D9D9] bg-white'>
+                    <Pressable
+                      onPress={handleLogout}
+                      className='w-full top-full p-2 items-center justify-center absolute rounded-xl border-2 border-[#D9D9D9] bg-white'>
                       <Text className='text-l'>Log Out</Text>
                     </Pressable>
                   )}
@@ -156,18 +156,25 @@ export default function Index() {
                 donut
                 radius={120}
                 innerRadius={90}
-                centerLabelComponent={() => (
-                  <View className="items-center">
-                    <Text className={`tracking-[2px] font-bold text-xl opacity-60 ${selectedKey === "recycle" ? "text-yellow-500" : selectedKey === "danger"
-                      ? "text-red-500" : selectedKey === "general" ? "text-blue-500" : selectedKey === "compost" ? "text-green-500" : "#CCCCCC"}`}>
+                centerLabelComponent={() => (           
+                  <View className="items-center justify-center w-[160px]">
+                    <Text
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                      className={`tracking-[1px] font-bold text-center text-sm opacity-60 w-full ${selectedKey === "recycle" ? "text-yellow-500" :
+                          selectedKey === "danger" ? "text-red-500" :
+                            selectedKey === "general" ? "text-blue-500" :
+                              selectedKey === "compost" ? "text-green-500" : "text-gray-400"
+                        }`}
+                    >
                       {selected.label.toUpperCase()}
                     </Text>
 
-                    <Text className="text-6xl font-extrabold">
+                    <Text className="text-5xl font-extrabold my-1">
                       {selected.value}
                     </Text>
 
-                    <Text className="text-xl opacity-60 text-gray-600">
+                    <Text className="text-xs opacity-60 text-gray-600 uppercase tracking-wider">
                       Items Sorted
                     </Text>
                   </View>

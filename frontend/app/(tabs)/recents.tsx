@@ -8,7 +8,18 @@ import { API_URL } from "@/config";
 import { useFocusEffect } from "@react-navigation/native";
 import { shadow } from "@/styles/shadow";
 import { getImage } from "@/lib/s3Service";
-import formatDate from "@/lib/formatDate";
+
+// เปลี่ยนแปลงเป็นรูปแบบสากล (Locale เป็น English)
+const formatEnglishDate = (timestampString: string) => {
+  if (!timestampString) return "-";
+  const date = new Date(timestampString);
+  // จัดฟอร์แมตให้ได้ผลลัพธ์เช่น: "Oct 24, 2024" หรือกำหนด options เพิ่มตามชอบได้ครับ
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
 
 export interface HistoryItem {
   Waste_ID: number;
@@ -20,14 +31,15 @@ export interface HistoryItem {
   Is_correct: boolean
 }
 
+// แก้ไขคำสะกดผิด Harzardous -> Hazardous และ Composable -> Compostable ให้ตรงกับหน้าอื่น
 const WASTE_LABEL: Record<number, string> = {
-  1: "ขยะอินทรีย์",
-  2: "ขยะอันตราย",
-  4: "ขยะรีไซเคิล",
-  3: "ขยะทั่วไป",
+  1: "Compostable Waste",
+  2: "Hazardous Waste",
+  3: "General Waste",
+  4: "Recyclable Waste",
 };
 
-const wasteLabel = (id: number) => WASTE_LABEL[id] ?? "unknown";
+const wasteLabel = (id: number) => WASTE_LABEL[id] ?? "Unknown";
 
 const Recents = () => {
   const router = useRouter();
@@ -74,35 +86,52 @@ const Recents = () => {
     }, [])
   );
 
-  const renderItem: ListRenderItem<HistoryItem> = ({ item }) => (
-    <TouchableOpacity
-      activeOpacity={0.8}
-      onPress={() => router.push(`/history_result/${item.Waste_ID}`)}
-      className="flex-row items-center bg-white p-3 rounded-xl mb-3 overflow-hidden"
-      style={shadow.card}
-    >
-      <Image
-        source={{ uri: getImage(item.Image_path) }}
-        className="w-[80px] h-[60px] rounded-lg"
-      />
+  const renderItem: ListRenderItem<HistoryItem> = ({ item }) => {
+    const label = wasteLabel(item.WasteType_ID);
+    
+    return (
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={() => router.push(`/history_result/${item.Waste_ID}`)}
+        className="flex-row items-center bg-white p-3 rounded-xl mb-3 overflow-hidden"
+        style={shadow.card}
+      >
+        <Image
+          source={{ uri: getImage(item.Image_path) }}
+          className="w-[80px] h-[60px] rounded-lg"
+        />
 
-      <View className="flex-1 ml-3">
-        <View className="self-start">
-          {wasteLabel(item.WasteType_ID) === "ขยะอินทรีย์" ? <Text className="text-xl font-bold capitalize bg-[#E5FFED] text-[#1A863E] rounded-lg px-2 py-1 ">
-            {wasteLabel(item.WasteType_ID)}</Text>
-            : wasteLabel(item.WasteType_ID) === "ขยะอันตราย" ? <Text className="text-xl font-bold capitalize bg-[#FFC8C8] text-[#842A2A] rounded-lg px-2 py-1 ">{wasteLabel(item.WasteType_ID)} </Text>
-              : wasteLabel(item.WasteType_ID) === "ขยะรีไซเคิล" ? <Text className="text-xl font-bold capitalize bg-[#FFFCEB] text-[#A99323] rounded-lg px-2 py-1">{wasteLabel(item.WasteType_ID)} </Text>
-                : <Text className="text-lg font-bold capitalize bg-[#EDF8FF] text-[#276F9F] rounded-lg px-2 py-1">{wasteLabel(item.WasteType_ID)} </Text>
-          }
+        <View className="flex-1 ml-3">
+          <View className="self-start">
+            {/* 🛠️ แก้ไขเงื่อนไขการดักสีตรงนี้ ให้เช็คคู่กับ String ภาษาอังกฤษตามที่ระบุใน WASTE_LABEL */}
+            {label === "Compostable Waste" ? (
+              <Text className="text-sm font-bold bg-[#E5FFED] text-[#1A863E] rounded-lg px-2 py-1">
+                {label}
+              </Text>
+            ) : label === "Hazardous Waste" ? (
+              <Text className="text-sm font-bold bg-[#FFC8C8] text-[#842A2A] rounded-lg px-2 py-1">
+                {label}
+              </Text>
+            ) : label === "Recyclable Waste" ? (
+              <Text className="text-sm font-bold bg-[#FFFCEB] text-[#A99323] rounded-lg px-2 py-1">
+                {label}
+              </Text>
+            ) : (
+              <Text className="text-sm font-bold bg-[#EDF8FF] text-[#276F9F] rounded-lg px-2 py-1">
+                {label}
+              </Text>
+            )}
+          </View>
+          {/* 🛠️ เปลี่ยนมาเรียกใช้ฟังก์ชันจัดรูปแบบวันที่ภาษาอังกฤษแทนตัวเดิม */}
+          <Text className="text-lg text-gray-500 mt-1">
+            {formatEnglishDate(item.Timestamp)}
+          </Text>
         </View>
-        <Text className="text-xl text-gray-500">
-          {formatDate(item.Timestamp)}
-        </Text>
-      </View>
 
-      <Text className="text-xl text-gray-400">{">"}</Text>
-    </TouchableOpacity>
-  );
+        <Text className="text-xl text-gray-400">{">"}</Text>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-[#F9F8FA]">

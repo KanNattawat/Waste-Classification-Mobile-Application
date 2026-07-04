@@ -34,7 +34,7 @@ export default function Picker({
           {/* ส่วนหัว: ชื่อหัวข้อ + ปุ่มกากบาท */}
           <View className="flex-row items-center justify-between mb-6">
             <Text className="text-xl font-bold">
-              select a method
+              Select Method
             </Text>
             
             <Pressable 
@@ -49,12 +49,12 @@ export default function Picker({
           {/* ส่วนตัวเลือก */}
           <View className="flex-row items-center gap-8 pb-2">
             <Pressable onPress={onCamera} hitSlop={10}>
-              <Text className="text-[#1F9280] text-lg font-medium">take a photo</Text>
+              <Text className="text-[#1F9280] text-lg font-medium">Take Photo</Text>
             </Pressable>
 
             <Pressable onPress={onGallery} hitSlop={10}>
               <Text className="text-[#1F9280] text-lg font-medium">
-                choose from gallery
+                Choose from Gallery
               </Text>
             </Pressable>
           </View>
