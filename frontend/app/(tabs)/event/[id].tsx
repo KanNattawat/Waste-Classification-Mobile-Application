@@ -187,7 +187,7 @@ const EventDetail = () => {
               </View>
             </View>
             <View className='flex flex-row justify-center w-full mt-2'>
-              <View className='flex-1'><Text className='text-xl'>Result from application</Text></View>
+              <View className='flex-1'><Text className='text-xl'>Result from app</Text></View>
               <View className='flex-1 items-end'>
                 <Text className='text-xl font-bold'>{item?.WasteType_ID === 1 ? "Compostable Waste" : item?.WasteType_ID === 2
                   ? "Hazardous Waste" : item?.WasteType_ID === 4 ? "Recyclable Waste" : "General Waste"}</Text>

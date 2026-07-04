@@ -31,7 +31,6 @@ export interface HistoryItem {
   Is_correct: boolean
 }
 
-// แก้ไขคำสะกดผิด Harzardous -> Hazardous และ Composable -> Compostable ให้ตรงกับหน้าอื่น
 const WASTE_LABEL: Record<number, string> = {
   1: "Compostable Waste",
   2: "Hazardous Waste",
@@ -103,7 +102,7 @@ const Recents = () => {
 
         <View className="flex-1 ml-3">
           <View className="self-start">
-            {/* 🛠️ แก้ไขเงื่อนไขการดักสีตรงนี้ ให้เช็คคู่กับ String ภาษาอังกฤษตามที่ระบุใน WASTE_LABEL */}
+
             {label === "Compostable Waste" ? (
               <Text className="text-sm font-bold bg-[#E5FFED] text-[#1A863E] rounded-lg px-2 py-1">
                 {label}
@@ -122,7 +121,7 @@ const Recents = () => {
               </Text>
             )}
           </View>
-          {/* 🛠️ เปลี่ยนมาเรียกใช้ฟังก์ชันจัดรูปแบบวันที่ภาษาอังกฤษแทนตัวเดิม */}
+
           <Text className="text-lg text-gray-500 mt-1">
             {formatEnglishDate(item.Timestamp)}
           </Text>
