@@ -45,14 +45,10 @@ export default function RootLayout() {
   }, []);
 
   return (
-    // 1. ครอบด้วย SafeAreaProvider เพื่อจัดการพื้นที่ปลอดภัยของระบบ
+
     <SafeAreaProvider>
       <AuthProvider>
         <AuthGate>
-          {/* 2. ใช้ SafeAreaView หุ้ม Stack ทั้งหมด 
-             - flex-1: ให้กินพื้นที่เต็มจอ
-             - bg-[#F9F8FA]: กำหนดสีพื้นหลังให้เนียนไปกับหน้า Index
-          */}
           <SafeAreaView style={{ flex: 1, backgroundColor: '#F9F8FA' }}>
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="(tabs)" />

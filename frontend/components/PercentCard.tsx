@@ -24,7 +24,7 @@ const PercentCard = ({bg, wasteType, votePercent, voteNumber}:PercentCardProps) 
                 </Text>
                 <View className='flex items-center'>
                     <Text className='text-xl text-white font-bold'>{votePercent}%</Text>
-                    <Text className='text-lg text-white font-bold'>จำนวน {voteNumber} คน</Text>
+                    <Text className='text-lg text-white font-bold'>{voteNumber} voter(s)</Text>
                 </View>
             </View>
         </View>

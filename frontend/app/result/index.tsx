@@ -1,7 +1,7 @@
 import { ensureModelLoaded, preprocessImage } from '@/lib/tflite';
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from 'react';
-import { Alert, Image, StyleSheet, Text, TouchableOpacity, View, SafeAreaView, ScrollView, Pressable, Modal } from 'react-native';
+import { Alert, Image, Text, TouchableOpacity, View, SafeAreaView, ScrollView, Pressable, Modal } from 'react-native';
 import Loading from '@/components/loading';
 import axios from 'axios';
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -9,23 +9,8 @@ import { saveImage } from "@/lib/storage";
 import { API_URL } from "@/config";
 import { getS3UploadPresinged, uploadToS3 } from "@/lib/s3Service"
 import { wasteDescriptions } from '@/constants/wasteDes';
-const ProgressBar = ({ label, percent, color }: { label: string, percent: number, color: string }) => {
-  return (
-    <View className="bg-white p-4 rounded-lg mb-[15px] shadow-md">
-      <View className="flex-row justify-between mb-1.5">
-        <Text className="text-xl text-gray-800">{label}</Text>
-        <Text className="text-xl font-medium text-gray-800">{percent.toFixed(1)}%</Text>
-      </View>
+import ProgressBar from '@/components/ProgressBar';
 
-      <View className="h-3 bg-gray-300 rounded-full overflow-hidden">
-        <View
-          style={{ width: `${percent}%`, backgroundColor: color }}
-          className="h-full rounded-full"
-        />
-      </View>
-    </View>
-  );
-};
 
 type WastePrediction = {
   label: string;
@@ -43,14 +28,20 @@ const Index = () => {
   const { photo } = useLocalSearchParams<{ photo: string }>();
   const [waste, setWaste] = useState<WasteUpload>();
   const [loading, setLoading] = useState(true);
-  // const [userId, setUserId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [selectType, setSelectType] = useState("")
   const router = useRouter();
 
+  const colorMap: { [key: string]: string } = {
+    "ขยะอันตราย": "bg-[#EF4545]",
+    "ขยะอินทรีย์": "bg-[#28C45C]",
+    "ขยะทั่วไป": "bg-[#2F98DD]",
+    "ขยะรีไซเคิล": "bg-[#FCD92C]"
+  };
+
 
   const displayNames: Record<string, string> = {
-    "ขยะย่อยสลาย": "Compostable Waste",
+    "ขยะอินทรีย์": "Compostable Waste",
     "ขยะอันตราย": "Hazardous Waste",
     "ขยะทั่วไป": "General Waste",
     "ขยะรีไซเคิล": "Recyclable Waste",
@@ -72,7 +63,6 @@ const Index = () => {
 
   const handleFeedbackInCorrect = async () => {
     try {
-      console.log('1')
       const selected = selectType === "ขยะอินทรีย์" ? [1, 0, 0, 0] : selectType === "ขยะอันตราย" ? [0, 1, 0, 0] :
         selectType === "ขยะทั่วไป" ? [0, 0, 1, 0] : selectType === "ขยะรีไซเคิล" ? [0, 0, 0, 1] : []
       const res = await axios.put(`${API_URL}/updateFeedback`, {
@@ -80,7 +70,6 @@ const Index = () => {
         status: false,
         selectedType: selected
       })
-      console.log('2')
       router.back()
     } catch (error) {
 
@@ -119,13 +108,10 @@ const Index = () => {
         const userId = await AsyncStorage.getItem("userId");
         const model = await ensureModelLoaded();
         const input = await preprocessImage(photo);
-        const outputs = model.runSync([input.data]);
-        const className = ["ขยะย่อยสลาย", "ขยะอันตราย", "ขยะทั่วไป", "ขยะรีไซเคิล"];
-        const mappingClass = className.reduce<Record<string, number>>((accu, current, index) => {
-          accu[current] = outputs[0][index];
-          return accu;
-        }, {});
-        const sortedClass = Object.entries(mappingClass).sort((a, b) => b[1] - a[1]);
+        const outputs = model.runSync([input.data]); //EX output. [[0.05, 0.02, 0.08, 0.85]]
+        const className = ["ขยะอินทรีย์", "ขยะอันตราย", "ขยะทั่วไป", "ขยะรีไซเคิล"];
+        const sortedClass = className.map((label, index) => [label, outputs[0][index]] as [string, number]).sort((a, b) => b[1] - a[1]); 
+        //EX output. [["ขยะรีไซเคิล", 0.945231],["ขยะทั่วไป", 0.032145],["ขยะอินทรีย์", 0.015682],["ขยะอันตราย", 0.006942]]
         setWaste({
           sortedResult: sortedClass.map(([label, score]) => ({
             label,
@@ -137,10 +123,9 @@ const Index = () => {
         await uploadToDB(sortedClass[0][0], photo, outputs[0], userId).then(id => {
           setWaste(prev => {
             if (!prev) return prev;
-            return{...prev, wasteId: id}
+            return { ...prev, wasteId: id }
           });
         });
-        setLoading(false);
 
       } catch (e) {
         Alert.alert("Predict error", String(e));
@@ -160,21 +145,19 @@ const Index = () => {
             </Text>
 
 
-            <Image source={{ uri: photo }} style={imgstyles.image} className="shadow-md object-cover h-full" />
+            <Image source={{ uri: photo }} className="shadow-md object-cover w-[90%] h-[200px] m-2.5 rounded-[10px]" />
 
-            <View style={descStyles.container} className='border-2 border-[#DAD9D9]' >
+            <View className='border-2 border-[#DAD9D9] mt-3 px-4 py-4 bg-white rounded-[10px] shadow-sm elevation-2 w-[95%] self-center' >
               {waste && (
                 <>
                   <Text className={`font-semibold text-2xl mb-2 text-center`}>
                     {displayNames[waste.sortedResult[0].label]}
                   </Text>
-                  {wasteDescriptions[waste.sortedResult[0].label].split("\n").slice(1).map((line, index) => (
+                  {wasteDescriptions[waste.sortedResult[0].label].split("\n").map((line, index) => (
                     <Text
                       key={index}
-                      style={[
-                        descStyles.text,
-                        line.startsWith("-") ? descStyles.bullet : null,
-                      ]}
+                      className={`text-[18px] text-[#444] leading-6 mb-1.5 ${line.startsWith("-") ? "pl-3" : ""
+                        }`}
                     >
                       {line}
                     </Text>
@@ -183,16 +166,14 @@ const Index = () => {
               )}
 
 
-              <View style={{ width: "95%", marginTop: 32 }}>
+              <View className="w-[95%] mt-8">
                 {waste?.sortedResult.map((item, index: number) => (
                   <ProgressBar
                     key={index}
                     label={displayNames[item.label]}
                     percent={item.score * 100}
                     color={
-                      item.label === 'ขยะรีไซเคิล' ? "#FCD92C" :
-                        item.label === 'ขยะอันตราย' ? "#EF4545" :
-                          item.label === 'ขยะย่อยสลาย' ? "#28C45C" : "#38AFFF"
+                      colorMap[item.label]
                     }
                   />
 
@@ -201,23 +182,23 @@ const Index = () => {
               <Text className='text-black text-xl mt-8 text-center font-bold'>Is this result correct?</Text>
               <View className='flex flex-row justify-center'>
 
-                <View style={btnstyles2.container} className='mx-4'>
+                <View className='mx-4 justify-center items-center py-2.5'>
                   <TouchableOpacity
-                    style={btnstyles2.greenButton} className='bg-[#239147]'
+                    className='bg-[#239147] py-4 px-10 rounded-lg'
                     activeOpacity={0.7}
                     onPress={() => handleFeedbackCorrect()}
                   >
-                    <Text style={btnstyles2.buttonText}>Correct</Text>
+                    <Text className='text-white text-base font-bold'>Correct</Text>
                   </TouchableOpacity>
                 </View>
 
-                <View style={btnstyles2.container} className='mx-4'>
+                <View className='mx-4 justify-center items-center py-2.5'>
                   <TouchableOpacity
-                    style={btnstyles2.greenButton} className='bg-[#AB2D2D]'
+                    className='bg-[#AB2D2D] py-4 px-10 rounded-lg'
                     activeOpacity={0.7}
                     onPress={() => setOpen(true)}
                   >
-                    <Text style={btnstyles2.buttonText}>Incorrect</Text>
+                    <Text className='text-white text-base font-bold'>Incorrect</Text>
                   </TouchableOpacity>
                 </View>
 
@@ -307,61 +288,5 @@ const Index = () => {
     </SafeAreaView>
   );
 };
-
-const imgstyles = StyleSheet.create({
-  image: {
-    width: "90%",
-    height: 200,
-    margin: 10,
-    borderRadius: 10,
-  },
-});
-
-const btnstyles2 = StyleSheet.create({
-  container: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 10,
-  },
-  greenButton: {
-    paddingVertical: 16,
-    paddingHorizontal: 40,
-    borderRadius: 8,
-  },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
-});
-
-const descStyles = StyleSheet.create({
-  container: {
-    marginTop: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    backgroundColor: "#ffffff",
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 2,
-    width: "95%",
-    alignSelf: "center",
-  },
-  text: {
-    fontSize: 18,
-    color: "#444",
-    lineHeight: 24,
-    marginBottom: 6,
-  },
-  title: {
-    fontWeight: "bold",
-    fontSize: 18,
-    color: "#2E7D32",
-    marginBottom: 10,
-    textAlign: "center",
-  },
-  bullet: {
-    paddingLeft: 12,
-  },
-});
 
 export default Index;

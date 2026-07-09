@@ -9,11 +9,9 @@ import { useFocusEffect } from "@react-navigation/native";
 import { shadow } from "@/styles/shadow";
 import { getImage } from "@/lib/s3Service";
 
-// เปลี่ยนแปลงเป็นรูปแบบสากล (Locale เป็น English)
 const formatEnglishDate = (timestampString: string) => {
   if (!timestampString) return "-";
   const date = new Date(timestampString);
-  // จัดฟอร์แมตให้ได้ผลลัพธ์เช่น: "Oct 24, 2024" หรือกำหนด options เพิ่มตามชอบได้ครับ
   return date.toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
@@ -133,14 +131,14 @@ const Recents = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F9F8FA]">
+    <SafeAreaView className="flex-1">
       <FlatList
         className="flex-1 bg-[#F9F8FA] px-8"
         data={historyfilterData}
         keyExtractor={(item) => item.Waste_ID.toString()}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingTop: 40, paddingBottom: 40 }}
+        contentContainerStyle={{ paddingTop: 40, paddingBottom: 100 }}
         ListHeaderComponent={
           <View className="mb-4">
             <Text className="text-3xl font-bold text-[#1E8B79] text-center mb-3">

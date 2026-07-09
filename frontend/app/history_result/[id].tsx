@@ -8,6 +8,7 @@ import { shadow } from "@/styles/shadow";
 import PercentCard from "@/components/PercentCard"
 import { mapAndSortVotes, mapAndSortProbs, calculateTotal } from "@/utils/wasteDataTransform"
 import { getImage } from "@/lib/s3Service"
+import ProgressBar from '@/components/ProgressBar';
 
 type ProbsList = [string, number][];
 type VoteList = [string, number, string][];
@@ -31,7 +32,6 @@ const WASTE_LABEL: Record<number, string> = {
   3: "General Waste",
 };
 
-// 🛠️ ดิกชันนารีสำหรับแปลงผลลัพธ์จากภาษาไทยเป็นภาษาอังกฤษสำหรับ UI
 const DISPLAY_NAMES: Record<string, string> = {
   "ขยะรีไซเคิล": "Recyclable Waste",
   "ขยะอันตราย": "Hazardous Waste",
@@ -40,24 +40,6 @@ const DISPLAY_NAMES: Record<string, string> = {
   "ขยะทั่วไป": "General Waste",
 };
 
-const ProgressBar = ({ label, percent, color }: { label: string, percent: number, color: string }) => {
-  return (
-    <View className="bg-white p-4 rounded-lg mb-[15px] shadow-md">
-      <View className="flex-row justify-between mb-1.5">
-        {/* 🛠️ แปลง Label ตรงนี้ */}
-        <Text className="text-xl text-gray-800">{DISPLAY_NAMES[label] || label}</Text>
-        <Text className="text-xl font-medium text-gray-800">{percent.toFixed(1)}%</Text>
-      </View>
-
-      <View className="h-3 bg-gray-300 rounded-full overflow-hidden">
-        <View
-          style={{ width: `${percent}%`, backgroundColor: color }}
-          className="h-full rounded-full"
-        />
-      </View>
-    </View>
-  );
-};
 
 export default function HistoryDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -71,13 +53,13 @@ export default function HistoryDetail() {
         const { data } = await axios.get(`${API_URL}/getWaste`, {
           params: { wasteId: id },
         });
-        const wasteData = data.item.Vote_wastetype;
-        const props = mapAndSortProbs(data.item.Probs);
-        const vote = mapAndSortVotes(data.item.Vote_wastetype);
+        const wasteData = calculateTotal(data.item.Vote_wastetype);
+        const props = mapAndSortProbs(data.item.Probs); // แปลงตัวเลขผลลัพธ์จากโมเดล
+        const vote = mapAndSortVotes(data.item.Vote_wastetype); //แปลงตัวเลขจากผลโหวต
         setWaste({
           ...data?.item,
           Probs: props,
-          Total: calculateTotal(wasteData),
+          Total: wasteData,
           Vote_wastetype: vote
         });
       } catch (err) {
@@ -130,13 +112,9 @@ export default function HistoryDetail() {
               {waste?.Probs.map((item, index: number) => (
                 <ProgressBar
                   key={index}
-                  label={item[0]}
+                  label={DISPLAY_NAMES[item[0]]}
                   percent={item[1] * 100}
-                  color={
-                    item[0] === 'ขยะรีไซเคิล' ? "#FCD92C" :
-                      item[0] === 'ขยะอันตราย' ? "#EF4545" :
-                        item[0] === 'ขยะอินทรีย์' ? "#28C45C" : "#38AFFF"
-                  }
+                  color = {colorMap[item[0]] }
                 />
               ))}
             </View>
@@ -147,18 +125,17 @@ export default function HistoryDetail() {
               <View className='flex flex-row justify-center w-full'>
                 <View className='flex'><Text className='text-xl'>Result from voters</Text></View>
                 <View className='flex-1 items-end'>
-                  {waste.Vote_wastetype.length > 0 ? (
-                    <Text className='text-xl font-bold'>
-                      {/* 🛠️ แปลงชื่อผลลัพธ์โหวตภาษาไทยตรงนี้ให้เป็นภาษาอังกฤษ */}
-                      {Number(waste.Vote_wastetype[0][1]) > 0 ? `${DISPLAY_NAMES[waste.Vote_wastetype[0][0]] || waste.Vote_wastetype[0][0]} ${waste.Vote_wastetype[0][2]}%` : "-"}
+                  {waste.Vote_wastetype.length > 0 && (
+                    <Text className='text-lg font-bold'>
+                      {Number(waste.Vote_wastetype[0][1]) > 0 ? `${DISPLAY_NAMES[waste.Vote_wastetype[0][0]]} ${waste.Vote_wastetype[0][2]}%` : "-"}
                     </Text>
-                  ) : <Text>error</Text>}
+                  )}
                 </View>
               </View>
               <View className='flex flex-row justify-center w-full mt-2'>
-                <View className='flex-1'><Text className='text-xl'>Result from application</Text></View>
+                <View className='flex-1'><Text className='text-xl'>Result from app</Text></View>
                 <View className='flex-1 items-end'>
-                  <Text className='text-xl font-bold'>{waste?.WasteType_ID === 1 ? "Compostable Waste" : waste?.WasteType_ID === 2
+                  <Text className='text-lg font-bold'>{waste?.WasteType_ID === 1 ? "Compostable Waste" : waste?.WasteType_ID === 2
                     ? "Hazardous Waste" : waste?.WasteType_ID === 4 ? "Recyclable Waste" : "General Waste"}</Text>
                 </View>
               </View>
@@ -174,7 +151,6 @@ export default function HistoryDetail() {
                   <PercentCard
                     key={index}
                     bg={colorMap[label]}
-                    /* 🛠️ เปลี่ยนการส่งค่า label เข้าไปใน PercentCard เป็นแบบภาษาอังกฤษ */
                     wasteType={DISPLAY_NAMES[label] || label}
                     votePercent={percent}
                     voteNumber={total as number}

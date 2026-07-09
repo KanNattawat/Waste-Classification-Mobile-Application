@@ -147,6 +147,7 @@ export default function Index() {
               </View>
             </View>
           </View>
+
           {/* tab graph */}
           <View className='flex flex-col bg-white items-center px-4 py-8 mt-8 mx-10 rounded-xl shadow'>
             <Text className='text-[#1E8B79] text-2xl font-bold'>Waste Sorting Stats</Text>
@@ -214,6 +215,7 @@ export default function Index() {
               </View>
             </View>
           </View>
+          
           {/* tab ด้านล่าง */}
           <View className="flex-row justify-center items-center mx-10 gap-x-8">
 

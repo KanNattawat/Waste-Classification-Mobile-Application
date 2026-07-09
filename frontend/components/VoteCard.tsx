@@ -8,13 +8,12 @@ interface VoteCardProps {
     wasteType: string
     votePercent: string
     voteNumber: number
-    isVoted: boolean
     hasVoted?: boolean
 }
 
 
 
-const VoteCard = ({ selectedVote, setSelectedVote, bg, wasteType, votePercent, voteNumber, isVoted, hasVoted }: VoteCardProps) => {
+const VoteCard = ({ selectedVote, setSelectedVote, bg, wasteType, votePercent, voteNumber, hasVoted }: VoteCardProps) => {
     const isSelected = selectedVote === wasteType;
     const isAnotherSelected = selectedVote !== "" && selectedVote !== wasteType;
 
@@ -30,7 +29,7 @@ const VoteCard = ({ selectedVote, setSelectedVote, bg, wasteType, votePercent, v
                 ${isSelected ? 'border-[3px] border-gray-800' : 'border-[3px] border-transparent'}
                 ${hasVoted ? 'opacity-100' : (isAnotherSelected ? 'opacity-40' : 'opacity-100')}
             `}
-            disabled={!isVoted || hasVoted}
+            disabled={hasVoted}
             onPress={() => {
                 isSelected ? setSelectedVote("") : setSelectedVote(wasteType)
             }}>
@@ -55,7 +54,6 @@ const VoteCard = ({ selectedVote, setSelectedVote, bg, wasteType, votePercent, v
 
                     <Text className='text-xl text-white font-bold'>
                         {displayLabel[wasteType]}
-                        {hasVoted && isSelected && " (ที่คุณเลือก)"}
                     </Text>
                 </View>
 

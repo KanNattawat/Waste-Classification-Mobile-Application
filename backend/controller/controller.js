@@ -28,7 +28,7 @@ export const uploadWaste = asyncHandler(async (req, res) => {
     const { user_id, wastetype, image_path, probs } = req.body
 
     const wasteMap = {
-        "ขยะย่อยสลาย": 1,
+        "ขยะอินทรีย์": 1,
         "ขยะอันตราย": 2,
         "ขยะทั่วไป": 3,
         "ขยะรีไซเคิล": 4
@@ -462,19 +462,19 @@ export const getUniqueWaste = asyncHandler(async (req, res) => {
         select: { Waste_ID: true },
         where: {
             User_ID: {
-                not: Number(userId)
+                not: Number(userId) //ไม่ใช่ขยะที่ตัวเองถ่าย
             },
             Timestamp: {
-                lt: startOfToday
+                lt: startOfToday //ขยะที่ถูกอัปโหลดกก่อนวันนี้
             },
-            Is_correct: { equals: false },
-            Waste_ID: { notIn: excludedId }
+            Is_correct: { equals: false }, //ผลการคัดแยกผิด
+            Waste_ID: { notIn: excludedId } //ไม่ใช่ขยะที่เคยโหวตแล้ว
         },
         orderBy: {
             Waste_ID: "asc"
         }
     });
-
+    //สุ่มขยะ 5 ชิ้น ใช้ seed สุ่มเพื่อให้ผลการสุ่มของขยะเหมือนเดิมตลอดทั้งวัน
     const dateSeed = new Date().toISOString().split('T')[0];
     const rng = seedrandom(`${userId}-${dateSeed}`);
     const shuffled = wasteId.sort(() => 0.5 - rng());
@@ -486,8 +486,8 @@ export const getUniqueWaste = asyncHandler(async (req, res) => {
             Waste_ID: "asc"
         }
     });
-
-    const userVotesForSelected = await prisma.wasteVote.findMany({
+    //เช็คว่าผู้ใช้ได้โหวตขยะที่สุ่มมาในวันนี้แล้วหรือยัง
+    const userVotesToday= await prisma.wasteVote.findMany({
         select: { Waste_ID: true },
         where: {
             User_ID: Number(userId),
@@ -496,7 +496,7 @@ export const getUniqueWaste = asyncHandler(async (req, res) => {
     });
     
    
-    const votedIds = userVotesForSelected.map(v => v.Waste_ID);
+    const votedIds = userVotesToday.map(v => v.Waste_ID);
 
     
     const finalWasteItems = waste.map(item => ({
@@ -543,7 +543,7 @@ export const getWaste = asyncHandler(async (req, res) => {
     if (!wasteData) {
         return res.status(404).json({ error: "ไม่พบข้อมูล" });
     }
-
+    // console.log('wasteData', wasteData)
     res.status(200).json({ item: wasteData });
 
 });

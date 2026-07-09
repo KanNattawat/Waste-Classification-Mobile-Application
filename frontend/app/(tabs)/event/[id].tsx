@@ -53,12 +53,11 @@ const EventDetail = () => {
       const vote = mapAndSortVotes(data.item.Vote_wastetype);
       const probs = mapAndSortProbs(data.item.Probs);
 
-      setItem((prev) => ({
-        ...(prev || {}),
+      setItem({
         ...data.item,
         total,
         isVoted: data.isVoted,
-      }));
+      });
       setStat({ vote: vote, prob: probs });
     } catch (error) {
       console.log('error: ', error);
@@ -92,19 +91,18 @@ const EventDetail = () => {
           vote: selectedVote
         }
       );
-      console.log("POST done:", res.status);
-      
+
       Alert.alert(
         "Vote Submitted",
         "You earned 1 point! Thank you for helping.",
         [
-          { 
-            text: "OK", 
-            onPress: () => router.push("/(tabs)/event") 
+          {
+            text: "OK",
+            onPress: () => router.push("/(tabs)/event")
           }
         ]
       );
-      
+
     } catch (error) {
       console.log(error);
       Alert.alert("Error", "Unable to submit your vote right now. Please try again later.");
@@ -117,8 +115,8 @@ const EventDetail = () => {
     return <Loading />;
   }
 
-  const displayLabel: {[key:string]:string} = {
-    "ขยะอันตราย" : "Hazardous Waste",
+  const displayLabel: { [key: string]: string } = {
+    "ขยะอันตราย": "Hazardous Waste",
     "ขยะอินทรีย์": "Compostable Waste",
     "ขยะทั่วไป": "General Waste",
     "ขยะรีไซเคิล": "Recyclable Waste"
@@ -208,16 +206,15 @@ const EventDetail = () => {
             </View>
 
             <View className='flex w-full mt-4 gap-y-4'>
-              {stat.vote.map(([label, count, percent], index) => (
+              {stat.vote.map(([label, voteNum, percent], index) => (
                 <VoteCard
                   key={index}
                   bg={colorMap[label]}
                   wasteType={label}
-                  voteNumber={count as number}
+                  voteNumber={voteNum as number}
                   votePercent={String(percent)}
                   selectedVote={selectedVote}
                   setSelectedVote={setSelectedVote}
-                  isVoted={userId !== String(item?.User_ID) && item?.isVoted !== true}
                   hasVoted={item?.isVoted}
                 />
               ))}
@@ -226,7 +223,7 @@ const EventDetail = () => {
 
           {/* ปุ่มส่งผลโหวต */}
           {(!item?.isVoted && userId !== String(item?.User_ID)) && (
-            <Pressable 
+            <Pressable
               className={`w-full py-4 rounded-full mt-4 flex items-center justify-center ${selectedVote ? 'bg-[#1E8B79]' : 'bg-gray-300'}`}
               disabled={!selectedVote || isSubmitting.current}
               onPress={voteHandler}

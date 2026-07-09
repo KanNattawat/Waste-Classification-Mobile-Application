@@ -53,7 +53,7 @@ const Index = () => {
                 });
 
                 const labels = ["Compostable", "Hazardous", "General", "Recyclable"];
-
+                // map label กับ ผลโหวต EX output : [ ["Compostable", 5], ["Hazardous", 0], ["General", 2], ["Recyclable", 12] ]
                 const wasteData = res.data.item.map((i: any) => {
                     let voteArray = i.Vote_wastetype;
                     if (typeof voteArray === 'string') {
@@ -141,7 +141,7 @@ const Index = () => {
 
                         <View className='flex-1 flex-col ml-3 gap-y-2 justify-center'>
 
-                            {/* แถวที่ 1 */}
+                            {/* ผลลัพธ์จากแอป */}
                             <View className='flex flex-row items-center justify-between'>
                                 <Text className='text-sm font-medium text-gray-700 flex-shrink'>Result from application</Text>
                                 <View className={`ml-2 ${currentColorMap[item.WasteType_ID + "-bg"]} rounded-md px-2 py-1 max-w-[55%]`}>
@@ -154,7 +154,7 @@ const Index = () => {
                                 </View>
                             </View>
 
-                            {/* แถวที่ 2 */}
+                            {/* ผลลัพธ์จากคนโหวต */}
                             <View className='flex flex-row items-center justify-between'>
                                 <Text className='text-sm font-medium text-gray-700 flex-shrink'>Result from voters</Text>
                                 <View className={`ml-2 ${Number(item.Vote_wastetype[0][1]) !== 0 ? `${voteColorMap[item.Vote_wastetype[0][0] + "-bg"]}` : "bg-[#CCCCCC]"} rounded-md px-2 py-1 max-w-[55%]`}>
@@ -162,7 +162,7 @@ const Index = () => {
                                         className={`text-sm ${Number(item.Vote_wastetype[0][1]) !== 0 ? `${voteColorMap[item.Vote_wastetype[0][0] + "-text"]}` : "text-black"} font-bold text-center`}
                                         numberOfLines={1}
                                     >
-                                        {Number(item.Vote_wastetype[0][1]) !== 0 ? `${item.Vote_wastetype[0][0]}` : "No vote yet"}
+                                        {Number(item.Vote_wastetype[0][1]) !== 0 ? `${item.Vote_wastetype[0][0]} Waste` : "No vote yet"}
                                     </Text>
                                 </View>
                             </View>
